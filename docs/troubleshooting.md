@@ -30,6 +30,10 @@ Disable optional pieces:
 
 Lower RHDH memory in `values-sandbox.yaml` if needed.
 
+## Guest login missing
+
+Confirm `auth.environment: development` and `auth.providers.guest.dangerouslyAllowOutsideDevelopment: true` in `values-sandbox.yaml`, then `helm upgrade` and restart the Hub deployment. Guest is demo-only; set `auth.environment: production` to hide it.
+
 ## Hub readiness 503 / GitHub catalog provider
 
 If logs show `Either organization or app must be specified`, disable the GitHub catalog module (default in `values-sandbox.yaml`) or set `catalog.providers.github` with an org/app. Sandbox demo uses URL catalog locations instead.

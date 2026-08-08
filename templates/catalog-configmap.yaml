@@ -16,6 +16,8 @@ data:
 {{ .Files.Get "files/catalog/skills.yaml" | indent 4 }}
   prompts.yaml: |
 {{ .Files.Get "files/catalog/prompts.yaml" | indent 4 }}
+  users.yaml: |
+{{ .Files.Get "files/catalog/users.yaml" | indent 4 }}
   template-devspaces-workspace.yaml: |
 {{ .Files.Get "files/templates/template-devspaces-workspace.yaml" | indent 4 }}
   template-ai-service.yaml: |

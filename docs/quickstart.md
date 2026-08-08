@@ -36,6 +36,8 @@ oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}"
 
 Open the Developer Hub Route (name typically contains `developer-hub`).
 
+On the login page, choose **Enter** / **Guest** — the sandbox profile enables anonymous guest access with the permission framework disabled so the demo user can use catalog, scaffolder, TechDocs, Lightspeed, and related UI without an IdP.
+
 ## Refresh model token
 
 Sandbox model services sit behind oauth-proxy. Tokens expire (~24h):

@@ -94,8 +94,16 @@ rhdh:
       appConfig:
         app:
           title: Agent-friendly Developer Hub
+        # Demo: sign in as Guest (anonymous) with unrestricted UI access.
         auth:
           environment: development
+          providers:
+            guest:
+              userEntityRef: user:default/guest
+              dangerouslyAllowOutsideDevelopment: true
+        # Keep the permission framework off so guest is not blocked by RBAC policies.
+        permission:
+          enabled: false
         catalog:
           locations:
             - type: url

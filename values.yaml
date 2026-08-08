@@ -146,7 +146,12 @@ rhdh:
           title: Agent-friendly Developer Hub
         auth:
           environment: development
-          providers: {}
+          providers:
+            guest:
+              userEntityRef: user:default/guest
+              dangerouslyAllowOutsideDevelopment: true
+        permission:
+          enabled: false
         backend:
           actions:
             pluginSources:

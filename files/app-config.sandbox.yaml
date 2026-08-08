@@ -2,6 +2,17 @@ app:
   title: Agent-friendly Developer Hub
   # baseUrl is normally injected by the RHDH chart from global.clusterRouterBase
 
+# Demo-only: Guest / anonymous login with full access (do not use in production).
+auth:
+  environment: development
+  providers:
+    guest:
+      userEntityRef: user:default/guest
+      dangerouslyAllowOutsideDevelopment: true
+
+permission:
+  enabled: false
+
 backend:
   actions:
     pluginSources:

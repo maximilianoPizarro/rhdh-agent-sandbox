@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+  description: Demo anonymous user with full access (permissions disabled)
+spec:
+  profile:
+    displayName: Guest
+    email: guest@localhost
+  memberOf: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: guests
+  description: Demo group for anonymous access
+spec:
+  type: team
+  children: []
+  members:
+    - user:default/guest
