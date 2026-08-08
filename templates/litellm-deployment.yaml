@@ -1,0 +1,64 @@
+{{- if .Values.litellm.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: litellm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+  template:
+    metadata:
+      labels:
+        app: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+        app.kubernetes.io/component: litellm
+    spec:
+      containers:
+        - name: litellm
+          image: "{{ .Values.litellm.image.repository }}:{{ .Values.litellm.image.tag }}"
+          imagePullPolicy: {{ .Values.litellm.image.pullPolicy }}
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - {{ .Values.litellm.service.port | quote }}
+          ports:
+            - containerPort: {{ .Values.litellm.service.port }}
+              name: http
+          env:
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.name }}
+                  key: litellm-master-key
+            - name: MODEL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.name }}
+                  key: model-api-key
+            - name: SSL_VERIFY
+              value: "False"
+            - name: LITELLM_SSL_VERIFY
+              value: "False"
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+              readOnly: true
+          resources:
+            {{- toYaml .Values.litellm.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+{{- end }}

@@ -1,0 +1,18 @@
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: k8s-mcp
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.mcp.kubernetes.service.port }}
+      targetPort: http
+      name: http
+  selector:
+    app: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+{{- end }}

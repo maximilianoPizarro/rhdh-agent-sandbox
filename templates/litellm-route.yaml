@@ -1,0 +1,18 @@
+{{- if and .Values.litellm.enabled .Values.litellm.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+spec:
+  to:
+    kind: Service
+    name: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+  port:
+    targetPort: http
+  tls:
+    termination: {{ .Values.litellm.route.tls.termination | default "edge" }}
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}

@@ -1,0 +1,12 @@
+*.tgz
+charts/*.tgz
+.idea/
+.vscode/
+*.swp
+.DS_Store
+tmp/
+dist/
+node_modules/
+.helm/
+secrets.env
+*.pem

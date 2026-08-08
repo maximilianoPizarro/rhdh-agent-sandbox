@@ -1,0 +1,10 @@
+# Lightweight catalog index image consumed via global.catalogIndex.extraImages
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+LABEL org.opencontainers.image.source="https://github.com/maximilianoPizarro/rhdh-agent-sandbox"
+LABEL rhdh.plugin.type="catalog-index"
+LABEL rhdh.plugin.name="plugin-catalog-index"
+
+COPY catalog/ /opt/app-root/src/catalog/
+
+USER 1001
+CMD ["sleep", "infinity"]

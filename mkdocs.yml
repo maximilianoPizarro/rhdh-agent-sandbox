@@ -1,0 +1,22 @@
+site_name: rhdh-agent-sandbox
+site_description: Agent-friendly Developer Hub on OpenShift Developer Sandbox
+site_url: https://maximilianoPizarro.github.io/rhdh-agent-sandbox/
+repo_url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+theme:
+  name: material
+  palette:
+    primary: red
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Architecture: architecture.md
+  - Lightspeed & models: lightspeed-models.md
+  - AI capabilities: ai-capabilities.md
+  - Community packs / GHCR: community-plugins-ghcr.md
+  - DevSpaces + Cursor: devspaces-cursor.md
+  - Troubleshooting: troubleshooting.md
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true

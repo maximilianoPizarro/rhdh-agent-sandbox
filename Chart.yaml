@@ -1,0 +1,46 @@
+apiVersion: v2
+name: rhdh-agent-sandbox
+description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces/Cursor workflows
+type: application
+version: 0.1.0
+appVersion: "1.10.3"
+kubeVersion: ">=1.25.0-0"
+home: https://maximilianoPizarro.github.io/rhdh-agent-sandbox
+keywords:
+  - openshift
+  - developer-hub
+  - backstage
+  - lightspeed
+  - mcp
+  - litellm
+  - devspaces
+  - ai
+maintainers:
+  - name: maximilianoPizarro
+    email: maximiliano.pizarro.5@gmail.com
+    url: https://github.com/maximilianoPizarro
+sources:
+  - https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+annotations:
+  artifacthub.io/category: developer-tools
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/prerelease: "true"
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://maximilianoPizarro.github.io/rhdh-agent-sandbox
+    - name: Source
+      url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+  artifacthub.io/maintainers: |
+    - name: maximilianoPizarro
+      email: maximiliano.pizarro.5@gmail.com
+  artifacthub.io/images: |
+    - name: litellm
+      image: litellm/litellm-non_root:v1.82.3-stable
+    - name: openshift-mcp-server
+      image: quay.io/maximilianopizarro/openshift-mcp-server:latest
+dependencies:
+  - name: redhat-developer-hub
+    version: 1.10.3
+    repository: https://charts.openshift.io/
+    alias: rhdh
+    condition: rhdh.enabled

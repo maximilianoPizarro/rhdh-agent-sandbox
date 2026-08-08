@@ -1,0 +1,32 @@
+============================================================
+ rhdh-agent-sandbox installed in namespace {{ .Release.Namespace }}
+============================================================
+
+Components:
+{{- if .Values.rhdh.enabled }}
+  - Red Hat Developer Hub (subchart)
+{{- end }}
+{{- if .Values.litellm.enabled }}
+  - LiteLLM  -> Service {{ include "rhdh-agent-sandbox.fullname" . }}-litellm:{{ .Values.litellm.service.port }}
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
+  - OpenShift MCP (Quarkus) -> {{ include "rhdh-agent-sandbox.fullname" . }}-mcp:{{ .Values.mcp.quarkus.service.port }}
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+  - Kubernetes MCP -> {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp:{{ .Values.mcp.kubernetes.service.port }}
+{{- end }}
+
+Next steps:
+  1. Refresh the model token (sandbox oauth-proxy, ~24h TTL):
+       oc set env secret/{{ .Values.secrets.name }} model-api-key=$(oc whoami -t) -n {{ .Release.Namespace }}
+       oc rollout restart deploy/{{ include "rhdh-agent-sandbox.fullname" . }}-litellm -n {{ .Release.Namespace }}
+
+  2. Open Developer Hub Route:
+       oc get route -n {{ .Release.Namespace }} | grep developer-hub
+
+  3. Connect Cursor to a DevSpaces workspace (see docs/devspaces-cursor.md).
+
+  4. Catalog AI entities / templates are in ConfigMap {{ .Values.catalog.configMapName }}.
+     Mount or sync them into RHDH catalog locations as described in the docs.
+
+Docs: https://maximilianoPizarro.github.io/rhdh-agent-sandbox

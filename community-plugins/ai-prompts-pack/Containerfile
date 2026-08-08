@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+LABEL org.opencontainers.image.source="https://github.com/maximilianoPizarro/rhdh-agent-sandbox"
+LABEL org.opencontainers.image.description="AI prompts pack assets for rhdh-agent-sandbox"
+LABEL rhdh.plugin.type="asset-pack"
+LABEL rhdh.plugin.name="ai-prompts-pack"
+
+COPY prompts/ /opt/rhdh-agent-sandbox/prompts/
+COPY catalog/ /opt/rhdh-agent-sandbox/catalog/
+
+USER 1001
+CMD ["sleep", "infinity"]

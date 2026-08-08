@@ -1,0 +1,43 @@
+{{- if .Values.litellm.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-litellm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: litellm
+data:
+  config.yaml: |
+    model_list:
+{{- range .Values.litellm.models }}
+      - model_name: {{ .name }}
+        litellm_params:
+          model: openai/{{ .modelId }}
+          api_base: {{ .apiBase }}
+          api_key: os.environ/MODEL_API_KEY
+          ssl_verify: false
+          drop_params: true
+        model_info:
+          supports_function_calling: true
+{{- end }}
+
+    mcp_servers:
+{{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
+      openshift_mcp_server:
+        url: http://{{ include "rhdh-agent-sandbox.fullname" . }}-mcp.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mcp.quarkus.service.port }}/mcp
+        transport: http
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+      kubernetes_mcp_server:
+        url: http://{{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mcp.kubernetes.service.port }}/mcp
+        transport: http
+{{- end }}
+
+    litellm_settings:
+      drop_params: true
+      default_model: {{ .Values.litellm.defaultModel | quote }}
+
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+{{- end }}

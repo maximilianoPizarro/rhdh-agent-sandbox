@@ -1,0 +1,9 @@
+.git
+.github
+docs
+community-plugins
+*.md
+.gitignore
+.helmignore
+tmp
+dist

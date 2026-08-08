@@ -1,0 +1,48 @@
+{{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "rhdh-agent-sandbox.fullname" . }}-mcp
+  template:
+    metadata:
+      labels:
+        app: {{ include "rhdh-agent-sandbox.fullname" . }}-mcp
+        app.kubernetes.io/component: mcp
+    spec:
+      serviceAccountName: {{ .Values.mcp.serviceAccount.name }}
+      containers:
+        - name: openshift-mcp-server
+          image: "{{ .Values.mcp.quarkus.image.repository }}:{{ .Values.mcp.quarkus.image.tag }}"
+          imagePullPolicy: {{ .Values.mcp.quarkus.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mcp.quarkus.service.port }}
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.mcp.quarkus.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+{{- end }}

@@ -1,0 +1,68 @@
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: k8s-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+  template:
+    metadata:
+      labels:
+        app: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+        app.kubernetes.io/component: k8s-mcp
+    spec:
+      serviceAccountName: {{ .Values.mcp.serviceAccount.name }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+        - name: helm-cache
+          emptyDir: {}
+        - name: helm-data
+          emptyDir: {}
+      containers:
+        - name: kubernetes-mcp-server
+          image: "{{ .Values.mcp.kubernetes.image.repository }}:{{ .Values.mcp.kubernetes.image.tag }}"
+          imagePullPolicy: {{ .Values.mcp.kubernetes.image.pullPolicy }}
+          command: ["/openshift-mcp-server"]
+          args:
+            - "--config"
+            - "/etc/k8s-mcp/config.toml"
+          env:
+            - name: HELM_CACHE_HOME
+              value: /tmp/helm/cache
+            - name: HELM_CONFIG_HOME
+              value: /tmp/helm/config
+            - name: HELM_DATA_HOME
+              value: /tmp/helm/data
+          ports:
+            - containerPort: {{ .Values.mcp.kubernetes.service.port }}
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/k8s-mcp/config.toml
+              subPath: config.toml
+              readOnly: true
+            - name: config
+              mountPath: /tmp/helm/config/repositories.yaml
+              subPath: repositories.yaml
+              readOnly: true
+            - name: helm-cache
+              mountPath: /tmp/helm/cache
+            - name: helm-data
+              mountPath: /tmp/helm/data
+          resources:
+            {{- toYaml .Values.mcp.kubernetes.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+{{- end }}

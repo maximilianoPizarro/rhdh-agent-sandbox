@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-pack-root
+  title: AI Skills Pack
+  description: Community skills pack published to GHCR for the sandbox demo
+  tags: [skill, ai, community]
+spec:
+  type: skill-pack
+  owner: group:default/developers

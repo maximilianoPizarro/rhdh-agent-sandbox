@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: prompts-pack-root
+  title: AI Prompts Pack
+  description: Saved prompts for Lightspeed / agent workflows
+  tags: [prompt, ai, community]
+spec:
+  type: prompt-pack
+  owner: group:default/developers

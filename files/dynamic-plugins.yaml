@@ -1,0 +1,19 @@
+# Reference list of dynamic plugins enabled for the sandbox demo.
+# Applied via values-sandbox.yaml -> rhdh.global.dynamic.plugins
+includes:
+  - dynamic-plugins.default.yaml
+plugins:
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+    disabled: false

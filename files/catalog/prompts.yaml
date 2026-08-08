@@ -1,0 +1,57 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: prompt-triage-namespace
+  title: Triage my namespace
+  description: Saved prompt to inspect pods, events, and failing deployments in the current sandbox namespace
+  tags:
+    - prompt
+    - mcp
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt: |
+      Using OpenShift MCP tools, list pods and recent warning events in the current namespace.
+      Summarize unhealthy workloads and suggest the smallest safe fix.
+spec:
+  type: prompt
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: prompt-scaffold-devspaces
+  title: Scaffold a DevSpaces workspace
+  description: Saved prompt for creating an agent-friendly workspace from the Hub template
+  tags:
+    - prompt
+    - scaffolder
+    - devspaces
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt: |
+      Help me scaffold a new service using the Agent-friendly DevSpaces Workspace template.
+      Prefer Node or Quarkus, include a Devfile, and document how to open it from Cursor.
+spec:
+  type: prompt
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: prompt-explain-catalog
+  title: Explain a catalog entity
+  description: Saved prompt that uses catalog MCP tools for deep context
+  tags:
+    - prompt
+    - catalog
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt: |
+      Use Developer Hub catalog MCP tools to fetch the selected entity, related APIs,
+      and TechDocs links. Explain ownership, dependencies, and next actions for a developer.
+spec:
+  type: prompt
+  owner: group:default/developers

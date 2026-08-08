@@ -1,0 +1,55 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-devspaces-cursor
+  title: DevSpaces + Cursor workflow skill
+  description: Guidance for opening a DevSpaces workspace and connecting Cursor over Remote SSH
+  tags:
+    - skill
+    - cursor
+    - devspaces
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/devspaces-cursor/SKILL.md
+spec:
+  type: skill
+  owner: group:default/developers
+  dependencyOf:
+    - component:default/rhdh-agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-openshift-mcp
+  title: OpenShift MCP tool-calling skill
+  description: How agents should call OpenShift MCP tools safely in a Developer Sandbox namespace
+  tags:
+    - skill
+    - mcp
+    - openshift
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/openshift-mcp/SKILL.md
+spec:
+  type: skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-lightspeed-rag
+  title: Lightspeed knowledge skill
+  description: Prefer TechDocs and catalog context when answering platform questions via Lightspeed
+  tags:
+    - skill
+    - lightspeed
+    - rag
+    - ai
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/lightspeed-rag/SKILL.md
+spec:
+  type: skill
+  owner: group:default/developers

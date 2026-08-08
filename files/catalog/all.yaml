@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: rhdh-agent-sandbox-catalog
+  description: AI catalog locations for agent-friendly Developer Hub demo
+spec:
+  targets:
+    - ./mcp-servers.yaml
+    - ./skills.yaml
+    - ./prompts.yaml
+    - ../templates/template-devspaces-workspace.yaml
+    - ../templates/template-ai-service.yaml

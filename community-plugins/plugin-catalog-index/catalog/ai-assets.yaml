@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rhdh-agent-sandbox
+  title: Agent-friendly Developer Hub (Sandbox)
+  description: Demo umbrella chart wiring Lightspeed, LiteLLM, MCP, and DevSpaces/Cursor
+  tags: [ai, mcp, lightspeed, sandbox]
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: litellm-gateway
+  title: LiteLLM gateway
+  description: OpenAI-compatible proxy to sandbox-shared-models (Granite / Qwen)
+  tags: [ai, litellm]
+spec:
+  type: model-gateway
+  owner: group:default/developers

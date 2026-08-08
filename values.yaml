@@ -1,0 +1,171 @@
+# Default values for rhdh-agent-sandbox (Developer Sandbox oriented).
+nameOverride: ""
+fullnameOverride: ""
+
+# Bootstrap secrets (generated if create=true and keys empty)
+secrets:
+  create: true
+  name: rhdh-agent-sandbox-secrets
+  backendSecret: ""
+  mcpToken: ""
+  litellmMasterKey: ""
+  # OpenShift user token for sandbox model oauth-proxy (set at install time)
+  modelApiKey: ""
+
+litellm:
+  enabled: true
+  image:
+    repository: litellm/litellm-non_root
+    tag: v1.82.3-stable
+    pullPolicy: IfNotPresent
+  service:
+    port: 4000
+  route:
+    enabled: true
+    tls:
+      termination: edge
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  models:
+    - name: granite
+      modelId: isvc-granite-31-8b-fp8
+      apiBase: https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
+    - name: qwen3
+      modelId: isvc-qwen3-8b-fp8
+      apiBase: https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
+  defaultModel: granite
+  postgres:
+    enabled: false
+
+mcp:
+  enabled: true
+  quarkus:
+    enabled: true
+    image:
+      repository: quay.io/maximilianopizarro/openshift-mcp-server
+      tag: latest
+      pullPolicy: Always
+    service:
+      port: 8080
+    route:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 512Mi
+  kubernetes:
+    enabled: true
+    image:
+      repository: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server
+      tag: latest
+      pullPolicy: Always
+    service:
+      port: 8085
+    route:
+      enabled: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  inspector:
+    enabled: false
+  serviceAccount:
+    create: true
+    name: rhdh-agent-mcp
+  rbac:
+    create: true
+
+catalog:
+  enabled: true
+  # Mount AI catalog entities + software templates into a ConfigMap for RHDH locations
+  configMapName: rhdh-agent-sandbox-catalog
+
+communityPlugins:
+  # OCI packages published by this repo's CI to GHCR
+  enabled: true
+  registry: ghcr.io
+  repositoryPrefix: maximilianoPizarro/rhdh-agent-sandbox
+  tag: "0.1.0"
+  # Referenced from dynamic-plugins / Extensions catalog index
+  packages:
+    - name: ai-skills-pack
+      disabled: false
+    - name: ai-prompts-pack
+      disabled: false
+
+# Subchart: official Red Hat Developer Hub
+rhdh:
+  enabled: true
+  nameOverride: developer-hub
+  global:
+    clusterRouterBase: ""  # set in values-sandbox.yaml or --set
+    host: ""
+    auth:
+      backend:
+        enabled: true
+        existingSecret: rhdh-agent-sandbox-secrets
+        # key must match secret; chart expects backend-secret by default — we align naming via extra wiring
+    dynamic:
+      includes:
+        - dynamic-plugins.default.yaml
+      plugins: []
+    lightspeed:
+      enabled: true
+      secret:
+        create: false
+        name: rhdh-agent-sandbox-secrets
+    catalogIndex:
+      extraImages:
+        - name: community
+          registry: ghcr.io
+          repository: redhat-developer/rhdh-plugin-community-index
+          tag: "1.10"
+  upstream:
+    backstage:
+      image:
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 250m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 2.5Gi
+      appConfig:
+        app:
+          title: Agent-friendly Developer Hub
+        auth:
+          environment: development
+          providers: {}
+        backend:
+          actions:
+            pluginSources:
+              - software-catalog-mcp-tool
+              - techdocs-mcp-tool
+        lightspeed:
+          servers: []
+        mcp:
+          mcpServers: {}
+      extraEnvVars: []
+    postgresql:
+      primary:
+        persistence:
+          size: 2Gi
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi

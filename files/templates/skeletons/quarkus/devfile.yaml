@@ -1,0 +1,15 @@
+schemaVersion: 2.2.0
+metadata:
+  name: ${{ values.name }}
+  version: 0.1.0
+components:
+  - name: tools
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi9-latest
+      memoryLimit: 3Gi
+      mountSources: true
+      endpoints:
+        - exposure: public
+          name: http-8080
+          protocol: http
+          targetPort: 8080

@@ -1,0 +1,8 @@
+# Mirrored into OCI asset pack; also shipped via Helm ConfigMap.
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: ai-skills-pack
+spec:
+  targets:
+    - ./entities.yaml

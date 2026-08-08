@@ -1,0 +1,71 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: agent-friendly-devspaces-workspace
+  title: Agent-friendly DevSpaces Workspace
+  description: Scaffold a repository with Devfile, Cursor skills, and MCP-oriented docs for Developer Sandbox
+  tags:
+    - devspaces
+    - cursor
+    - ai
+    - recommended
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: Service
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          default: Agent-friendly service workspace
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+        stack:
+          title: Stack
+          type: string
+          default: nodejs
+          enum:
+            - nodejs
+            - quarkus
+            - python
+  steps:
+    - id: fetch
+      name: Fetch skeleton
+      action: fetch:template
+      input:
+        url: ./skeletons/${{ parameters.stack }}
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          stack: ${{ parameters.stack }}
+    - id: publish
+      name: Publish instructions
+      action: debug:log
+      input:
+        message: |
+          Workspace files prepared for ${{ parameters.name }}.
+          Next: push to GitHub and open in OpenShift DevSpaces, then connect Cursor via Remote SSH.
+          See docs/devspaces-cursor.md in the rhdh-agent-sandbox chart repository.
+  output:
+    text:
+      - title: Next steps
+        content: |
+          1. Commit the generated workspace to a Git repository.
+          2. In OpenShift DevSpaces, create a workspace from the Devfile.
+          3. In Cursor, use Remote SSH / DevSpaces connection flow documented in the chart docs.
+          4. Install skills from the catalog Resources tagged `skill`.

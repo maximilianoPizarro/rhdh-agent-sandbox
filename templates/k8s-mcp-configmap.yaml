@@ -1,0 +1,23 @@
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: k8s-mcp
+data:
+  config.toml: |
+    port = {{ .Values.mcp.kubernetes.service.port }}
+    log_level = "info"
+    list_output = "yaml"
+    read_only = false
+    disable_destructive = false
+  repositories.yaml: |
+    apiVersion: ""
+    generated: "1970-01-01T00:00:00Z"
+    repositories:
+      - name: openshift-helm-charts
+        url: https://charts.openshift.io/
+{{- end }}

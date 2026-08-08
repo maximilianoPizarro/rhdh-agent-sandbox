@@ -1,0 +1,49 @@
+app:
+  title: Agent-friendly Developer Hub
+  # baseUrl is normally injected by the RHDH chart from global.clusterRouterBase
+
+backend:
+  actions:
+    pluginSources:
+      - software-catalog-mcp-tool
+      - techdocs-mcp-tool
+  reading:
+    allow:
+      - host: github.com
+      - host: raw.githubusercontent.com
+      - host: "*.github.io"
+
+catalog:
+  rules:
+    - allow:
+        - Component
+        - System
+        - API
+        - Resource
+        - Location
+        - Template
+        - User
+        - Group
+  locations:
+    - type: url
+      target: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/blob/main/files/catalog/all.yaml
+      rules:
+        - allow: [Component, System, API, Resource, Location, Template]
+
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters:
+        - url: https://kubernetes.default.svc
+          name: sandbox
+          authProvider: serviceAccount
+          skipTLSVerify: true
+
+mcp:
+  mcpServers:
+    openshift-mcp:
+      headers: {}
+    k8s-mcp:
+      headers: {}

@@ -1,0 +1,23 @@
+{{- if .Values.catalog.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.catalog.configMapName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog
+data:
+  all.yaml: |
+{{ .Files.Get "files/catalog/all.yaml" | indent 4 }}
+  mcp-servers.yaml: |
+{{ .Files.Get "files/catalog/mcp-servers.yaml" | indent 4 }}
+  skills.yaml: |
+{{ .Files.Get "files/catalog/skills.yaml" | indent 4 }}
+  prompts.yaml: |
+{{ .Files.Get "files/catalog/prompts.yaml" | indent 4 }}
+  template-devspaces-workspace.yaml: |
+{{ .Files.Get "files/templates/template-devspaces-workspace.yaml" | indent 4 }}
+  template-ai-service.yaml: |
+{{ .Files.Get "files/templates/template-ai-service.yaml" | indent 4 }}
+{{- end }}

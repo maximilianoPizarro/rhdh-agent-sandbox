@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+LABEL org.opencontainers.image.source="https://github.com/maximilianoPizarro/rhdh-agent-sandbox"
+LABEL org.opencontainers.image.description="AI skills pack assets for rhdh-agent-sandbox"
+LABEL rhdh.plugin.type="asset-pack"
+LABEL rhdh.plugin.name="ai-skills-pack"
+
+COPY skills/ /opt/rhdh-agent-sandbox/skills/
+COPY catalog/ /opt/rhdh-agent-sandbox/catalog/
+
+USER 1001
+CMD ["sleep", "infinity"]
