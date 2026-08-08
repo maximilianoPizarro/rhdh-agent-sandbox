@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: k8s-mcp
 data:
   config.toml: |
-    port = {{ .Values.mcp.kubernetes.service.port }}
+    port = {{ .Values.mcp.kubernetes.service.port | quote }}
     log_level = "info"
     list_output = "yaml"
     read_only = false
