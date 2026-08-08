@@ -30,6 +30,26 @@ Disable optional pieces:
 
 Lower RHDH memory in `values-sandbox.yaml` if needed.
 
+## Hub readiness 503 / GitHub catalog provider
+
+If logs show `Either organization or app must be specified`, disable the GitHub catalog module (default in `values-sandbox.yaml`) or set `catalog.providers.github` with an org/app. Sandbox demo uses URL catalog locations instead.
+
+## Hub readiness 503 / postgres auth or missing `BACKEND_SECRET`
+
+Helm **replaces** `upstream.backstage.extraEnvVars` arrays. Keep both chart defaults when overriding:
+
+- `BACKEND_SECRET` → `rhdh-agent-sandbox-secrets` / `backend-secret`
+- `POSTGRESQL_ADMIN_PASSWORD` → `rhdh-agent-postgresql` / `postgres-password`
+
+See `values-sandbox.yaml`. Without them you get `password authentication failed for user "postgres"` or `Missing required config value at 'backend.auth.externalAccess[0].options.secret'`.
+
+```bash
+helm upgrade rhdh-agent . -f values-sandbox.yaml \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com
+oc rollout status deploy/rhdh-agent-developer-hub
+```
+
 ## Catalog entities missing
 
 Ensure the GitHub repo is public (URL locations) or apply/sync ConfigMap `rhdh-agent-sandbox-catalog` contents into a catalog location RHDH can read.

@@ -156,7 +156,18 @@ rhdh:
           servers: []
         mcp:
           mcpServers: {}
-      extraEnvVars: []
+      # Do not set to [] — that drops subchart defaults for auth + database.
+      extraEnvVars:
+        - name: BACKEND_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-secrets
+              key: backend-secret
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-postgresql
+              key: postgres-password
     postgresql:
       primary:
         persistence:
