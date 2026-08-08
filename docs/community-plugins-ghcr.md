@@ -21,6 +21,5 @@ echo "$GITHUB_TOKEN" | docker login ghcr.io -u maximilianoPizarro --password-std
 
 ## What loads in RHDH
 
-- Official community plugins: `ghcr.io/redhat-developer/rhdh-plugin-community-index:1.10`
-- Demo AI index: `ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/plugin-catalog-index:0.1.0`
+- Demo AI index content: `ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/plugin-catalog-index:0.1.0` (asset pack; Hub catalog entities load from GitHub `files/catalog/` URLs)
 - Skills/Prompts/MCP entities: also shipped in Helm ConfigMap `rhdh-agent-sandbox-catalog` and via GitHub `files/catalog/` locations once the repo is public

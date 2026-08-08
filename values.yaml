@@ -1,6 +1,7 @@
 # Default values for rhdh-agent-sandbox (Developer Sandbox oriented).
 nameOverride: ""
-fullnameOverride: ""
+# Keep service DNS short and stable: <fullname>-mcp / <fullname>-litellm
+fullnameOverride: "rhdh-agent-sandbox"
 
 # Bootstrap secrets (generated if create=true and keys empty)
 secrets:
@@ -125,12 +126,10 @@ rhdh:
       secret:
         create: false
         name: rhdh-agent-sandbox-secrets
+    # Asset packs publish to GHCR (skills/prompts/index). Do not wire a non-janus
+    # image as catalogIndex.extraImages — install-dynamic-plugins will fail the Hub pod.
     catalogIndex:
-      extraImages:
-        - name: community
-          registry: ghcr.io
-          repository: redhat-developer/rhdh-plugin-community-index
-          tag: "1.10"
+      extraImages: []
   upstream:
     backstage:
       image:

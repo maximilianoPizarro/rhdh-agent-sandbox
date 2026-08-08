@@ -9,15 +9,25 @@ metadata:
     app.kubernetes.io/component: k8s-mcp
 data:
   config.toml: |
+    log_level = 3
     port = {{ .Values.mcp.kubernetes.service.port | quote }}
-    log_level = "info"
-    list_output = "yaml"
     read_only = false
     disable_destructive = false
+    toolsets = ["core", "config", "openshift", "helm"]
+
+    denied_resources = [
+      {group = "rbac.authorization.k8s.io", version = "v1"}
+    ]
   repositories.yaml: |
     apiVersion: ""
-    generated: "1970-01-01T00:00:00Z"
+    generated: "0001-01-01T00:00:00Z"
     repositories:
-      - name: openshift-helm-charts
+      - caFile: ""
+        certFile: ""
+        insecure_skip_tls_verify: false
+        keyFile: ""
+        name: openshift-helm-charts
+        password: ""
         url: https://charts.openshift.io/
+        username: ""
 {{- end }}

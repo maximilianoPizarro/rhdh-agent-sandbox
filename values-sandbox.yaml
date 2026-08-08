@@ -78,18 +78,10 @@ rhdh:
           disabled: false
         - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
           disabled: false
-        # Note: demo AI Skills/Prompts ship as catalog entities (ConfigMap) + GHCR asset packs.
-        # Official community plugins are discovered via catalogIndex.extraImages below.
+        # AI Skills/Prompts: catalog YAML (GitHub URL + ConfigMap) + GHCR asset packs.
+        # Keep catalogIndex.extraImages empty unless the image is a real RHDH catalog index.
     catalogIndex:
-      extraImages:
-        - name: community
-          registry: ghcr.io
-          repository: redhat-developer/rhdh-plugin-community-index
-          tag: "1.10"
-        - name: ai-demo
-          registry: ghcr.io
-          repository: maximilianoPizarro/rhdh-agent-sandbox/plugin-catalog-index
-          tag: "0.1.0"
+      extraImages: []
   upstream:
     backstage:
       resources:
@@ -106,8 +98,8 @@ rhdh:
           environment: development
         catalog:
           locations:
-            - type: file
-              target: /opt/app-root/src/catalog/all.yaml
+            - type: url
+              target: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/blob/main/files/catalog/all.yaml
               rules:
                 - allow: [Component, System, API, Resource, Location, Template, User, Group]
         backend:

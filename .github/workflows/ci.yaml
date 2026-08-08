@@ -51,6 +51,20 @@ jobs:
           # PREFIX is org/repo — images at ghcr.io/org/repo/<pack>
           export PREFIX="${GITHUB_REPOSITORY,,}"
           ./community-plugins/build-and-push.sh "${{ github.ref_name == 'main' && '0.1.0' || github.sha }}"
+      - name: Make GHCR packages public (Sandbox anonymous pull)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          for pack in ai-skills-pack ai-prompts-pack plugin-catalog-index; do
+            pkg="rhdh-agent-sandbox/${pack}"
+            echo "Setting visibility=public for ${OWNER}/${pkg}"
+            gh api --method PATCH "/users/${OWNER}/packages/container/${pkg//\//%2F}" \
+              -f visibility=public \
+              || gh api --method PUT "/users/${OWNER}/packages/container/${pkg//\//%2F}/visibility" \
+              -f visibility=public \
+              || echo "WARN: could not publish ${pkg} (set visibility manually in GitHub Packages UI)"
+          done
 
   pages:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

@@ -24,5 +24,5 @@ Requires `docker` or `podman` and permission to push to GHCR (`echo $GITHUB_TOKE
 
 ## RHDH dynamic plugins note
 
-RHDH also loads the official community plugin index (`ghcr.io/redhat-developer/rhdh-plugin-community-index:1.10`) via `global.catalogIndex.extraImages`.
+CI pushes packs to GHCR and attempts to mark them **public** (required for anonymous Sandbox pulls). Hub catalog entities still load from GitHub `files/catalog/` URLs — do not point `catalogIndex.extraImages` at these asset packs unless they are real RHDH catalog-index images.
 Asset packs above complement that with demo-specific Skills / Prompts / MCP catalog entities mounted by the Helm chart ConfigMap.
