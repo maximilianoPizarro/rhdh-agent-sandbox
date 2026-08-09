@@ -7,15 +7,43 @@ spec:
   profile:
     displayName: Guest
     email: guest@localhost
-  memberOf: []
+  memberOf:
+    - group:default/guests
+    - group:default/developers
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Group
 metadata:
   name: guests
-  description: Demo group for anonymous access
+  description: Demo group for anonymous Hub access
 spec:
   type: team
   children: []
   members:
     - user:default/guest
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: developers
+  description: Default owner group for demo AI assets and templates
+spec:
+  type: team
+  children: []
+  members:
+    - user:default/guest
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rhdh-agent-sandbox
+  description: Agent-friendly Developer Hub demo on OpenShift Developer Sandbox
+  tags:
+    - ai
+    - mcp
+    - lightspeed
+    - demo
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/developers

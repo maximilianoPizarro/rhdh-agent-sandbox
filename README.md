@@ -1,6 +1,5 @@
 # rhdh-agent-sandbox
 
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/rhdh-agent-sandbox)](https://artifacthub.io/packages/search?repo=rhdh-agent-sandbox)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://maximilianoPizarro.github.io/rhdh-agent-sandbox/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
@@ -8,40 +7,49 @@ Agent-friendly **Red Hat Developer Hub** umbrella Helm chart for **OpenShift Dev
 
 It wires:
 
-- Developer Hub 1.10 (Lightspeed, TechDocs, Kubernetes/Topology, GitHub modules)
+- Developer Hub 1.10 (Lightspeed, TechDocs, Kubernetes/Topology)
 - **LiteLLM** → Granite / Qwen in `sandbox-shared-models`
 - **MCP** servers (OpenShift + Kubernetes) with namespace RBAC
-- AI **Skills / Prompts / MCP catalog** entities
-- **DevSpaces** Devfiles + Software Templates for **Cursor** remote workflows
-- Community AI asset packs published to **GHCR** (`ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/*`)
+- AI **Skills / Prompts / MCP catalog** (ConfigMap mount)
+- **DevSpaces AI** Devfiles + Software Templates (Continue → LiteLLM in the browser IDE)
+- Guest login for Hub demos (`permission.enabled: false`)
 
 ## Quick install
 
 ```bash
 helm dependency update
 export MODEL_API_KEY=$(oc whoami -t)
+export APPS_DOMAIN=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
+
 helm upgrade --install rhdh-agent . \
   -n "$(oc project -q)" \
-  -f values-sandbox.yaml \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase=apps.rm2.thpm.p1.openshiftapps.com
+  --set rhdh.global.clusterRouterBase="$APPS_DOMAIN"
 ```
 
-Full guide: [docs/quickstart.md](docs/quickstart.md)
+Single `values.yaml` — this chart is Sandbox-only (no overlay file).
+
+## Documentation
+
+**https://maximilianoPizarro.github.io/rhdh-agent-sandbox/**
+
+| Page | Content |
+|---|---|
+| [Quickstart](docs/quickstart.md) | Install step by step |
+| [Verify](docs/verify.md) | Post-install checks (LiteLLM, Lightspeed, catalog) |
+| [Demo script](docs/demo-script.md) | ~10 minute Hub + DevSpaces walkthrough |
+| [Architecture](docs/architecture.md) | Components, tokens, MCP |
+| [Troubleshooting](docs/troubleshooting.md) | Common failures |
 
 ## Repository layout
 
 ```text
-Chart.yaml / values*.yaml / templates/   # umbrella chart
-files/catalog|templates|devfiles         # Hub catalog + scaffolder assets
-community-plugins/                       # GHCR asset packs + build script
-docs/                                    # GitHub Pages (MkDocs)
-.github/workflows/                       # CI for charts, pages, GHCR
+Chart.yaml / values.yaml / templates/   # umbrella chart (Sandbox-only)
+files/catalog|templates|devfiles        # Hub catalog + scaffolder assets
+community-plugins/                      # optional GHCR asset packs
+docs/                                   # GitHub Pages (MkDocs)
+.github/workflows/                      # CI for charts, pages, GHCR
 ```
-
-## Documentation
-
-https://maximilianoPizarro.github.io/rhdh-agent-sandbox/
 
 ## License
 

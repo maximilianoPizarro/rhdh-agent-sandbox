@@ -1,0 +1,12 @@
+{{- if and .Values.rhdh.enabled .Values.rhdh.global.lightspeed.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-lightspeed-stack
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+data:
+  lightspeed-stack.yaml: |
+{{ .Files.Get "files/lightspeed-stack.yaml" | indent 4 }}
+{{- end }}

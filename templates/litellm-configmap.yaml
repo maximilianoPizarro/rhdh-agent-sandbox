@@ -18,8 +18,10 @@ data:
           api_key: os.environ/MODEL_API_KEY
           ssl_verify: false
           drop_params: true
+          # Sandbox shared Granite/Qwen reject tool_choice=auto (no --enable-auto-tool-choice).
+          additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
         model_info:
-          supports_function_calling: true
+          supports_function_calling: false
 {{- end }}
 
     mcp_servers:

@@ -1,0 +1,25 @@
+{
+  "models": [
+    {
+      "title": "Granite (LiteLLM)",
+      "provider": "openai",
+      "model": "granite",
+      "apiBase": "https://REPLACE_LITELLM_HOST/v1",
+      "apiKey": "REPLACE_LITELLM_KEY"
+    },
+    {
+      "title": "Qwen3 (LiteLLM)",
+      "provider": "openai",
+      "model": "qwen3",
+      "apiBase": "https://REPLACE_LITELLM_HOST/v1",
+      "apiKey": "REPLACE_LITELLM_KEY"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Granite autocomplete",
+    "provider": "openai",
+    "model": "granite",
+    "apiBase": "https://REPLACE_LITELLM_HOST/v1",
+    "apiKey": "REPLACE_LITELLM_KEY"
+  }
+}

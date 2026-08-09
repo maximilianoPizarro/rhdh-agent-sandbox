@@ -1,17 +1,17 @@
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: skill-devspaces-cursor
-  title: DevSpaces + Cursor workflow skill
-  description: Guidance for opening a DevSpaces workspace and connecting Cursor over Remote SSH
+  name: skill-devspaces-ai
+  title: DevSpaces AI workspace skill
+  description: Open an OpenShift DevSpaces workspace with Continue pointed at LiteLLM (browser IDE, no Cursor proxy)
   tags:
     - skill
-    - cursor
+    - continue
     - devspaces
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: skill
-    rhdh-agent-sandbox/install-path: .cursor/skills/devspaces-cursor/SKILL.md
+    rhdh-agent-sandbox/install-path: .continue/skills/devspaces-ai/SKILL.md
 spec:
   type: skill
   owner: group:default/developers
@@ -31,10 +31,12 @@ metadata:
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: skill
-    rhdh-agent-sandbox/install-path: .cursor/skills/openshift-mcp/SKILL.md
+    rhdh-agent-sandbox/install-path: .continue/skills/openshift-mcp/SKILL.md
 spec:
   type: skill
   owner: group:default/developers
+  dependencyOf:
+    - component:default/rhdh-agent-sandbox
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
@@ -49,7 +51,9 @@ metadata:
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: skill
-    rhdh-agent-sandbox/install-path: .cursor/skills/lightspeed-rag/SKILL.md
+    rhdh-agent-sandbox/install-path: .continue/skills/lightspeed-rag/SKILL.md
 spec:
   type: skill
   owner: group:default/developers
+  dependencyOf:
+    - component:default/rhdh-agent-sandbox

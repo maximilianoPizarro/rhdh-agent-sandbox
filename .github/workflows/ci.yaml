@@ -23,8 +23,8 @@ jobs:
       - name: Helm dependency + lint
         run: |
           helm dependency update
-          helm lint . -f values-sandbox.yaml
-          helm template rhdh-agent . -f values-sandbox.yaml \
+          helm lint .
+          helm template rhdh-agent . \
             --set secrets.modelApiKey=dummy \
             --set rhdh.global.clusterRouterBase=apps.example.openshiftapps.com \
             > /tmp/render.yaml

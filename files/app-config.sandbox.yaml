@@ -1,8 +1,8 @@
+# Reference app-config for the sandbox demo (authoritative runtime config is
+# values.yaml → rhdh.upstream.backstage.appConfig).
 app:
   title: Agent-friendly Developer Hub
-  # baseUrl is normally injected by the RHDH chart from global.clusterRouterBase
 
-# Demo-only: Guest / anonymous login with full access (do not use in production).
 auth:
   environment: development
   providers:
@@ -36,10 +36,10 @@ catalog:
         - User
         - Group
   locations:
-    - type: url
-      target: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/blob/main/files/catalog/all.yaml
+    - type: file
+      target: /opt/app-root/src/catalog/all.yaml
       rules:
-        - allow: [Component, System, API, Resource, Location, Template]
+        - allow: [Component, System, API, Resource, Location, Template, User, Group]
 
 kubernetes:
   serviceLocatorMethod:
@@ -52,9 +52,23 @@ kubernetes:
           authProvider: serviceAccount
           skipTLSVerify: true
 
+lightspeed:
+  systemPrompt: >-
+    You are the agent-friendly Developer Hub demo assistant on OpenShift Developer Sandbox.
+    Prefer catalog, TechDocs, and namespace-scoped MCP tools.
+  servers:
+    - id: vllm/granite
+      url: http://rhdh-agent-sandbox-litellm:4000/v1
+      model: granite
+    - id: vllm/qwen3
+      url: http://rhdh-agent-sandbox-litellm:4000/v1
+      model: qwen3
+
 mcp:
   mcpServers:
+    rhdh-actions:
+      url: http://localhost:7007/api/mcp-actions/v1
     openshift-mcp:
-      headers: {}
+      url: http://rhdh-agent-sandbox-mcp:8080/mcp
     k8s-mcp:
-      headers: {}
+      url: http://rhdh-agent-sandbox-k8s-mcp:8085/mcp

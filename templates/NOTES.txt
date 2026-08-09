@@ -4,7 +4,7 @@
 
 Components:
 {{- if .Values.rhdh.enabled }}
-  - Red Hat Developer Hub (subchart)
+  - Red Hat Developer Hub (subchart) — Guest login enabled for demo
 {{- end }}
 {{- if .Values.litellm.enabled }}
   - LiteLLM  -> Service {{ include "rhdh-agent-sandbox.fullname" . }}-litellm:{{ .Values.litellm.service.port }}
@@ -18,15 +18,17 @@ Components:
 
 Next steps:
   1. Refresh the model token (sandbox oauth-proxy, ~24h TTL):
-       oc set env secret/{{ .Values.secrets.name }} model-api-key=$(oc whoami -t) -n {{ .Release.Namespace }}
+       oc patch secret/{{ .Values.secrets.name }} -n {{ .Release.Namespace }} --type=merge \
+         -p "{\"stringData\":{\"model-api-key\":\"$(oc whoami -t)\"}}"
        oc rollout restart deploy/{{ include "rhdh-agent-sandbox.fullname" . }}-litellm -n {{ .Release.Namespace }}
 
-  2. Open Developer Hub Route:
+  2. Open Developer Hub Route and sign in as Guest:
        oc get route -n {{ .Release.Namespace }} | grep developer-hub
 
-  3. Connect Cursor to a DevSpaces workspace (see docs/devspaces-cursor.md).
+  3. Open a DevSpaces AI workspace from the Devfile (Continue → LiteLLM Route).
+     See docs/devspaces-ai.md and docs/demo-script.md.
 
-  4. Catalog AI entities / templates are in ConfigMap {{ .Values.catalog.configMapName }}.
-     Mount or sync them into RHDH catalog locations as described in the docs.
+  4. AI catalog is mounted from ConfigMap {{ .Values.catalog.configMapName }}
+     at /opt/app-root/src/catalog (file location).
 
 Docs: https://maximilianoPizarro.github.io/rhdh-agent-sandbox

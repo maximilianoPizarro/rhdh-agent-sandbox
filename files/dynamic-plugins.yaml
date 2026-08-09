@@ -1,5 +1,5 @@
 # Reference list of dynamic plugins enabled for the sandbox demo.
-# Applied via values-sandbox.yaml -> rhdh.global.dynamic.plugins
+# Applied via values.yaml -> rhdh.global.dynamic.plugins
 includes:
   - dynamic-plugins.default.yaml
 plugins:

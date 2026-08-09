@@ -1,10 +1,35 @@
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: skill-pack-root
-  title: AI Skills Pack
-  description: Community skills pack published to GHCR for the sandbox demo
-  tags: [skill, ai, community]
+  name: skill-devspaces-ai
+  title: DevSpaces AI workspace skill
+  tags: [skill, continue, devspaces, ai]
+  annotations:
+    rhdh-agent-sandbox/install-path: .continue/skills/devspaces-ai/SKILL.md
 spec:
-  type: skill-pack
+  type: skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-openshift-mcp
+  title: OpenShift MCP tool-calling skill
+  tags: [skill, mcp, openshift, ai]
+  annotations:
+    rhdh-agent-sandbox/install-path: .continue/skills/openshift-mcp/SKILL.md
+spec:
+  type: skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skill-lightspeed-rag
+  title: Lightspeed knowledge skill
+  tags: [skill, lightspeed, rag, ai]
+  annotations:
+    rhdh-agent-sandbox/install-path: .continue/skills/lightspeed-rag/SKILL.md
+spec:
+  type: skill
   owner: group:default/developers

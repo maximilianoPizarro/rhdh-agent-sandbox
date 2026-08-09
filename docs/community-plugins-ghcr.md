@@ -1,16 +1,16 @@
 # Community packs on GHCR
 
-CI publishes asset packs to:
+CI publishes **optional asset packs** (skills/prompts bundles) to:
 
 ```text
 ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/<pack>:<tag>
 ```
 
-Packs:
-
-- `ai-skills-pack`
-- `ai-prompts-pack`
-- `plugin-catalog-index` (extra Extensions/catalog index)
+| Pack | Contents |
+|---|---|
+| `ai-skills-pack` | Skill markdown bundles |
+| `ai-prompts-pack` | Prompt markdown bundles |
+| `plugin-catalog-index` | Extra catalog/index assets for packaging demos |
 
 ## Build locally
 
@@ -19,7 +19,9 @@ echo "$GITHUB_TOKEN" | docker login ghcr.io -u maximilianoPizarro --password-std
 ./community-plugins/build-and-push.sh 0.1.0
 ```
 
-## What loads in RHDH
+## What actually loads in RHDH
 
-- Demo AI index content: `ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/plugin-catalog-index:0.1.0` (asset pack; Hub catalog entities load from GitHub `files/catalog/` URLs)
-- Skills/Prompts/MCP entities: also shipped in Helm ConfigMap `rhdh-agent-sandbox-catalog` and via GitHub `files/catalog/` locations once the repo is public
+!!! important
+    These GHCR packs are **not** installed as RHDH dynamic plugins. Hub AI entities come from the Helm ConfigMap `rhdh-agent-sandbox-catalog` (`files/catalog/*` mounted at `/opt/app-root/src/catalog`).
+
+Use GHCR packs if you want to distribute the same skills/prompts as OCI artifacts for Continue or other tooling. Keep `catalogIndex.extraImages` empty unless the image is a real RHDH catalog index — a wrong image fails `install-dynamic-plugins` and blocks the Hub pod.

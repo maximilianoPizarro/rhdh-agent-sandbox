@@ -1,15 +1,99 @@
 schemaVersion: 2.2.0
 metadata:
-  name: ${{ values.name }}
-  version: 0.1.0
+  name: agent-friendly-workspace
+  version: 0.2.0
+  displayName: Agent-friendly DevSpaces AI Workspace
+  description: Browser IDE (Che Code) with Continue → LiteLLM on Developer Sandbox
+  tags:
+    - continue
+    - mcp
+    - ai
+    - sandbox
+    - lightspeed
 components:
   - name: tools
     container:
       image: quay.io/devfile/universal-developer-image:ubi9-latest
       memoryLimit: 3Gi
+      memoryRequest: 1Gi
+      cpuLimit: "2"
+      cpuRequest: 200m
       mountSources: true
       endpoints:
-        - exposure: public
-          name: http-8080
+        - name: http-3000
+          targetPort: 3000
+          exposure: public
           protocol: http
+        - name: http-8080
           targetPort: 8080
+          exposure: public
+          protocol: http
+      env:
+        - name: SHELL
+          value: /bin/bash
+        # Set these when starting the workspace (or edit .continue/config.json).
+        - name: LITELLM_API_BASE
+          value: ""
+        - name: LITELLM_API_KEY
+          value: ""
+      # Che Code / VS Code extensions for in-browser AI
+      attributes:
+        controller.devfile.io/merge-contribution: true
+commands:
+  - id: print-ai-help
+    exec:
+      component: tools
+      commandLine: |
+        cat <<'EOF'
+        DevSpaces AI workspace
+        ----------------------
+        1) Open Continue in Che Code (sidebar).
+        2) Point models at LiteLLM Route:
+             LITELLM_API_BASE=https://rhdh-agent-sandbox-litellm-<ns>.apps.<cluster>/v1
+             LITELLM_API_KEY=$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.litellm-master-key}' | base64 -d)
+        3) Models: granite | qwen3
+        4) Skills live under .continue/skills/ — prompts under docs/prompts/
+        5) Hub Lightspeed + MCP stay in Developer Hub (guest login). This IDE talks to LiteLLM Route only.
+        EOF
+  - id: wire-continue
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        CFG=".continue/config.json"
+        if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
+          echo "Set LITELLM_API_BASE and LITELLM_API_KEY, then re-run wire-continue."
+          exit 0
+        fi
+        mkdir -p .continue
+        cat > "${CFG}" <<EOF
+        {
+          "models": [
+            {
+              "title": "Granite (LiteLLM)",
+              "provider": "openai",
+              "model": "granite",
+              "apiBase": "${LITELLM_API_BASE}",
+              "apiKey": "${LITELLM_API_KEY}"
+            },
+            {
+              "title": "Qwen3 (LiteLLM)",
+              "provider": "openai",
+              "model": "qwen3",
+              "apiBase": "${LITELLM_API_BASE}",
+              "apiKey": "${LITELLM_API_KEY}"
+            }
+          ],
+          "tabAutocompleteModel": {
+            "title": "Granite autocomplete",
+            "provider": "openai",
+            "model": "granite",
+            "apiBase": "${LITELLM_API_BASE}",
+            "apiKey": "${LITELLM_API_KEY}"
+          }
+        }
+        EOF
+        echo "Wrote ${CFG}"
+events:
+  postStart:
+    - print-ai-help

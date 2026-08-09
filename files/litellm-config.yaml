@@ -7,8 +7,10 @@ model_list:
       api_key: os.environ/MODEL_API_KEY
       ssl_verify: false
       drop_params: true
+      # Sandbox shared models reject tool_choice=auto (no --enable-auto-tool-choice).
+      additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
     model_info:
-      supports_function_calling: true
+      supports_function_calling: false
   - model_name: qwen3
     litellm_params:
       model: openai/isvc-qwen3-8b-fp8
@@ -16,8 +18,17 @@ model_list:
       api_key: os.environ/MODEL_API_KEY
       ssl_verify: false
       drop_params: true
+      additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
     model_info:
-      supports_function_calling: true
+      supports_function_calling: false
+
+mcp_servers:
+  openshift_mcp_server:
+    url: http://rhdh-agent-sandbox-mcp.NAMESPACE.svc.cluster.local:8080/mcp
+    transport: http
+  kubernetes_mcp_server:
+    url: http://rhdh-agent-sandbox-k8s-mcp.NAMESPACE.svc.cluster.local:8085/mcp
+    transport: http
 
 litellm_settings:
   drop_params: true

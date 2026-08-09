@@ -10,6 +10,7 @@ metadata:
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt-path: docs/prompts/triage-namespace.md
     rhdh-agent-sandbox/prompt: |
       Using OpenShift MCP tools, list pods and recent warning events in the current namespace.
       Summarize unhealthy workloads and suggest the smallest safe fix.
@@ -21,8 +22,8 @@ apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
   name: prompt-scaffold-devspaces
-  title: Scaffold a DevSpaces workspace
-  description: Saved prompt for creating an agent-friendly workspace from the Hub template
+  title: Scaffold a DevSpaces AI workspace
+  description: Saved prompt for creating an agent-friendly DevSpaces workspace from the Hub template
   tags:
     - prompt
     - scaffolder
@@ -30,9 +31,10 @@ metadata:
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt-path: docs/prompts/scaffold-devspaces.md
     rhdh-agent-sandbox/prompt: |
       Help me scaffold a new service using the Agent-friendly DevSpaces Workspace template.
-      Prefer Node or Quarkus, include a Devfile, and document how to open it from Cursor.
+      Prefer Node or Quarkus, include a Devfile with Continue → LiteLLM, and document how to open it in DevSpaces (browser IDE).
 spec:
   type: prompt
   owner: group:default/developers
@@ -49,6 +51,7 @@ metadata:
     - ai
   annotations:
     rhdh-agent-sandbox/asset-type: prompt
+    rhdh-agent-sandbox/prompt-path: docs/prompts/explain-catalog.md
     rhdh-agent-sandbox/prompt: |
       Use Developer Hub catalog MCP tools to fetch the selected entity, related APIs,
       and TechDocs links. Explain ownership, dependencies, and next actions for a developer.

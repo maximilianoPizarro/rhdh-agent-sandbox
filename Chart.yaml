@@ -1,6 +1,6 @@
 apiVersion: v2
 name: rhdh-agent-sandbox
-description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces/Cursor workflows
+description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
 type: application
 version: 0.1.0
 appVersion: "1.10.3"

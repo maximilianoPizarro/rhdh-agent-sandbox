@@ -1,0 +1,53 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ai-service-with-mcp
+  title: AI Service with MCP wiring
+  description: Scaffold a small service plus catalog Component/API entities for MCP and Lightspeed
+  tags:
+    - ai
+    - mcp
+    - lightspeed
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: Service details
+      required: [name, owner]
+      properties:
+        name:
+          title: Name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [Group]
+        model:
+          title: Default model via LiteLLM
+          type: string
+          default: granite
+          enum: [granite, qwen3]
+  steps:
+    - id: fetch
+      name: Fetch AI service skeleton
+      action: fetch:template
+      input:
+        url: ./skeletons/ai-service
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          model: ${{ parameters.model }}
+    - id: log
+      name: Log next actions
+      action: debug:log
+      input:
+        message: Created AI service skeleton for ${{ parameters.name }} using model ${{ parameters.model }}
+  output:
+    text:
+      - title: Connect to Lightspeed
+        content: |
+          Point clients at the LiteLLM route in your namespace and use model `${{ parameters.model }}`.
+          Register MCP servers from catalog Resources of type `mcp-server`.

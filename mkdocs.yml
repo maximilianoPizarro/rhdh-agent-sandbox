@@ -1,22 +1,70 @@
 site_name: rhdh-agent-sandbox
-site_description: Agent-friendly Developer Hub on OpenShift Developer Sandbox
+site_description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
 site_url: https://maximilianoPizarro.github.io/rhdh-agent-sandbox/
 repo_url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+repo_name: maximilianoPizarro/rhdh-agent-sandbox
+edit_uri: edit/main/docs/
+
 theme:
   name: material
   palette:
-    primary: red
+    - scheme: default
+      primary: red
+      accent: red
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: red
+      accent: red
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+plugins:
+  - search
+
 nav:
   - Home: index.md
-  - Quickstart: quickstart.md
-  - Architecture: architecture.md
-  - Lightspeed & models: lightspeed-models.md
-  - AI capabilities: ai-capabilities.md
-  - Community packs / GHCR: community-plugins-ghcr.md
-  - DevSpaces + Cursor: devspaces-cursor.md
-  - Troubleshooting: troubleshooting.md
+  - Get started:
+      - Quickstart: quickstart.md
+      - Verify the install: verify.md
+      - Demo script: demo-script.md
+  - How it works:
+      - Architecture: architecture.md
+      - Lightspeed & models: lightspeed-models.md
+      - AI capabilities: ai-capabilities.md
+  - Workspaces:
+      - DevSpaces AI: devspaces-ai.md
+      - Cursor (optional): devspaces-cursor.md
+  - Operations:
+      - Troubleshooting: troubleshooting.md
+      - Community packs / GHCR: community-plugins-ghcr.md
+
 markdown_extensions:
-  - tables
   - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
   - toc:
       permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets

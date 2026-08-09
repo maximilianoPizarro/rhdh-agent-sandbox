@@ -1,4 +1,11 @@
-# Default values for rhdh-agent-sandbox (Developer Sandbox oriented).
+# Default values for rhdh-agent-sandbox (OpenShift Developer Sandbox only).
+#
+# Install:
+#   export MODEL_API_KEY=$(oc whoami -t)
+#   helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+#     --set secrets.modelApiKey="$MODEL_API_KEY" \
+#     --set rhdh.global.clusterRouterBase=apps.rm2.thpm.p1.openshiftapps.com
+
 nameOverride: ""
 # Keep service DNS short and stable: <fullname>-mcp / <fullname>-litellm
 fullnameOverride: "rhdh-agent-sandbox"
@@ -8,10 +15,10 @@ secrets:
   create: true
   name: rhdh-agent-sandbox-secrets
   backendSecret: ""
-  mcpToken: ""
   litellmMasterKey: ""
-  # OpenShift user token for sandbox model oauth-proxy (set at install time)
-  modelApiKey: ""
+  mcpToken: ""
+  # OpenShift user token for sandbox-shared-models oauth-proxy (~24h TTL)
+  modelApiKey: ""  # override: --set secrets.modelApiKey=$(oc whoami -t)
 
 litellm:
   enabled: true
@@ -25,13 +32,14 @@ litellm:
     enabled: true
     tls:
       termination: edge
+  # LiteLLM image is memory-heavy; 512Mi limit OOMs on Sandbox.
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 512Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1536Mi
   models:
     - name: granite
       modelId: isvc-granite-31-8b-fp8
@@ -98,7 +106,6 @@ communityPlugins:
   registry: ghcr.io
   repositoryPrefix: maximilianoPizarro/rhdh-agent-sandbox
   tag: "0.1.0"
-  # Referenced from dynamic-plugins / Extensions catalog index
   packages:
     - name: ai-skills-pack
       disabled: false
@@ -110,24 +117,61 @@ rhdh:
   enabled: true
   nameOverride: developer-hub
   global:
-    clusterRouterBase: ""  # set in values-sandbox.yaml or --set
+    # REQUIRED: your sandbox apps domain, e.g. apps.rm2.thpm.p1.openshiftapps.com
+    clusterRouterBase: apps.rm2.thpm.p1.openshiftapps.com
     host: ""
     auth:
       backend:
         enabled: true
         existingSecret: rhdh-agent-sandbox-secrets
-        # key must match secret; chart expects backend-secret by default — we align naming via extra wiring
-    dynamic:
-      includes:
-        - dynamic-plugins.default.yaml
-      plugins: []
     lightspeed:
       enabled: true
       secret:
         create: false
         name: rhdh-agent-sandbox-secrets
-    # Asset packs publish to GHCR (skills/prompts/index). Do not wire a non-janus
-    # image as catalogIndex.extraImages — install-dynamic-plugins will fail the Hub pod.
+      # Chart ConfigMap with OpenShift/k8s MCP + RHDH mcp-integration-tools.
+      configMaps:
+        - name: stack
+          create: false
+          nameOverride: rhdh-agent-sandbox-lightspeed-stack
+          mountPath: /app-root/lightspeed-stack.yaml
+          subPath: lightspeed-stack.yaml
+          sourceFile: lightspeed-stack.yaml
+          optional: false
+        - name: config
+          create: true
+          nameOverride: ""
+          mountPath: /app-root/config.yaml
+          subPath: config.yaml
+          sourceFile: config.yaml
+          optional: false
+        - name: rhdh-profile
+          create: true
+          nameOverride: ""
+          mountPath: /app-root/rhdh-profile.py
+          subPath: rhdh-profile.py
+          sourceFile: rhdh-profile.py
+          optional: false
+    dynamic:
+      includes:
+        - dynamic-plugins.default.yaml
+      plugins:
+        - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+          disabled: false
+        - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+          disabled: false
+        - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+          disabled: false
+        - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+          disabled: false
+        - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+          disabled: false
+        # GitHub org discovery needs organization/app — disable (catalog via ConfigMap file).
+        - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
+          disabled: true
+        - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
+          disabled: true
+    # Asset packs publish to GHCR. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:
       extraImages: []
   upstream:
@@ -140,10 +184,11 @@ rhdh:
           memory: 1Gi
         limits:
           cpu: 1000m
-          memory: 2.5Gi
+          memory: 2Gi
       appConfig:
         app:
           title: Agent-friendly Developer Hub
+        # Demo: Guest login with permission framework off.
         auth:
           environment: development
           providers:
@@ -152,31 +197,130 @@ rhdh:
               dangerouslyAllowOutsideDevelopment: true
         permission:
           enabled: false
+        catalog:
+          locations:
+            - type: file
+              target: /opt/app-root/src/catalog/all.yaml
+              rules:
+                - allow: [Component, System, API, Resource, Location, Template, User, Group]
         backend:
           actions:
             pluginSources:
               - software-catalog-mcp-tool
               - techdocs-mcp-tool
+          auth:
+            externalAccess:
+              - type: legacy
+                options:
+                  secret: ${BACKEND_SECRET}
+                  subject: legacy-default-config
+              - type: static
+                options:
+                  token: ${MCP_TOKEN}
+                  subject: mcp-clients
+          reading:
+            allow:
+              - host: github.com
+              - host: raw.githubusercontent.com
+              - host: "*.github.io"
+        kubernetes:
+          serviceLocatorMethod:
+            type: multiTenant
+          clusterLocatorMethods:
+            - type: config
+              clusters:
+                - url: https://kubernetes.default.svc
+                  name: sandbox
+                  authProvider: serviceAccount
+                  skipTLSVerify: true
+                  serviceAccountToken:
+                    $file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        # Lightspeed → LiteLLM via lightspeed-core (ENABLE_VLLM / VLLM_*).
+        # Model identifiers exposed by llama-stack are vllm/<name>.
         lightspeed:
-          servers: []
-        mcp:
-          mcpServers: {}
-      # Do not set to [] — that drops subchart defaults for auth + database.
+          systemPrompt: >-
+            You are the agent-friendly Developer Hub demo assistant on OpenShift Developer Sandbox.
+            Prefer catalog, TechDocs, and namespace-scoped MCP tools. Stay inside the user namespace.
+            When diagnosing cluster state, list/get before mutate and summarize risk.
+          servers:
+            - id: vllm/granite
+              url: http://rhdh-agent-sandbox-litellm:4000/v1
+              model: granite
+            - id: vllm/qwen3
+              url: http://rhdh-agent-sandbox-litellm:4000/v1
+              model: qwen3
+          # Must match mcp_servers[].name in files/lightspeed-stack.yaml
+          mcpServers:
+            - name: mcp-integration-tools
+              token: ${MCP_TOKEN}
+      # IMPORTANT: Helm replaces arrays — keep chart-required env vars AND default volumes.
       extraEnvVars:
         - name: BACKEND_SECRET
           valueFrom:
             secretKeyRef:
               name: rhdh-agent-sandbox-secrets
               key: backend-secret
+        - name: MCP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-secrets
+              key: mcp-token
         - name: POSTGRESQL_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
               name: rhdh-agent-postgresql
               key: postgres-password
+        - name: NODE_OPTIONS
+          value: "--no-node-snapshot"
+      # RHDH 1.10.3 defaults + AI catalog ConfigMap mount.
+      extraVolumeMounts:
+        - name: dynamic-plugins-root
+          mountPath: /opt/app-root/src/dynamic-plugins-root
+        - name: extensions-catalog
+          mountPath: /extensions
+        - name: temp
+          mountPath: /tmp
+        - name: rhdh-agent-catalog
+          mountPath: /opt/app-root/src/catalog
+          readOnly: true
+      extraVolumes:
+        - name: dynamic-plugins-root
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 5Gi
+        - name: dynamic-plugins
+          configMap:
+            defaultMode: 420
+            name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
+            optional: true
+        - name: dynamic-plugins-npmrc
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
+        - name: dynamic-plugins-registry-auth
+          secret:
+            defaultMode: 416
+            optional: true
+            secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
+        - name: npmcacache
+          emptyDir: {}
+        - name: extensions-catalog
+          emptyDir: {}
+        - name: temp
+          emptyDir: {}
+        - name: rhdh-agent-catalog
+          configMap:
+            name: rhdh-agent-sandbox-catalog
     postgresql:
       primary:
         persistence:
-          size: 2Gi
+          size: 1Gi
         resources:
           requests:
             cpu: 50m

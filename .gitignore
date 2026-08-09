@@ -6,6 +6,7 @@ charts/*.tgz
 .DS_Store
 tmp/
 dist/
+site/
 node_modules/
 .helm/
 secrets.env
