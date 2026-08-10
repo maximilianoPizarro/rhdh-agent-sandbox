@@ -74,11 +74,11 @@ carousel: true
 </figure>
 
 <figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 8" hidden>
-<img src="{{ '/assets/screenshots/openclaw-devhub-integration.png' | relative_url }}" alt="Split view of Developer Hub catalog and OpenClaw deploying an agent via Golden Path template" />
+<img src="{{ '/assets/screenshots/openclaw-devhub-integration.png' | relative_url }}" alt="Illustrative concept of OpenClaw beside Developer Hub catalog while deploying an agent" />
 <figcaption>
 <span class="slide-num">Step 08</span>
-<strong>OpenClaw + Developer Hub</strong>
-<span class="desc">OpenClaw works alongside Developer Hub: invoke the scaffolder API to deploy agents via Golden Path templates, check catalog entries, and manage the full agent lifecycle — all from one AI-powered interface.</span>
+<strong>OpenClaw + Developer Hub <em>(illustrative)</em></strong>
+<span class="desc"><strong>Concept image only</strong> — not a live capture. Today OpenClaw on Sandbox proves kubectl tool calling against your namespace (Step 07). Deploying agents via the Hub scaffolder from OpenClaw is not wired yet; use the <a href="{{ '/journey/' | relative_url }}">Golden Path journey</a> in Developer Hub Guest for that flow.</span>
 </figcaption>
 </figure>
 
@@ -106,7 +106,7 @@ OpenClaw connects to a **private Qwen3.6-35B-A3B** model via the **LiteMaaS** Op
 | **LiteMaaS** | Red Hat AI Services hosted LLM gateway (OpenAI Completions API) |
 | **Qwen3.6-35B-A3B** | Private model with function/tool calling support |
 | **OpenClaw Pod** | Kubernetes-native AI assistant running in your namespace |
-| **Developer Hub** | Catalog, Lightspeed, Golden Paths — OpenClaw can orchestrate these |
+| **Developer Hub** | Catalog, Lightspeed, Golden Paths — complementary portal (Guest). Direct OpenClaw→scaffolder orchestration is not packaged yet |
 | **DevSpaces** | Browser IDE connected to LiteLLM for AI-assisted coding |
 
 ## Security: never commit API keys
@@ -121,32 +121,39 @@ The provision form securely stores the key in a Secret that only the OpenClaw po
 2. Re-provision with the new key
 3. Or patch the Secret directly: `oc patch secret openclaw-credentials -p '{"data":{"api-key":"<base64-new-key>"}}'`
 
-## Using OpenClaw with agents
+## What is proven vs illustrative
 
-Once provisioned, OpenClaw can:
+| Capability | Status |
+|---|---|
+| Provision OpenClaw + LiteMaaS Qwen (tool calling) | **Proven** — Steps 01–06 |
+| `kubectl` list Deployments/Pods in Hub namespace | **Proven** — Step 07 (real chat capture) |
+| Split Hub catalog + OpenClaw scaffolder deploy UI | **Illustrative** — Step 08 concept art only |
+| Deploy agents via Golden Path | **Proven in Hub Guest** — see [Golden Path journey]({{ '/journey/' | relative_url }}), not via OpenClaw yet |
 
-- **Inspect deployments**: `kubectl get deployments` via tool calling
-- **Read agent logs**: `kubectl logs deployment/triage-agent`
-- **Deploy new agents**: invoke the Developer Hub scaffolder API
-- **Debug issues**: analyze pod events, check resource limits, inspect routes
-- **Manage lifecycle**: scale deployments, update ConfigMaps, restart pods
+### Reproducing Step 07 (real)
 
-### Example: deploy an agent via OpenClaw
+1. Provision OpenClaw with LiteMaaS as in Steps 01–06.
+2. Open Control UI with gateway token (`oc get secret claw-gateway-token -n <claw-ns> -o jsonpath='{.data.token}' | base64 -d`).
+3. Approve device pairing if prompted (`openclaw devices approve …` inside the gateway pod).
+4. Prompt: *Using kubectl, list Deployments and Pods in namespace &lt;your-dev-ns&gt;. Highlight sample-\*-agent Ready status.*
 
-```
-You: Deploy a new python agent called security-scanner using the Golden Path template
+### Reproducing Golden Path deploy (Hub, not OpenClaw)
 
-OpenClaw: I'll help you deploy security-scanner using the Golden Path template.
-  > Executing tool: POST /api/scaffolder/v2/tasks
-  > Template: deploy-agent-golden-path
-  > Parameters: name=security-scanner, language=python, owner=platform-team
-  
-  ✓ Skeleton materialized
-  ✓ Runtime manifests applied
-  ✓ Component registered in catalog
-  
-  security-scanner is now running in your namespace.
-```
+Use Guest → Self-service → **Deploy Agent (Golden Path)** and follow the [Golden Path journey]({{ '/journey/' | relative_url }}).
+
+### What Step 08 would need to become a live capture
+
+OpenClaw would need Hub Reachability + credentials (e.g. scaffolder/`mcp-token` or a service account that can call the Hub Route) and a deliberate prompt that posts a scaffolder task — that integration is **out of scope for this chart** today (OpenClaw is provisioned outside the umbrella chart).
+
+## Using OpenClaw with the cluster (today)
+
+Once provisioned with LiteMaaS Qwen, OpenClaw can typically:
+
+- **Inspect deployments / pods** in namespaces its workspace kubeconfig allows (often your `*-dev` NS)
+- **Read logs** with `kubectl logs`
+- **Debug** events, describe resources, check readiness
+
+Use Developer Hub Guest for catalog browse, Lightspeed/MCP Chat tool demos, and Golden Path scaffolding.
 
 ## See also
 
