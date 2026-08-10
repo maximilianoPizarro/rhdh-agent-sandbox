@@ -293,11 +293,11 @@
 </figure>
 
 <figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 8" hidden="">
-<img src="/rhdh-agent-sandbox/assets/screenshots/openclaw-devhub-integration.png" alt="Split view of Developer Hub catalog and OpenClaw deploying an agent via Golden Path template" />
+<img src="/rhdh-agent-sandbox/assets/screenshots/openclaw-devhub-integration.png" alt="Illustrative concept of OpenClaw beside Developer Hub catalog while deploying an agent" />
 <figcaption>
 <span class="slide-num">Step 08</span>
-<strong>OpenClaw + Developer Hub</strong>
-<span class="desc">OpenClaw works alongside Developer Hub: invoke the scaffolder API to deploy agents via Golden Path templates, check catalog entries, and manage the full agent lifecycle — all from one AI-powered interface.</span>
+<strong>OpenClaw + Developer Hub <em>(illustrative)</em></strong>
+<span class="desc"><strong>Concept image only</strong> — not a live capture. Today OpenClaw on Sandbox proves kubectl tool calling against your namespace (Step 07). Deploying agents via the Hub scaffolder from OpenClaw is not wired yet; use the <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a> in Developer Hub Guest for that flow.</span>
 </figcaption>
 </figure>
 
@@ -345,7 +345,7 @@
     </tr>
     <tr>
       <td><strong>Developer Hub</strong></td>
-      <td>Catalog, Lightspeed, Golden Paths — OpenClaw can orchestrate these</td>
+      <td>Catalog, Lightspeed, Golden Paths — complementary portal (Guest). Direct OpenClaw→scaffolder orchestration is not packaged yet</td>
     </tr>
     <tr>
       <td><strong>DevSpaces</strong></td>
@@ -370,33 +370,63 @@
   <li>Or patch the Secret directly: <code class="language-plaintext highlighter-rouge">oc patch secret openclaw-credentials -p '{"data":{"api-key":"&lt;base64-new-key&gt;"}}'</code></li>
 </ol>
 
-<h2 id="using-openclaw-with-agents">Using OpenClaw with agents</h2>
+<h2 id="what-is-proven-vs-illustrative">What is proven vs illustrative</h2>
 
-<p>Once provisioned, OpenClaw can:</p>
+<table>
+  <thead>
+    <tr>
+      <th>Capability</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Provision OpenClaw + LiteMaaS Qwen (tool calling)</td>
+      <td><strong>Proven</strong> — Steps 01–06</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">kubectl</code> list Deployments/Pods in Hub namespace</td>
+      <td><strong>Proven</strong> — Step 07 (real chat capture)</td>
+    </tr>
+    <tr>
+      <td>Split Hub catalog + OpenClaw scaffolder deploy UI</td>
+      <td><strong>Illustrative</strong> — Step 08 concept art only</td>
+    </tr>
+    <tr>
+      <td>Deploy agents via Golden Path</td>
+      <td><strong>Proven in Hub Guest</strong> — see <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>, not via OpenClaw yet</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="reproducing-step-07-real">Reproducing Step 07 (real)</h3>
+
+<ol>
+  <li>Provision OpenClaw with LiteMaaS as in Steps 01–06.</li>
+  <li>Open Control UI with gateway token (<code class="language-plaintext highlighter-rouge">oc get secret claw-gateway-token -n &lt;claw-ns&gt; -o jsonpath='{.data.token}' | base64 -d</code>).</li>
+  <li>Approve device pairing if prompted (<code class="language-plaintext highlighter-rouge">openclaw devices approve …</code> inside the gateway pod).</li>
+  <li>Prompt: <em>Using kubectl, list Deployments and Pods in namespace &lt;your-dev-ns&gt;. Highlight sample-*-agent Ready status.</em></li>
+</ol>
+
+<h3 id="reproducing-golden-path-deploy-hub-not-openclaw">Reproducing Golden Path deploy (Hub, not OpenClaw)</h3>
+
+<p>Use Guest → Self-service → <strong>Deploy Agent (Golden Path)</strong> and follow the <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>.</p>
+
+<h3 id="what-step-08-would-need-to-become-a-live-capture">What Step 08 would need to become a live capture</h3>
+
+<p>OpenClaw would need Hub Reachability + credentials (e.g. scaffolder/<code class="language-plaintext highlighter-rouge">mcp-token</code> or a service account that can call the Hub Route) and a deliberate prompt that posts a scaffolder task — that integration is <strong>out of scope for this chart</strong> today (OpenClaw is provisioned outside the umbrella chart).</p>
+
+<h2 id="using-openclaw-with-the-cluster-today">Using OpenClaw with the cluster (today)</h2>
+
+<p>Once provisioned with LiteMaaS Qwen, OpenClaw can typically:</p>
 
 <ul>
-  <li><strong>Inspect deployments</strong>: <code class="language-plaintext highlighter-rouge">kubectl get deployments</code> via tool calling</li>
-  <li><strong>Read agent logs</strong>: <code class="language-plaintext highlighter-rouge">kubectl logs deployment/triage-agent</code></li>
-  <li><strong>Deploy new agents</strong>: invoke the Developer Hub scaffolder API</li>
-  <li><strong>Debug issues</strong>: analyze pod events, check resource limits, inspect routes</li>
-  <li><strong>Manage lifecycle</strong>: scale deployments, update ConfigMaps, restart pods</li>
+  <li><strong>Inspect deployments / pods</strong> in namespaces its workspace kubeconfig allows (often your <code class="language-plaintext highlighter-rouge">*-dev</code> NS)</li>
+  <li><strong>Read logs</strong> with <code class="language-plaintext highlighter-rouge">kubectl logs</code></li>
+  <li><strong>Debug</strong> events, describe resources, check readiness</li>
 </ul>
 
-<h3 id="example-deploy-an-agent-via-openclaw">Example: deploy an agent via OpenClaw</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>You: Deploy a new python agent called security-scanner using the Golden Path template
-
-OpenClaw: I'll help you deploy security-scanner using the Golden Path template.
-  &gt; Executing tool: POST /api/scaffolder/v2/tasks
-  &gt; Template: deploy-agent-golden-path
-  &gt; Parameters: name=security-scanner, language=python, owner=platform-team
-  
-  ✓ Skeleton materialized
-  ✓ Runtime manifests applied
-  ✓ Component registered in catalog
-  
-  security-scanner is now running in your namespace.
-</code></pre></div></div>
+<p>Use Developer Hub Guest for catalog browse, Lightspeed/MCP Chat tool demos, and Golden Path scaffolding.</p>
 
 <h2 id="see-also">See also</h2>
 
