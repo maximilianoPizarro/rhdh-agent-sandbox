@@ -1,1366 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickstart | rhdh-agent-sandbox</title>
+<!-- Begin Jekyll SEO tag v2.9.0 -->
+<title>Quickstart | rhdh-agent-sandbox</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Quickstart" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/quickstart/" />
+<meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/quickstart/" />
+<meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Quickstart" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"Quickstart","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/quickstart/"}</script>
+<!-- End Jekyll SEO tag -->
 
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox">
-      
-      
-      
-        <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/quickstart/">
-      
-      
-        <link rel="prev" href="../journey/">
-      
-      
-        <link rel="next" href="../golden-paths/">
-      
-      
-        
-      
-      
-      <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
-    
-    
-      
-        <title>Quickstart - rhdh-agent-sandbox</title>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
-      
-        
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
-      
-      
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@6.0.0/patternfly.min.css">
+<link rel="stylesheet" href="/rhdh-agent-sandbox/assets/css/main.css">
 
-
-    
-    
-      
-    
-    
-      
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/css/journey-carousel.css">
-    
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
-    
-      
-
-    
-    
-  </head>
-  
-  
-    
-    
-      
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red">
-  
-    
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#quickstart" class="md-skip">
-          Skip to content
-        </a>
-      
+</head>
+<body class="pf-v6-c-page">
+  <header class="pf-v6-c-page__header">
+    <div class="pf-v6-c-masthead" id="masthead">
+  <div class="pf-v6-c-masthead__main">
+    <div class="pf-v6-c-masthead__brand">
+      <a href="/rhdh-agent-sandbox/" class="masthead-logo" aria-label="Home">
+        <svg viewBox="0 0 36 36" width="36" height="36" aria-hidden="true" class="rh-logo-mark">
+          <path fill="#ee0000" d="M32.7 25.2c.6-1.2 1-2.5 1.2-3.8 0-.2-.1-.3-.3-.3h-4.5c-.9 0-1.3-.5-1.3-1.2v-.5c0-.7.4-1.2 1.3-1.2h4.7c.2 0 .3-.1.3-.3-.1-1-.3-2-.6-2.9-.1-.2-.2-.3-.4-.2l-4.1 1.2c-.9.3-1.4-.1-1.6-.8l-.2-.5c-.2-.7.1-1.3.9-1.6l4-1.5c.2-.1.2-.2.2-.4-.5-1-1.2-2-1.9-2.8-.1-.1-.3-.2-.4 0l-3.3 2.8c-.7.6-1.3.4-1.7-.1l-.4-.4c-.5-.6-.4-1.2.3-1.8l3.1-2.8c.1-.1.1-.3 0-.4-.8-.7-1.7-1.3-2.7-1.8-.2-.1-.3 0-.4.1l-1.8 4c-.4.8-1 1-1.7.6l-.5-.2c-.7-.3-.9-.9-.6-1.7l1.5-4c.1-.2 0-.3-.2-.4-1-.4-2.1-.6-3.2-.7-.2 0-.3.1-.3.3l-.1 4.5c0 .9-.5 1.3-1.2 1.3h-.5c-.7 0-1.2-.4-1.2-1.3l.1-4.5c0-.2-.1-.3-.3-.3-1.1.1-2.2.3-3.2.7-.2.1-.3.2-.2.4l1.5 4c.3.8.1 1.4-.6 1.7l-.5.2c-.7.3-1.3.1-1.7-.6l-1.8-4c-.1-.2-.2-.2-.4-.1-1 .5-1.9 1.1-2.7 1.8-.1.1-.2.3 0 .4l3.1 2.8c.7.6.8 1.2.3 1.8l-.4.4c-.5.6-1.1.7-1.7.1L5.3 9.5c-.1-.1-.3-.2-.4 0-.8.9-1.4 1.8-1.9 2.8-.1.2 0 .3.2.4l4 1.5c.8.3 1.1.9.9 1.6l-.2.5c-.2.7-.8 1-1.6.8L2.2 15.8c-.2-.1-.3 0-.4.2-.3 1-.5 2-.6 2.9 0 .2.1.3.3.3H6c.9 0 1.3.5 1.3 1.2v.5c0 .7-.4 1.2-1.3 1.2H1.5c-.2 0-.3.1-.3.3.1 1.3.6 2.6 1.2 3.8.1.2.2.2.4.1l4-1.5c.8-.3 1.4-.1 1.7.6l.2.5c.3.7.1 1.3-.8 1.6l-3.8 1.4c-.2.1-.2.2-.1.4.6 1 1.3 1.9 2.1 2.7.1.1.3.2.4 0l3.1-2.7c.7-.6 1.3-.5 1.8.1l.3.4c.5.6.4 1.2-.2 1.8l-2.8 2.5c-.1.1-.1.3 0 .4.9.7 1.8 1.4 2.8 1.9.2.1.3 0 .4-.1l1.6-3.8c.4-.8 1-.9 1.7-.6l.5.2c.7.3.9.9.6 1.7l-1.3 3.7c-.1.2 0 .3.2.4 1 .3 2.1.6 3.2.7.2 0 .3-.1.3-.3l.1-4.1c0-.9.5-1.3 1.2-1.3h.5c.7 0 1.2.5 1.2 1.3l.1 4.1c0 .2.1.3.3.3 1.1-.1 2.2-.3 3.2-.7.2-.1.2-.2.2-.4l-1.3-3.7c-.3-.8-.1-1.4.6-1.7l.5-.2c.7-.3 1.3-.1 1.7.6l1.6 3.8c.1.2.2.2.4.1 1-.5 1.9-1.2 2.8-1.9.1-.1.2-.3 0-.4l-2.8-2.5c-.6-.6-.7-1.2-.2-1.8l.3-.4c.5-.6 1.1-.7 1.8-.1l3.1 2.7c.1.1.3.1.4 0 .8-.8 1.5-1.7 2.1-2.7.1-.2 0-.3-.1-.4l-3.8-1.4c-.8-.3-1.1-.9-.8-1.6l.2-.5c.3-.7.8-1 1.7-.6l4 1.5c.1 0 .3 0 .3-.1z"/>
+        </svg>
+        <span class="masthead-title">rhdh-agent-sandbox</span>
+      </a>
     </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-    
-      
-
-  
-
-<header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="rhdh-agent-sandbox" class="md-header__button md-logo" aria-label="rhdh-agent-sandbox" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
-
-    </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </label>
-    <div class="md-header__title" data-md-component="header-title">
-      <div class="md-header__ellipsis">
-        <div class="md-header__topic">
-          <span class="md-ellipsis">
-            rhdh-agent-sandbox
-          </span>
-        </div>
-        <div class="md-header__topic" data-md-component="header-topic">
-          <span class="md-ellipsis">
-            
-              Quickstart
-            
-          </span>
-        </div>
-      </div>
-    </div>
-    
-      
-        <form class="md-header__option" data-md-component="palette">
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
-    
-    
-    
-      
-      
-        <label class="md-header__button md-icon" for="__search">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
+    <div class="pf-v6-c-masthead__content">
+      <nav class="masthead-nav" aria-label="Main navigation">
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        <a href="/rhdh-agent-sandbox/" class="masthead-nav-link">Home</a>
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="Search">
+        <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
+        <a href="" class="masthead-nav-link">Get started</a>
+        
+        <a href="" class="masthead-nav-link">How it works</a>
+        
+        <a href="" class="masthead-nav-link">Workspaces</a>
+        
+        <a href="" class="masthead-nav-link">Operations</a>
+        
       </nav>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
+      <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" class="masthead-github" aria-label="GitHub repository" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </a>
+      <button class="masthead-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M1 2.75A.75.75 0 011.75 2h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 2.75zm0 5A.75.75 0 011.75 7h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 7.75zm0 5a.75.75 0 011.75-.75h12.5a.75.75 0 010 1.5H1.75a.75.75 0 01-.75-.75z"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>
-      
-    
-    
-      <div class="md-header__source">
-        <a href="https://github.com/maximilianopizarro/rhdh-agent-sandbox" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    maximilianopizarro/rhdh-agent-sandbox
-  </div>
-</a>
-      </div>
-    
-  </nav>
-  
-</header>
-    
-    <div class="md-container" data-md-component="container">
-      
-      
-        
-          
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-
-
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href=".." title="rhdh-agent-sandbox" class="md-nav__button md-logo" aria-label="rhdh-agent-sandbox" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
-
-    </a>
-    rhdh-agent-sandbox
-  </label>
-  
-    <div class="md-nav__source">
-      <a href="https://github.com/maximilianopizarro/rhdh-agent-sandbox" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
+  </header>
+  <div class="pf-v6-c-page__sidebar">
+    <nav class="pf-v6-c-nav" aria-label="Side navigation" id="sidebar-nav">
+  <ul class="pf-v6-c-nav__list">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    maximilianopizarro/rhdh-agent-sandbox
-  </div>
-</a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
     
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/" class="pf-v6-c-nav__link">Home</a>
     </li>
-  
-
     
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../journey/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
     
-  
-    Journey
-  
-
     
-  </span>
-  
-  
-
-      </a>
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
     
     
     
-    
-      
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Get started
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Quickstart</a>
+        </li>
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/golden-paths/" class="pf-v6-c-nav__link">Golden Paths</a>
+        </li>
         
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/agents/" class="pf-v6-c-nav__link">Agents</a>
+        </li>
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/verify/" class="pf-v6-c-nav__link">Verify the install</a>
+        </li>
         
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Get started
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/demo-script/" class="pf-v6-c-nav__link">Demo script</a>
+        </li>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Get started
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quickstart
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quickstart
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-from-clone" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install from clone
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-from-pages-helm-repo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install from Pages Helm repo
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-to-expect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What to expect
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#confirm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirm
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#token-refresh-when-chat-returns-401" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Token refresh (when chat returns 401)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../golden-paths/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        How it works
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Golden Paths
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/architecture/" class="pf-v6-c-nav__link">Architecture</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/lightspeed-models/" class="pf-v6-c-nav__link">Lightspeed & models</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/ai-capabilities/" class="pf-v6-c-nav__link">AI capabilities</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../agents/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Workspaces
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Agents
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-ai/" class="pf-v6-c-nav__link">DevSpaces AI</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-cursor/" class="pf-v6-c-nav__link">Cursor (optional)</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/openclaw/" class="pf-v6-c-nav__link">OpenClaw (optional)</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../verify/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Operations
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Verify the install
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/troubleshooting/" class="pf-v6-c-nav__link">Troubleshooting</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/community-plugins-quay/" class="pf-v6-c-nav__link">Community packs / Quay</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../demo-script/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
     
-  
-    Demo script
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    How it works
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    How it works
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../lightspeed-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Lightspeed & models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ai-capabilities/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI capabilities
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workspaces
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Workspaces
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../devspaces-ai/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DevSpaces AI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../devspaces-cursor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cursor (optional)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openclaw/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    OpenClaw (optional)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Operations
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Operations
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../troubleshooting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Troubleshooting
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../community-plugins-quay/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Community packs / Quay
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
     
   </ul>
 </nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-from-clone" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install from clone
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-from-pages-helm-repo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install from Pages Helm repo
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-to-expect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What to expect
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#confirm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirm
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#token-refresh-when-chat-returns-401" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Token refresh (when chat returns 401)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          
-            <div class="md-content" data-md-component="content">
-              
-              <article class="md-content__inner md-typeset">
-                
-                  
+  </div>
+  <main class="pf-v6-c-page__main" id="main-content">
+    <section class="pf-v6-c-page__main-section">
+      <div class="pf-v6-c-content">
+        <h1 id="quickstart">Quickstart</h1>
 
+<p>Install on <strong>OpenShift Developer Sandbox</strong> with a single Helm release. Chart source lives at the <strong>repository root</strong>. GitHub Pages serves the <strong><code class="language-plaintext highlighter-rouge">/docs</code></strong> folder, which holds the Helm repo (<code class="language-plaintext highlighter-rouge">index.yaml</code>, <code class="language-plaintext highlighter-rouge">artifacthub-repo.yml</code>, packaged <code class="language-plaintext highlighter-rouge">.tgz</code>).</p>
 
-  
-  
+<h2 id="prerequisites">Prerequisites</h2>
 
-
-<h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
-<p>Install on <strong>OpenShift Developer Sandbox</strong> with a single Helm release. Chart source lives at the <strong>repository root</strong>. GitHub Pages serves the <strong><code>/docs</code></strong> folder, which holds the Helm repo (<code>index.yaml</code>, <code>artifacthub-repo.yml</code>, packaged <code>.tgz</code>).</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <table>
-<thead>
-<tr>
-<th>Requirement</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>oc</code> CLI</td>
-<td>Logged in to Developer Sandbox (<code>oc login</code>)</td>
-</tr>
-<tr>
-<td><code>helm</code></td>
-<td>3.14 or newer</td>
-</tr>
-<tr>
-<td>Sandbox quota</td>
-<td>At least <strong>1.5 CPU / 3 Gi</strong> free (Hub + LiteLLM + MCP)</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Requirement</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">oc</code> CLI</td>
+      <td>Logged in to Developer Sandbox (<code class="language-plaintext highlighter-rouge">oc login</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">helm</code></td>
+      <td>3.14 or newer</td>
+    </tr>
+    <tr>
+      <td>Sandbox quota</td>
+      <td>At least <strong>1.5 CPU / 3 Gi</strong> free (Hub + LiteLLM + MCP)</td>
+    </tr>
+  </tbody>
 </table>
-<div class="admonition warning">
-<p class="admonition-title">Replace <code>&lt;your-sandbox&gt;</code> before running</p>
-<p>Both install methods use the placeholder <code>apps.&lt;your-sandbox&gt;.openshiftapps.com</code>. Replace it with your cluster's apps domain <strong>before</strong> you copy-paste.
-If <code>oc get ingresses.config.openshift.io cluster</code> is Forbidden, take any Route host and drop the first DNS label (example: <code>my-app-ns.apps.rm2.thpm.p1.openshiftapps.com</code> → <code>apps.rm2.thpm.p1.openshiftapps.com</code>).</p>
-</div>
-<h2 id="install-from-clone">Install from clone<a class="headerlink" href="#install-from-clone" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/maximilianopizarro/rhdh-agent-sandbox.git
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>rhdh-agent-sandbox
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>helm<span class="w"> </span>dependency<span class="w"> </span>update
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>rhdh-agent<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--namespace<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>project<span class="w"> </span>-q<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>--set<span class="w"> </span>secrets.modelApiKey<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span>--set<span class="w"> </span>rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span>--timeout<span class="w"> </span>20m<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>--wait<span class="o">=</span><span class="nb">false</span>
-</code></pre></div>
-<p><code>helm dependency update</code> downloads <strong>Red Hat Developer Hub</strong> (<code>redhat-developer-hub</code> 1.10.3 from <code>charts.openshift.io</code>) into local <code>charts/</code> only. That subchart is <strong>not</strong> committed to git.</p>
-<h2 id="install-from-pages-helm-repo">Install from Pages Helm repo<a class="headerlink" href="#install-from-pages-helm-repo" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>rhdh-agent-sandbox<span class="w"> </span>https://maximilianopizarro.github.io/rhdh-agent-sandbox
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>rhdh-agent<span class="w"> </span>rhdh-agent-sandbox/rhdh-agent-sandbox<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--namespace<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>project<span class="w"> </span>-q<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--set<span class="w"> </span>secrets.modelApiKey<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--set<span class="w"> </span>rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>--timeout<span class="w"> </span>20m<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--wait<span class="o">=</span><span class="nb">false</span>
-</code></pre></div>
-<h2 id="what-to-expect">What to expect<a class="headerlink" href="#what-to-expect" title="Permanent link">&para;</a></h2>
+
+<blockquote>
+  <p><strong>Warning: Replace <code class="language-plaintext highlighter-rouge">&lt;your-sandbox&gt;</code> before running</strong></p>
+
+  <p>Both install methods use the placeholder <code class="language-plaintext highlighter-rouge">apps.&lt;your-sandbox&gt;.openshiftapps.com</code>. Replace it with your cluster’s apps domain <strong>before</strong> you copy-paste.
+If <code class="language-plaintext highlighter-rouge">oc get ingresses.config.openshift.io cluster</code> is Forbidden, take any Route host and drop the first DNS label (example: <code class="language-plaintext highlighter-rouge">my-app-ns.apps.rm2.thpm.p1.openshiftapps.com</code> → <code class="language-plaintext highlighter-rouge">apps.rm2.thpm.p1.openshiftapps.com</code>).</p>
+</blockquote>
+
+<h2 id="install-from-clone">Install from clone</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/maximilianopizarro/rhdh-agent-sandbox.git
+<span class="nb">cd </span>rhdh-agent-sandbox
+
+helm dependency update
+helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="se">\</span>
+  <span class="nt">--namespace</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
+  <span class="nt">--timeout</span> 20m <span class="se">\</span>
+  <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">helm dependency update</code> downloads <strong>Red Hat Developer Hub</strong> (<code class="language-plaintext highlighter-rouge">redhat-developer-hub</code> 1.10.3 from <code class="language-plaintext highlighter-rouge">charts.openshift.io</code>) into local <code class="language-plaintext highlighter-rouge">charts/</code> only. That subchart is <strong>not</strong> committed to git.</p>
+
+<h2 id="install-from-pages-helm-repo">Install from Pages Helm repo</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
+helm repo update
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox <span class="se">\</span>
+  <span class="nt">--namespace</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
+  <span class="nt">--timeout</span> 20m <span class="se">\</span>
+  <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
+<h2 id="what-to-expect">What to expect</h2>
+
 <p>First install pulls large images (RHDH ~1.5 GB, LiteLLM ~500 MB). <strong>Expect 5–10 minutes</strong> on Developer Sandbox before everything is Ready.</p>
+
 <table>
-<thead>
-<tr>
-<th>Phase</th>
-<th>Typical time</th>
-<th>What you'll see</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Helm release created</td>
-<td>Instant</td>
-<td><code>release "rhdh-agent" … installed</code></td>
-</tr>
-<tr>
-<td>Image pulls</td>
-<td>3–7 min</td>
-<td>Pods in <code>ContainerCreating</code> / <code>Init:0/1</code> — <strong>this is normal</strong></td>
-</tr>
-<tr>
-<td>LiteLLM ready</td>
-<td>~1 min after pull</td>
-<td><code>rhdh-agent-litellm-*</code> shows <code>1/1 Running</code></td>
-</tr>
-<tr>
-<td>Hub ready (2 containers)</td>
-<td>2–4 min after pull</td>
-<td><code>rhdh-agent-developer-hub-*</code> shows <code>2/2 Running</code></td>
-</tr>
-<tr>
-<td>MCP servers ready</td>
-<td>~30 s after pull</td>
-<td><code>rhdh-agent-*-mcp-*</code> pods show <code>1/1 Running</code></td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Typical time</th>
+      <th>What you’ll see</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Helm release created</td>
+      <td>Instant</td>
+      <td><code class="language-plaintext highlighter-rouge">release "rhdh-agent" … installed</code></td>
+    </tr>
+    <tr>
+      <td>Image pulls</td>
+      <td>3–7 min</td>
+      <td>Pods in <code class="language-plaintext highlighter-rouge">ContainerCreating</code> / <code class="language-plaintext highlighter-rouge">Init:0/1</code> — <strong>this is normal</strong></td>
+    </tr>
+    <tr>
+      <td>LiteLLM ready</td>
+      <td>~1 min after pull</td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-litellm-*</code> shows <code class="language-plaintext highlighter-rouge">1/1 Running</code></td>
+    </tr>
+    <tr>
+      <td>Hub ready (2 containers)</td>
+      <td>2–4 min after pull</td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-developer-hub-*</code> shows <code class="language-plaintext highlighter-rouge">2/2 Running</code></td>
+    </tr>
+    <tr>
+      <td>MCP servers ready</td>
+      <td>~30 s after pull</td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-*-mcp-*</code> pods show <code class="language-plaintext highlighter-rouge">1/1 Running</code></td>
+    </tr>
+  </tbody>
 </table>
-<div class="admonition tip">
-<p class="admonition-title">Normal vs. not normal</p>
-<p><strong>Normal:</strong> pods in <code>ContainerCreating</code> for several minutes, <code>0/1</code> or <code>1/2</code> while init containers run, occasional <code>CrashLoopBackOff</code> on Hub if PostgreSQL isn't ready yet (self-heals).
-<strong>Not normal:</strong> pods stuck in <code>Pending</code> for &gt;5 min (quota issue — run <code>oc describe resourcequota</code>), or <code>ImagePullBackOff</code> (network/registry issue).</p>
-</div>
-<h2 id="confirm">Confirm<a class="headerlink" href="#confirm" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>oc<span class="w"> </span>get<span class="w"> </span>route<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">&#39;developer-hub|litellm&#39;</span>
-</code></pre></div>
+
+<blockquote>
+  <p><strong>Tip: Normal vs. not normal</strong></p>
+
+  <p><strong>Normal:</strong> pods in <code class="language-plaintext highlighter-rouge">ContainerCreating</code> for several minutes, <code class="language-plaintext highlighter-rouge">0/1</code> or <code class="language-plaintext highlighter-rouge">1/2</code> while init containers run, occasional <code class="language-plaintext highlighter-rouge">CrashLoopBackOff</code> on Hub if PostgreSQL isn’t ready yet (self-heals).
+<strong>Not normal:</strong> pods stuck in <code class="language-plaintext highlighter-rouge">Pending</code> for &gt;5 min (quota issue — run <code class="language-plaintext highlighter-rouge">oc describe resourcequota</code>), or <code class="language-plaintext highlighter-rouge">ImagePullBackOff</code> (network/registry issue).</p>
+</blockquote>
+
+<h2 id="confirm">Confirm</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get pods
+oc get route | <span class="nb">grep</span> <span class="nt">-E</span> <span class="s1">'developer-hub|litellm'</span>
+</code></pre></div></div>
+
 <p>Expected output (names will vary):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>NAME                                          READY   STATUS    RESTARTS   AGE
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>rhdh-agent-developer-hub-&lt;hash&gt;               2/2     Running   0          6m
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>rhdh-agent-litellm-&lt;hash&gt;                     1/1     Running   0          5m
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>rhdh-agent-sandbox-kubernetes-mcp-&lt;hash&gt;      1/1     Running   0          5m
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>rhdh-agent-sandbox-openshift-mcp-&lt;hash&gt;       1/1     Running   0          5m
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>...
-</code></pre></div>
-<p>Sign in as <strong>Guest</strong>. Next: <a href="../golden-paths/">Golden Paths</a> (deploy an agent) and <a href="../verify/">Verify</a>.</p>
-<h2 id="token-refresh-when-chat-returns-401">Token refresh (when chat returns 401)<a class="headerlink" href="#token-refresh-when-chat-returns-401" title="Permanent link">&para;</a></h2>
-<p><code>secrets.modelApiKey</code> uses your Sandbox oauth-proxy token, which expires in <strong>~24 hours</strong>. When Lightspeed or LiteLLM returns <strong>401</strong>, refresh the secret and restart LiteLLM:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>oc<span class="w"> </span><span class="nb">set</span><span class="w"> </span>data<span class="w"> </span>secret/rhdh-agent-sandbox-secrets<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>model-api-key<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">&quot;</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>oc<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deploy/rhdh-agent-litellm
-</code></pre></div>
-<p>If the problem persists, see <a href="../troubleshooting/#litellm-401-to-shared-models">Troubleshooting — LiteLLM 401</a>.</p>
-<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NAME                                          READY   STATUS    RESTARTS   AGE
+rhdh-agent-developer-hub-&lt;hash&gt;               2/2     Running   0          6m
+rhdh-agent-litellm-&lt;hash&gt;                     1/1     Running   0          5m
+rhdh-agent-sandbox-kubernetes-mcp-&lt;hash&gt;      1/1     Running   0          5m
+rhdh-agent-sandbox-openshift-mcp-&lt;hash&gt;       1/1     Running   0          5m
+...
+</code></pre></div></div>
+
+<p>Sign in as <strong>Guest</strong>. Next: <a href="/rhdh-agent-sandbox/golden-paths/">Golden Paths</a> (deploy an agent) and <a href="/rhdh-agent-sandbox/verify/">Verify</a>.</p>
+
+<h2 id="token-refresh-when-chat-returns-401">Token refresh (when chat returns 401)</h2>
+
+<p><code class="language-plaintext highlighter-rouge">secrets.modelApiKey</code> uses your Sandbox oauth-proxy token, which expires in <strong>~24 hours</strong>. When Lightspeed or LiteLLM returns <strong>401</strong>, refresh the secret and restart LiteLLM:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">set </span>data secret/rhdh-agent-sandbox-secrets <span class="se">\</span>
+  <span class="nt">--from-literal</span><span class="o">=</span>model-api-key<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span>
+oc rollout restart deploy/rhdh-agent-litellm
+</code></pre></div></div>
+
+<p>If the problem persists, see <a href="/rhdh-agent-sandbox/troubleshooting/#litellm-401-to-shared-models">Troubleshooting — LiteLLM 401</a>.</p>
+
+<h2 id="notes">Notes</h2>
+
 <table>
-<thead>
-<tr>
-<th>Topic</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>RHDH dependency</td>
-<td>Declared in <code>Chart.yaml</code>; bump version there when upgrading Developer Hub</td>
-</tr>
-<tr>
-<td>Single values file</td>
-<td>All Sandbox defaults live in root <code>values.yaml</code></td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Topic</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RHDH dependency</td>
+      <td>Declared in <code class="language-plaintext highlighter-rouge">Chart.yaml</code>; bump version there when upgrading Developer Hub</td>
+    </tr>
+    <tr>
+      <td>Single values file</td>
+      <td>All Sandbox defaults live in root <code class="language-plaintext highlighter-rouge">values.yaml</code></td>
+    </tr>
+  </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-                
-              </article>
-            </div>
-          
-          
-<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
-        </div>
-        
-          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
-</button>
-        
-      </main>
-      
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
-    </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+  <div class="site-footer__inner">
+    <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" target="_blank" rel="noopener">maximilianoPizarro/rhdh-agent-sandbox</a>
+    <span class="site-footer__sep">&middot;</span>
+    <span>Built with Jekyll + PatternFly v6</span>
   </div>
 </footer>
-      
-    </div>
-    <div class="md-dialog" data-md-component="dialog">
-      <div class="md-dialog__inner md-typeset"></div>
-    </div>
-    
-    
-    
-      
-      
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
-    
-    
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="../assets/js/journey-carousel.js"></script>
-      
-    
-  </body>
+
+  <script src="/rhdh-agent-sandbox/assets/js/nav.js"></script>
+  
+</body>
 </html>

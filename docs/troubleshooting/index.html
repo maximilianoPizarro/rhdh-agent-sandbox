@@ -1,1536 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting | rhdh-agent-sandbox</title>
+<!-- Begin Jekyll SEO tag v2.9.0 -->
+<title>Troubleshooting | rhdh-agent-sandbox</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Troubleshooting" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/" />
+<meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/" />
+<meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Troubleshooting" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"Troubleshooting","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/"}</script>
+<!-- End Jekyll SEO tag -->
 
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox">
-      
-      
-      
-        <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/">
-      
-      
-        <link rel="prev" href="../openclaw/">
-      
-      
-        <link rel="next" href="../community-plugins-quay/">
-      
-      
-        
-      
-      
-      <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
-    
-    
-      
-        <title>Troubleshooting - rhdh-agent-sandbox</title>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
-      
-        
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
-      
-      
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@6.0.0/patternfly.min.css">
+<link rel="stylesheet" href="/rhdh-agent-sandbox/assets/css/main.css">
 
-
-    
-    
-      
-    
-    
-      
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/css/journey-carousel.css">
-    
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
-    
-      
-
-    
-    
-  </head>
-  
-  
-    
-    
-      
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red">
-  
-    
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#troubleshooting" class="md-skip">
-          Skip to content
-        </a>
-      
+</head>
+<body class="pf-v6-c-page">
+  <header class="pf-v6-c-page__header">
+    <div class="pf-v6-c-masthead" id="masthead">
+  <div class="pf-v6-c-masthead__main">
+    <div class="pf-v6-c-masthead__brand">
+      <a href="/rhdh-agent-sandbox/" class="masthead-logo" aria-label="Home">
+        <svg viewBox="0 0 36 36" width="36" height="36" aria-hidden="true" class="rh-logo-mark">
+          <path fill="#ee0000" d="M32.7 25.2c.6-1.2 1-2.5 1.2-3.8 0-.2-.1-.3-.3-.3h-4.5c-.9 0-1.3-.5-1.3-1.2v-.5c0-.7.4-1.2 1.3-1.2h4.7c.2 0 .3-.1.3-.3-.1-1-.3-2-.6-2.9-.1-.2-.2-.3-.4-.2l-4.1 1.2c-.9.3-1.4-.1-1.6-.8l-.2-.5c-.2-.7.1-1.3.9-1.6l4-1.5c.2-.1.2-.2.2-.4-.5-1-1.2-2-1.9-2.8-.1-.1-.3-.2-.4 0l-3.3 2.8c-.7.6-1.3.4-1.7-.1l-.4-.4c-.5-.6-.4-1.2.3-1.8l3.1-2.8c.1-.1.1-.3 0-.4-.8-.7-1.7-1.3-2.7-1.8-.2-.1-.3 0-.4.1l-1.8 4c-.4.8-1 1-1.7.6l-.5-.2c-.7-.3-.9-.9-.6-1.7l1.5-4c.1-.2 0-.3-.2-.4-1-.4-2.1-.6-3.2-.7-.2 0-.3.1-.3.3l-.1 4.5c0 .9-.5 1.3-1.2 1.3h-.5c-.7 0-1.2-.4-1.2-1.3l.1-4.5c0-.2-.1-.3-.3-.3-1.1.1-2.2.3-3.2.7-.2.1-.3.2-.2.4l1.5 4c.3.8.1 1.4-.6 1.7l-.5.2c-.7.3-1.3.1-1.7-.6l-1.8-4c-.1-.2-.2-.2-.4-.1-1 .5-1.9 1.1-2.7 1.8-.1.1-.2.3 0 .4l3.1 2.8c.7.6.8 1.2.3 1.8l-.4.4c-.5.6-1.1.7-1.7.1L5.3 9.5c-.1-.1-.3-.2-.4 0-.8.9-1.4 1.8-1.9 2.8-.1.2 0 .3.2.4l4 1.5c.8.3 1.1.9.9 1.6l-.2.5c-.2.7-.8 1-1.6.8L2.2 15.8c-.2-.1-.3 0-.4.2-.3 1-.5 2-.6 2.9 0 .2.1.3.3.3H6c.9 0 1.3.5 1.3 1.2v.5c0 .7-.4 1.2-1.3 1.2H1.5c-.2 0-.3.1-.3.3.1 1.3.6 2.6 1.2 3.8.1.2.2.2.4.1l4-1.5c.8-.3 1.4-.1 1.7.6l.2.5c.3.7.1 1.3-.8 1.6l-3.8 1.4c-.2.1-.2.2-.1.4.6 1 1.3 1.9 2.1 2.7.1.1.3.2.4 0l3.1-2.7c.7-.6 1.3-.5 1.8.1l.3.4c.5.6.4 1.2-.2 1.8l-2.8 2.5c-.1.1-.1.3 0 .4.9.7 1.8 1.4 2.8 1.9.2.1.3 0 .4-.1l1.6-3.8c.4-.8 1-.9 1.7-.6l.5.2c.7.3.9.9.6 1.7l-1.3 3.7c-.1.2 0 .3.2.4 1 .3 2.1.6 3.2.7.2 0 .3-.1.3-.3l.1-4.1c0-.9.5-1.3 1.2-1.3h.5c.7 0 1.2.5 1.2 1.3l.1 4.1c0 .2.1.3.3.3 1.1-.1 2.2-.3 3.2-.7.2-.1.2-.2.2-.4l-1.3-3.7c-.3-.8-.1-1.4.6-1.7l.5-.2c.7-.3 1.3-.1 1.7.6l1.6 3.8c.1.2.2.2.4.1 1-.5 1.9-1.2 2.8-1.9.1-.1.2-.3 0-.4l-2.8-2.5c-.6-.6-.7-1.2-.2-1.8l.3-.4c.5-.6 1.1-.7 1.8-.1l3.1 2.7c.1.1.3.1.4 0 .8-.8 1.5-1.7 2.1-2.7.1-.2 0-.3-.1-.4l-3.8-1.4c-.8-.3-1.1-.9-.8-1.6l.2-.5c.3-.7.8-1 1.7-.6l4 1.5c.1 0 .3 0 .3-.1z"/>
+        </svg>
+        <span class="masthead-title">rhdh-agent-sandbox</span>
+      </a>
     </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-    
-      
-
-  
-
-<header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="rhdh-agent-sandbox" class="md-header__button md-logo" aria-label="rhdh-agent-sandbox" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
-
-    </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </label>
-    <div class="md-header__title" data-md-component="header-title">
-      <div class="md-header__ellipsis">
-        <div class="md-header__topic">
-          <span class="md-ellipsis">
-            rhdh-agent-sandbox
-          </span>
-        </div>
-        <div class="md-header__topic" data-md-component="header-topic">
-          <span class="md-ellipsis">
-            
-              Troubleshooting
-            
-          </span>
-        </div>
-      </div>
-    </div>
-    
-      
-        <form class="md-header__option" data-md-component="palette">
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
-    
-    
-    
-      
-      
-        <label class="md-header__button md-icon" for="__search">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
+    <div class="pf-v6-c-masthead__content">
+      <nav class="masthead-nav" aria-label="Main navigation">
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        <a href="/rhdh-agent-sandbox/" class="masthead-nav-link">Home</a>
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="Search">
+        <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
+        <a href="" class="masthead-nav-link">Get started</a>
+        
+        <a href="" class="masthead-nav-link">How it works</a>
+        
+        <a href="" class="masthead-nav-link">Workspaces</a>
+        
+        <a href="" class="masthead-nav-link">Operations</a>
+        
       </nav>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
+      <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" class="masthead-github" aria-label="GitHub repository" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </a>
+      <button class="masthead-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M1 2.75A.75.75 0 011.75 2h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 2.75zm0 5A.75.75 0 011.75 7h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 7.75zm0 5a.75.75 0 011.75-.75h12.5a.75.75 0 010 1.5H1.75a.75.75 0 01-.75-.75z"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>
-      
-    
-    
-      <div class="md-header__source">
-        <a href="https://github.com/maximilianopizarro/rhdh-agent-sandbox" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    maximilianopizarro/rhdh-agent-sandbox
-  </div>
-</a>
-      </div>
-    
-  </nav>
-  
-</header>
-    
-    <div class="md-container" data-md-component="container">
-      
-      
-        
-          
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-
-
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href=".." title="rhdh-agent-sandbox" class="md-nav__button md-logo" aria-label="rhdh-agent-sandbox" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
-
-    </a>
-    rhdh-agent-sandbox
-  </label>
-  
-    <div class="md-nav__source">
-      <a href="https://github.com/maximilianopizarro/rhdh-agent-sandbox" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
+  </header>
+  <div class="pf-v6-c-page__sidebar">
+    <nav class="pf-v6-c-nav" aria-label="Side navigation" id="sidebar-nav">
+  <ul class="pf-v6-c-nav__list">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
-  </div>
-  <div class="md-source__repository">
-    maximilianopizarro/rhdh-agent-sandbox
-  </div>
-</a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
     
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/" class="pf-v6-c-nav__link">Home</a>
     </li>
-  
-
     
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../journey/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
     
-  
-    Journey
-  
-
     
-  </span>
-  
-  
-
-      </a>
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
     
     
     
-    
-      
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Get started
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
+        </li>
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/golden-paths/" class="pf-v6-c-nav__link">Golden Paths</a>
+        </li>
         
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/agents/" class="pf-v6-c-nav__link">Agents</a>
+        </li>
         
-          
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/verify/" class="pf-v6-c-nav__link">Verify the install</a>
+        </li>
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/demo-script/" class="pf-v6-c-nav__link">Demo script</a>
+        </li>
         
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Get started
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Get started
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../quickstart/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quickstart
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../golden-paths/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        How it works
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Golden Paths
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/architecture/" class="pf-v6-c-nav__link">Architecture</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/lightspeed-models/" class="pf-v6-c-nav__link">Lightspeed & models</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/ai-capabilities/" class="pf-v6-c-nav__link">AI capabilities</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../agents/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Workspaces
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Agents
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-ai/" class="pf-v6-c-nav__link">DevSpaces AI</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-cursor/" class="pf-v6-c-nav__link">Cursor (optional)</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/openclaw/" class="pf-v6-c-nav__link">OpenClaw (optional)</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../verify/" class="md-nav__link">
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Operations
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Verify the install
-  
-
-    
-  </span>
-  
-  
-
-      </a>
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/troubleshooting/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Troubleshooting</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/community-plugins-quay/" class="pf-v6-c-nav__link">Community packs / Quay</a>
+        </li>
+        
+      </ul>
     </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../demo-script/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
     
-  
-    Demo script
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    How it works
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    How it works
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../lightspeed-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Lightspeed & models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ai-capabilities/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI capabilities
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workspaces
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Workspaces
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../devspaces-ai/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DevSpaces AI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../devspaces-cursor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cursor (optional)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openclaw/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    OpenClaw (optional)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Operations
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Operations
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Troubleshooting
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Troubleshooting
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#litellm-401-to-shared-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiteLLM 401 to shared models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#lightspeed-chat-empty-error-while-processing-query" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Lightspeed chat empty / “Error while processing query”
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#litellm-oomkilled-crashloopbackoff" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiteLLM OOMKilled / CrashLoopBackOff
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rhdh-route-host-wrong" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RHDH Route host wrong
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pods-pending-quota" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pods Pending / quota
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#guest-login-missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Guest login missing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hub-readiness-503-github-catalog-provider" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hub readiness 503 / GitHub catalog provider
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hub-readiness-503-postgres-or-backend_secret" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hub readiness 503 / postgres or BACKEND_SECRET
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#catalog-entities-missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Catalog entities missing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#devspaces-continue-cannot-reach-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DevSpaces Continue cannot reach models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-permission-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP permission errors
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openclaw-cannot-use-tools-with-shared-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OpenClaw cannot use tools with shared models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-chat-loads-but-tools-never-fire" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP Chat loads but tools never fire
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-community-oci-plugins-fail-to-install" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP / community OCI plugins fail to install
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#stale-secret-keys-after-upgrade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stale secret keys after upgrade
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../community-plugins-quay/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Community packs / Quay
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
     
   </ul>
 </nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#litellm-401-to-shared-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiteLLM 401 to shared models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#lightspeed-chat-empty-error-while-processing-query" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Lightspeed chat empty / “Error while processing query”
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#litellm-oomkilled-crashloopbackoff" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiteLLM OOMKilled / CrashLoopBackOff
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rhdh-route-host-wrong" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RHDH Route host wrong
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pods-pending-quota" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pods Pending / quota
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#guest-login-missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Guest login missing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hub-readiness-503-github-catalog-provider" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hub readiness 503 / GitHub catalog provider
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hub-readiness-503-postgres-or-backend_secret" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hub readiness 503 / postgres or BACKEND_SECRET
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#catalog-entities-missing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Catalog entities missing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#devspaces-continue-cannot-reach-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DevSpaces Continue cannot reach models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-permission-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP permission errors
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openclaw-cannot-use-tools-with-shared-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OpenClaw cannot use tools with shared models
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-chat-loads-but-tools-never-fire" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP Chat loads but tools never fire
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-community-oci-plugins-fail-to-install" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP / community OCI plugins fail to install
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#stale-secret-keys-after-upgrade" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stale secret keys after upgrade
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          
-            <div class="md-content" data-md-component="content">
-              
-              <article class="md-content__inner md-typeset">
-                
-                  
+  </div>
+  <main class="pf-v6-c-page__main" id="main-content">
+    <section class="pf-v6-c-page__main-section">
+      <div class="pf-v6-c-content">
+        <h1 id="troubleshooting">Troubleshooting</h1>
 
+<h2 id="litellm-401-to-shared-models">LiteLLM 401 to shared models</h2>
 
-  
-  
+<p>Symptoms: <code class="language-plaintext highlighter-rouge">/v1/models</code> works with the master key, but chat returns 401 / upstream auth errors; or chat worked yesterday and fails today.</p>
 
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc patch secret/rhdh-agent-sandbox-secrets <span class="nt">--type</span><span class="o">=</span>merge <span class="se">\</span>
+  <span class="nt">-p</span> <span class="s2">"{</span><span class="se">\"</span><span class="s2">stringData</span><span class="se">\"</span><span class="s2">:{</span><span class="se">\"</span><span class="s2">model-api-key</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="se">\"</span><span class="s2">}}"</span>
+oc rollout restart deploy <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>litellm
+</code></pre></div></div>
 
-<h1 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
-<h2 id="litellm-401-to-shared-models">LiteLLM 401 to shared models<a class="headerlink" href="#litellm-401-to-shared-models" title="Permanent link">&para;</a></h2>
-<p>Symptoms: <code>/v1/models</code> works with the master key, but chat returns 401 / upstream auth errors; or chat worked yesterday and fails today.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>secret/rhdh-agent-sandbox-secrets<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="s2">&quot;{\&quot;stringData\&quot;:{\&quot;model-api-key\&quot;:\&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">\&quot;}}&quot;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>oc<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deploy<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/component<span class="o">=</span>litellm
-</code></pre></div>
-<p>Confirm the LiteLLM pod picked up the new key (<code>oc exec … -- env | grep MODEL_API_KEY</code>).</p>
-<h2 id="lightspeed-chat-empty-error-while-processing-query">Lightspeed chat empty / “Error while processing query”<a class="headerlink" href="#lightspeed-chat-empty-error-while-processing-query" title="Permanent link">&para;</a></h2>
+<p>Confirm the LiteLLM pod picked up the new key (<code class="language-plaintext highlighter-rouge">oc exec … -- env | grep MODEL_API_KEY</code>).</p>
+
+<h2 id="lightspeed-chat-empty--error-while-processing-query">Lightspeed chat empty / “Error while processing query”</h2>
+
 <p>Check sidecar logs:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">HUB</span><span class="o">=</span><span class="k">$(</span>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-o<span class="w"> </span>name<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>developer-hub<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s|pod/||&#39;</span><span class="k">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>oc<span class="w"> </span>logs<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HUB</span><span class="s2">&quot;</span><span class="w"> </span>-c<span class="w"> </span>lightspeed-core<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
-</code></pre></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">HUB</span><span class="o">=</span><span class="si">$(</span>oc get pods <span class="nt">-o</span> name | <span class="nb">grep </span>developer-hub | <span class="nb">head</span> <span class="nt">-1</span> | <span class="nb">sed</span> <span class="s1">'s|pod/||'</span><span class="si">)</span>
+oc logs <span class="s2">"</span><span class="nv">$HUB</span><span class="s2">"</span> <span class="nt">-c</span> lightspeed-core <span class="nt">--tail</span><span class="o">=</span>100
+</code></pre></div></div>
+
 <table>
-<thead>
-<tr>
-<th>Cause</th>
-<th>Fix</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>tool_choice=auto</code> / BadRequest from Granite</td>
-<td>Chart must set <code>supports_function_calling: false</code> + drop tool params in LiteLLM ConfigMap. Re-upgrade chart.</td>
-</tr>
-<tr>
-<td><code>Incorrect API key</code> / OpenAI provider</td>
-<td>Remove <code>ENABLE_OPENAI</code> / <code>OPENAI_*</code> from the secret. Only <code>ENABLE_VLLM=true</code> + <code>VLLM_URL</code> → LiteLLM.</td>
-</tr>
-<tr>
-<td><code>model-api-key</code> is <code>replace-me</code></td>
-<td>Patch token (above) and restart LiteLLM. Helm preserves the key when you pass <code>--set secrets.modelApiKey=…</code> or when the existing secret already has a real value.</td>
-</tr>
-<tr>
-<td>Wrong model id</td>
-<td>Use provider <code>vllm</code> + model <code>granite</code> (UI: <code>vllm/granite</code>).</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Cause</th>
+      <th>Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tool_choice=auto</code> / BadRequest from Granite</td>
+      <td>Chart must set <code class="language-plaintext highlighter-rouge">supports_function_calling: false</code> + drop tool params in LiteLLM ConfigMap. Re-upgrade chart.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Incorrect API key</code> / OpenAI provider</td>
+      <td>Remove <code class="language-plaintext highlighter-rouge">ENABLE_OPENAI</code> / <code class="language-plaintext highlighter-rouge">OPENAI_*</code> from the secret. Only <code class="language-plaintext highlighter-rouge">ENABLE_VLLM=true</code> + <code class="language-plaintext highlighter-rouge">VLLM_URL</code> → LiteLLM.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">model-api-key</code> is <code class="language-plaintext highlighter-rouge">replace-me</code></td>
+      <td>Patch token (above) and restart LiteLLM. Helm preserves the key when you pass <code class="language-plaintext highlighter-rouge">--set secrets.modelApiKey=…</code> or when the existing secret already has a real value.</td>
+    </tr>
+    <tr>
+      <td>Wrong model id</td>
+      <td>Use provider <code class="language-plaintext highlighter-rouge">vllm</code> + model <code class="language-plaintext highlighter-rouge">granite</code> (UI: <code class="language-plaintext highlighter-rouge">vllm/granite</code>).</td>
+    </tr>
+  </tbody>
 </table>
-<h2 id="litellm-oomkilled-crashloopbackoff">LiteLLM OOMKilled / CrashLoopBackOff<a class="headerlink" href="#litellm-oomkilled-crashloopbackoff" title="Permanent link">&para;</a></h2>
-<p>LiteLLM needs more than 512Mi. Defaults in <code>values.yaml</code> request 512Mi / limit <strong>1536Mi</strong>. If the live Deployment still shows 512Mi limit, upgrade the chart or:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>oc<span class="w"> </span><span class="nb">set</span><span class="w"> </span>resources<span class="w"> </span>deploy/rhdh-agent-sandbox-litellm<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--requests<span class="o">=</span><span class="nv">cpu</span><span class="o">=</span>50m,memory<span class="o">=</span>512Mi<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--limits<span class="o">=</span><span class="nv">cpu</span><span class="o">=</span>500m,memory<span class="o">=</span>1536Mi
-</code></pre></div>
-<h2 id="rhdh-route-host-wrong">RHDH Route host wrong<a class="headerlink" href="#rhdh-route-host-wrong" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>rhdh-agent<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--set<span class="w"> </span>rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--reuse-values
-</code></pre></div>
-<h2 id="pods-pending-quota">Pods Pending / quota<a class="headerlink" href="#pods-pending-quota" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>resourcequota
-</code></pre></div>
+
+<h2 id="litellm-oomkilled--crashloopbackoff">LiteLLM OOMKilled / CrashLoopBackOff</h2>
+
+<p>LiteLLM needs more than 512Mi. Defaults in <code class="language-plaintext highlighter-rouge">values.yaml</code> request 512Mi / limit <strong>1536Mi</strong>. If the live Deployment still shows 512Mi limit, upgrade the chart or:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">set </span>resources deploy/rhdh-agent-sandbox-litellm <span class="se">\</span>
+  <span class="nt">--requests</span><span class="o">=</span><span class="nv">cpu</span><span class="o">=</span>50m,memory<span class="o">=</span>512Mi <span class="se">\</span>
+  <span class="nt">--limits</span><span class="o">=</span><span class="nv">cpu</span><span class="o">=</span>500m,memory<span class="o">=</span>1536Mi
+</code></pre></div></div>
+
+<h2 id="rhdh-route-host-wrong">RHDH Route host wrong</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade rhdh-agent <span class="nb">.</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
+  <span class="nt">--reuse-values</span>
+</code></pre></div></div>
+
+<h2 id="pods-pending--quota">Pods Pending / quota</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc describe resourcequota
+</code></pre></div></div>
+
 <p>Mitigations:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>rhdh-agent<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--reuse-values<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>--set<span class="w"> </span>mcp.kubernetes.enabled<span class="o">=</span><span class="nb">false</span>
-</code></pre></div>
-<p>Stop DevSpaces workspaces. Lower Hub memory in <code>values.yaml</code> if needed.</p>
-<h2 id="guest-login-missing">Guest login missing<a class="headerlink" href="#guest-login-missing" title="Permanent link">&para;</a></h2>
-<p>Confirm in <code>values.yaml</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade rhdh-agent <span class="nb">.</span> <span class="se">\</span>
+  <span class="nt">--reuse-values</span> <span class="se">\</span>
+  <span class="nt">--set</span> mcp.kubernetes.enabled<span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
+<p>Stop DevSpaces workspaces. Lower Hub memory in <code class="language-plaintext highlighter-rouge">values.yaml</code> if needed.</p>
+
+<h2 id="guest-login-missing">Guest login missing</h2>
+
+<p>Confirm in <code class="language-plaintext highlighter-rouge">values.yaml</code>:</p>
+
 <ul>
-<li><code>auth.environment: development</code>  </li>
-<li><code>auth.providers.guest.dangerouslyAllowOutsideDevelopment: true</code>  </li>
-<li><code>permission.enabled: false</code>  </li>
+  <li><code class="language-plaintext highlighter-rouge">auth.environment: development</code></li>
+  <li><code class="language-plaintext highlighter-rouge">auth.providers.guest.dangerouslyAllowOutsideDevelopment: true</code></li>
+  <li><code class="language-plaintext highlighter-rouge">permission.enabled: false</code></li>
 </ul>
-<p>Then <code>helm upgrade</code> and restart the Hub Deployment.</p>
-<h2 id="hub-readiness-503-github-catalog-provider">Hub readiness 503 / GitHub catalog provider<a class="headerlink" href="#hub-readiness-503-github-catalog-provider" title="Permanent link">&para;</a></h2>
-<p>Logs: <code>Either organization or app must be specified</code>.</p>
-<p>GitHub catalog/scaffolder modules are <strong>disabled</strong> in <code>values.yaml</code>. Catalog loads from the ConfigMap <strong>file</strong> location. Do not re-enable GitHub modules without org/app config.</p>
-<h2 id="hub-readiness-503-postgres-or-backend_secret">Hub readiness 503 / postgres or BACKEND_SECRET<a class="headerlink" href="#hub-readiness-503-postgres-or-backend_secret" title="Permanent link">&para;</a></h2>
-<p>Helm <strong>replaces</strong> <code>extraEnvVars</code> arrays. Keep:</p>
+
+<p>Then <code class="language-plaintext highlighter-rouge">helm upgrade</code> and restart the Hub Deployment.</p>
+
+<h2 id="hub-readiness-503--github-catalog-provider">Hub readiness 503 / GitHub catalog provider</h2>
+
+<p>Logs: <code class="language-plaintext highlighter-rouge">Either organization or app must be specified</code>.</p>
+
+<p>GitHub catalog/scaffolder modules are <strong>disabled</strong> in <code class="language-plaintext highlighter-rouge">values.yaml</code>. Catalog loads from the ConfigMap <strong>file</strong> location. Do not re-enable GitHub modules without org/app config.</p>
+
+<h2 id="hub-readiness-503--postgres-or-backend_secret">Hub readiness 503 / postgres or BACKEND_SECRET</h2>
+
+<p>Helm <strong>replaces</strong> <code class="language-plaintext highlighter-rouge">extraEnvVars</code> arrays. Keep:</p>
+
 <table>
-<thead>
-<tr>
-<th>Env</th>
-<th>Secret / key</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>BACKEND_SECRET</code></td>
-<td><code>rhdh-agent-sandbox-secrets</code> / <code>backend-secret</code></td>
-</tr>
-<tr>
-<td><code>MCP_TOKEN</code></td>
-<td><code>rhdh-agent-sandbox-secrets</code> / <code>mcp-token</code></td>
-</tr>
-<tr>
-<td><code>POSTGRESQL_ADMIN_PASSWORD</code></td>
-<td><code>rhdh-agent-postgresql</code> / <code>postgres-password</code></td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Env</th>
+      <th>Secret / key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">BACKEND_SECRET</code></td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code> / <code class="language-plaintext highlighter-rouge">backend-secret</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MCP_TOKEN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code> / <code class="language-plaintext highlighter-rouge">mcp-token</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">POSTGRESQL_ADMIN_PASSWORD</code></td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-postgresql</code> / <code class="language-plaintext highlighter-rouge">postgres-password</code></td>
+    </tr>
+  </tbody>
 </table>
-<p>Same for <code>extraVolumes</code> / <code>extraVolumeMounts</code>: keep RHDH dynamic-plugins defaults <strong>plus</strong> the catalog ConfigMap mount.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>rhdh-agent<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--set<span class="w"> </span>secrets.modelApiKey<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--set<span class="w"> </span>rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>oc<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deploy/rhdh-agent-developer-hub
-</code></pre></div>
-<h2 id="catalog-entities-missing">Catalog entities missing<a class="headerlink" href="#catalog-entities-missing" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>oc<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>deploy/rhdh-agent-developer-hub<span class="w"> </span>-c<span class="w"> </span>backstage-backend<span class="w"> </span>--<span class="w"> </span>ls<span class="w"> </span>/opt/app-root/src/catalog
-</code></pre></div>
-<p>If empty, check ConfigMap <code>rhdh-agent-sandbox-catalog</code> and Hub volume mount <code>rhdh-agent-catalog</code>.</p>
-<h2 id="devspaces-continue-cannot-reach-models">DevSpaces Continue cannot reach models<a class="headerlink" href="#devspaces-continue-cannot-reach-models" title="Permanent link">&para;</a></h2>
+
+<p>Same for <code class="language-plaintext highlighter-rouge">extraVolumes</code> / <code class="language-plaintext highlighter-rouge">extraVolumeMounts</code>: keep RHDH dynamic-plugins defaults <strong>plus</strong> the catalog ConfigMap mount.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm upgrade rhdh-agent <span class="nb">.</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com
+oc rollout status deploy/rhdh-agent-developer-hub
+</code></pre></div></div>
+
+<h2 id="catalog-entities-missing">Catalog entities missing</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">exec </span>deploy/rhdh-agent-developer-hub <span class="nt">-c</span> backstage-backend <span class="nt">--</span> <span class="nb">ls</span> /opt/app-root/src/catalog
+</code></pre></div></div>
+
+<p>If empty, check ConfigMap <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-catalog</code> and Hub volume mount <code class="language-plaintext highlighter-rouge">rhdh-agent-catalog</code>.</p>
+
+<h2 id="devspaces-continue-cannot-reach-models">DevSpaces Continue cannot reach models</h2>
+
 <ol>
-<li>LiteLLM <strong>Route</strong> up?  </li>
-<li>Continue <code>apiBase</code> ends with <code>/v1</code>?  </li>
-<li>API key = <code>litellm-master-key</code> (not OpenShift token)?  </li>
-<li>Shared models token fresh if LiteLLM itself 401s upstream?</li>
+  <li>LiteLLM <strong>Route</strong> up?</li>
+  <li>Continue <code class="language-plaintext highlighter-rouge">apiBase</code> ends with <code class="language-plaintext highlighter-rouge">/v1</code>?</li>
+  <li>API key = <code class="language-plaintext highlighter-rouge">litellm-master-key</code> (not OpenShift token)?</li>
+  <li>Shared models token fresh if LiteLLM itself 401s upstream?</li>
 </ol>
-<h2 id="mcp-permission-errors">MCP permission errors<a class="headerlink" href="#mcp-permission-errors" title="Permanent link">&para;</a></h2>
+
+<h2 id="mcp-permission-errors">MCP permission errors</h2>
+
 <p>Namespace Role only. Cluster-scoped tools fail by design. Stay inside the user project.</p>
-<h2 id="openclaw-cannot-use-tools-with-shared-models">OpenClaw cannot use tools with shared models<a class="headerlink" href="#openclaw-cannot-use-tools-with-shared-models" title="Permanent link">&para;</a></h2>
-<p>OpenClaw provisioned from sandbox.redhat.com needs <strong>external</strong> Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject <code>tool_choice</code> / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep <code>agents.defaults.sandbox.mode: "off"</code> on Developer Sandbox (no Docker daemon). See <a href="../openclaw/">OpenClaw</a>.</p>
-<h2 id="mcp-chat-loads-but-tools-never-fire">MCP Chat loads but tools never fire<a class="headerlink" href="#mcp-chat-loads-but-tools-never-fire" title="Permanent link">&para;</a></h2>
-<p>Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set <code>mcpChat.providers</code> to openai/claude/gemini with your own API key (Secret + env). See <a href="../ai-capabilities/">AI capabilities</a>.</p>
-<p>If <strong>Backstage MCP Actions</strong> shows disconnected at startup, that is an init race (mcp-chat connects before <code>/api/mcp-actions/v1</code> is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with <code>mcp-token</code>.</p>
-<h2 id="mcp-community-oci-plugins-fail-to-install">MCP / community OCI plugins fail to install<a class="headerlink" href="#mcp-community-oci-plugins-fail-to-install" title="Permanent link">&para;</a></h2>
-<p>Init container <code>install-dynamic-plugins</code> must pull from <code>ghcr.io/redhat-developer/rhdh-plugin-export-overlays</code>. Check:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>deploy/rhdh-agent-developer-hub<span class="w"> </span>-c<span class="w"> </span>install-dynamic-plugins<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-iE<span class="w"> </span><span class="s1">&#39;mcp-chat|mcp-actions|Successfully installed|ERROR|denied&#39;</span>
-</code></pre></div>
-<p>Confirm the tag matches RHDH 1.10 / Backstage <code>1.49.4</code> (<code>bs_1.49.4__…</code>) and the cluster can reach ghcr.io.</p>
-<h2 id="stale-secret-keys-after-upgrade">Stale secret keys after upgrade<a class="headerlink" href="#stale-secret-keys-after-upgrade" title="Permanent link">&para;</a></h2>
-<p>If old <code>ENABLE_OPENAI</code> keys linger, replace the secret data (chart uses <code>data:</code> so Helm merge can drop keys) or:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># after a good helm upgrade, confirm keys:</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>oc<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>rhdh-agent-sandbox-secrets<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import json,sys; print(sorted(json.load(sys.stdin)[&#39;data&#39;]))&quot;</span>
-</code></pre></div>
-<p>You should <strong>not</strong> see <code>ENABLE_OPENAI</code> / <code>OPENAI_API_KEY</code>. Then restart Hub so <code>lightspeed-core</code> reloads envFrom.</p>
 
+<h2 id="openclaw-cannot-use-tools-with-shared-models">OpenClaw cannot use tools with shared models</h2>
 
+<p>OpenClaw provisioned from sandbox.redhat.com needs <strong>external</strong> Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject <code class="language-plaintext highlighter-rouge">tool_choice</code> / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep <code class="language-plaintext highlighter-rouge">agents.defaults.sandbox.mode: "off"</code> on Developer Sandbox (no Docker daemon). See <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw</a>.</p>
 
+<h2 id="mcp-chat-loads-but-tools-never-fire">MCP Chat loads but tools never fire</h2>
 
+<p>Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set <code class="language-plaintext highlighter-rouge">mcpChat.providers</code> to openai/claude/gemini with your own API key (Secret + env). See <a href="/rhdh-agent-sandbox/ai-capabilities/">AI capabilities</a>.</p>
 
+<p>If <strong>Backstage MCP Actions</strong> shows disconnected at startup, that is an init race (mcp-chat connects before <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with <code class="language-plaintext highlighter-rouge">mcp-token</code>.</p>
 
+<h2 id="mcp--community-oci-plugins-fail-to-install">MCP / community OCI plugins fail to install</h2>
 
+<p>Init container <code class="language-plaintext highlighter-rouge">install-dynamic-plugins</code> must pull from <code class="language-plaintext highlighter-rouge">ghcr.io/redhat-developer/rhdh-plugin-export-overlays</code>. Check:</p>
 
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc logs deploy/rhdh-agent-developer-hub <span class="nt">-c</span> install-dynamic-plugins | <span class="nb">grep</span> <span class="nt">-iE</span> <span class="s1">'mcp-chat|mcp-actions|Successfully installed|ERROR|denied'</span>
+</code></pre></div></div>
 
+<p>Confirm the tag matches RHDH 1.10 / Backstage <code class="language-plaintext highlighter-rouge">1.49.4</code> (<code class="language-plaintext highlighter-rouge">bs_1.49.4__…</code>) and the cluster can reach ghcr.io.</p>
 
+<h2 id="stale-secret-keys-after-upgrade">Stale secret keys after upgrade</h2>
 
+<p>If old <code class="language-plaintext highlighter-rouge">ENABLE_OPENAI</code> keys linger, replace the secret data (chart uses <code class="language-plaintext highlighter-rouge">data:</code> so Helm merge can drop keys) or:</p>
 
-                
-              </article>
-            </div>
-          
-          
-<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
-        </div>
-        
-          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
-</button>
-        
-      </main>
-      
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
-    </div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># after a good helm upgrade, confirm keys:</span>
+oc get secret rhdh-agent-sandbox-secrets <span class="nt">-o</span> json | python <span class="nt">-c</span> <span class="s2">"import json,sys; print(sorted(json.load(sys.stdin)['data']))"</span>
+</code></pre></div></div>
+
+<p>You should <strong>not</strong> see <code class="language-plaintext highlighter-rouge">ENABLE_OPENAI</code> / <code class="language-plaintext highlighter-rouge">OPENAI_API_KEY</code>. Then restart Hub so <code class="language-plaintext highlighter-rouge">lightspeed-core</code> reloads envFrom.</p>
+
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+  <div class="site-footer__inner">
+    <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" target="_blank" rel="noopener">maximilianoPizarro/rhdh-agent-sandbox</a>
+    <span class="site-footer__sep">&middot;</span>
+    <span>Built with Jekyll + PatternFly v6</span>
   </div>
 </footer>
-      
-    </div>
-    <div class="md-dialog" data-md-component="dialog">
-      <div class="md-dialog__inner md-typeset"></div>
-    </div>
-    
-    
-    
-      
-      
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
-    
-    
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="../assets/js/journey-carousel.js"></script>
-      
-    
-  </body>
+
+  <script src="/rhdh-agent-sandbox/assets/js/nav.js"></script>
+  
+</body>
 </html>
