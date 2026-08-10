@@ -74,7 +74,8 @@ data:
                 return self._json(502, {"error": str(exc)})
 
         def log_message(self, fmt, *args):
-            return
+            print(fmt % args, flush=True)
 
+    print(f"agent started on :{PORT} framework={FRAMEWORK} language={LANGUAGE} model={MODEL}", flush=True)
     HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
 {{- end }}
