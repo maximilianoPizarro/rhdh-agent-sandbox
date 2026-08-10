@@ -253,8 +253,22 @@
               "title": "Enable Agent Applier",
               "description": "Reconciler that creates Deployment+Service from managed-agent catalog annotations",
               "default": true
+            },
+            "logLevel": {
+              "type": "string",
+              "title": "Applier log level",
+              "description": "DEBUG | INFO | WARN | ERROR",
+              "default": "INFO",
+              "enum": ["DEBUG", "INFO", "WARN", "ERROR"]
             }
           }
+        },
+        "logLevel": {
+          "type": "string",
+          "title": "Sample agent log level",
+          "description": "DEBUG | INFO | WARN | ERROR for shared agent stub",
+          "default": "INFO",
+          "enum": ["DEBUG", "INFO", "WARN", "ERROR"]
         },
         "hubRbac": {
           "type": "object",

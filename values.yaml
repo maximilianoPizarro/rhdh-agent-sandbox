@@ -121,8 +121,11 @@ catalog:
 # Golden Path agent pods (samples + catalog-driven applier)
 agents:
   enabled: true
+  # Shared sample-agent stub log level (DEBUG|INFO|WARN|ERROR)
+  logLevel: INFO
   applier:
     enabled: true
+    logLevel: INFO
   # Namespace RBAC for Hub SA (scaffolder kubernetes module + optional apply)
   hubRbac:
     enabled: true

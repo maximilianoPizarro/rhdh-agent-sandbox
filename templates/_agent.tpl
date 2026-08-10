@@ -48,6 +48,8 @@ spec:
               value: {{ .language | quote }}
             - name: AGENT_SPEC
               value: {{ .agentSpec | default "You are a helpful namespace-scoped agent." | quote }}
+            - name: LOG_LEVEL
+              value: {{ .logLevel | default "INFO" | quote }}
             - name: LITELLM_API_BASE
               value: http://{{ .fullname }}-litellm:{{ .litellmPort }}/v1
             - name: LITELLM_API_KEY
@@ -65,6 +67,12 @@ spec:
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
           resources:
             requests:
               cpu: 25m

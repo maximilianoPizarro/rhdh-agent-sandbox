@@ -48,8 +48,8 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
 data:
   applier.py: |
-    import json, os, time, urllib.request, ssl
-    from base64 import b64encode
+    import hashlib, json, os, time, threading, urllib.error, urllib.request, ssl
+    from http.server import BaseHTTPRequestHandler, HTTPServer
 
     NS = os.environ["NAMESPACE"]
     FULLNAME = os.environ["FULLNAME"]
@@ -57,11 +57,35 @@ data:
     LITELLM_PORT = os.environ.get("LITELLM_PORT", "4000")
     CATALOG = os.environ.get("CATALOG_URL", "http://localhost:7007").rstrip("/")
     TOKEN = os.environ.get("MCP_TOKEN", "")
+    POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "45"))
+    HEALTH_PORT = int(os.environ.get("HEALTH_PORT", "8080"))
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+    _LEVELS = {"DEBUG": 10, "INFO": 20, "WARN": 30, "WARNING": 30, "ERROR": 40}
+    _MIN = _LEVELS.get(LOG_LEVEL, 20)
+
     SA = open("/var/run/secrets/kubernetes.io/serviceaccount/token").read().strip()
     CA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
     API = "https://kubernetes.default.svc"
-
     ctx = ssl.create_default_context(cafile=CA)
+
+    # Shared mutable health for probes
+    STATE = {
+        "ready": False,
+        "last_poll_ok": False,
+        "last_poll_at": None,
+        "last_error": None,
+        "cycles": 0,
+        "agents_seen": 0,
+    }
+
+    def log(level, msg, **fields):
+        lvl = level.upper()
+        if _LEVELS.get(lvl, 20) < _MIN:
+            return
+        ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        parts = [f"{k}={v}" for k, v in fields.items() if v is not None and v != ""]
+        extra = (" " + " ".join(parts)) if parts else ""
+        print(f"{ts} {lvl} {msg}{extra}", flush=True)
 
     def k8s(method, path, body=None):
         data = None if body is None else json.dumps(body).encode()
@@ -87,6 +111,18 @@ data:
                 payload = {"message": raw}
             return e.code, payload
 
+    def _k8s_err(body):
+        if not isinstance(body, dict):
+            return str(body)[:300]
+        msg = body.get("message") or body.get("reason") or ""
+        details = body.get("details") or {}
+        causes = details.get("causes") or []
+        if causes:
+            msg = msg + " " + ";".join(
+                (c.get("message") or c.get("reason") or str(c)) for c in causes[:3]
+            )
+        return (msg or json.dumps(body)[:300]).replace("\n", " ")[:400]
+
     def catalog_agents():
         req = urllib.request.Request(
             f"{CATALOG}/api/catalog/entities?filter=kind=component,metadata.annotations.rhdh-agent-sandbox.io/managed-agent=true",
@@ -94,10 +130,14 @@ data:
         )
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.loads(resp.read().decode())
+                data = json.loads(resp.read().decode())
+                if not isinstance(data, list):
+                    log("WARN", "catalog_unexpected_payload", type=type(data).__name__)
+                    return [], "unexpected payload type"
+                return data, None
         except Exception as exc:
-            print(f"catalog poll error: {exc}", flush=True)
-            return []
+            log("ERROR", "catalog_poll_error", error=repr(exc), catalog=CATALOG)
+            return [], str(exc)
 
     FRAMEWORK = {
         "python": "langgraph",
@@ -114,7 +154,12 @@ data:
         model = ann.get("rhdh-agent-sandbox.io/model", "granite")
         spec = ann.get("rhdh-agent-sandbox.io/agent-spec", "You are a helpful namespace-scoped agent.")
         if not name:
-            return
+            log("WARN", "skip_nameless_entity")
+            return "skip"
+        agent_log_level = os.environ.get("AGENT_LOG_LEVEL", LOG_LEVEL)
+        desired_hash = hashlib.sha256(
+            f"{language}|{framework}|{model}|{spec}|{agent_log_level}|{FULLNAME}|{LITELLM_PORT}|{SECRETS}".encode()
+        ).hexdigest()[:16]
         deploy = {
             "apiVersion": "apps/v1",
             "kind": "Deployment",
@@ -131,6 +176,7 @@ data:
                 },
                 "annotations": {
                     "app.openshift.io/connects-to": json.dumps([{"apiVersion": "apps/v1", "kind": "Deployment", "name": f"{FULLNAME}-litellm"}]),
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
                 },
             },
             "spec": {
@@ -156,12 +202,14 @@ data:
                                 {"name": "FRAMEWORK", "value": framework},
                                 {"name": "LANGUAGE", "value": language},
                                 {"name": "AGENT_SPEC", "value": spec},
+                                {"name": "LOG_LEVEL", "value": agent_log_level},
                                 {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
                                 {"name": "LITELLM_API_KEY", "valueFrom": {"secretKeyRef": {"name": SECRETS, "key": "litellm-master-key"}}},
                             ],
                             "command": ["python3", "-u", "/app/server.py"],
                             "volumeMounts": [{"name": "app", "mountPath": "/app"}],
                             "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 5, "periodSeconds": 10},
+                            "livenessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 15, "periodSeconds": 20},
                             "resources": {
                                 "requests": {"cpu": "25m", "memory": "64Mi"},
                                 "limits": {"cpu": "200m", "memory": "256Mi"},
@@ -181,26 +229,135 @@ data:
                 "ports": [{"name": "http", "port": 8080, "targetPort": "http"}],
             },
         }
-        code, _ = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
+        code, existing = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
         if code == 404:
             c, body = k8s("POST", f"/apis/apps/v1/namespaces/{NS}/deployments", deploy)
-            print(f"create deployment {name}: {c}", flush=True)
+            if 200 <= c < 300:
+                log("INFO", "deployment_created", name=name, status=c, language=language, framework=framework, model=model, hash=desired_hash)
+                action = "created"
+            else:
+                log("ERROR", "deployment_create_failed", name=name, status=c, error=_k8s_err(body))
+                action = "error"
+        elif 200 <= code < 300:
+            current_hash = (existing.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if current_hash == desired_hash:
+                log("DEBUG", "deployment_unchanged", name=name, hash=desired_hash)
+                action = "unchanged"
+            else:
+                # Preserve resourceVersion for PUT
+                deploy["metadata"]["resourceVersion"] = existing.get("metadata", {}).get("resourceVersion", "")
+                c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
+                if 200 <= c < 300:
+                    log("INFO", "deployment_updated", name=name, status=c, language=language, framework=framework, model=model, hash=desired_hash)
+                    action = "updated"
+                else:
+                    log("ERROR", "deployment_update_failed", name=name, status=c, error=_k8s_err(body))
+                    action = "error"
         else:
-            c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
-            print(f"update deployment {name}: {c}", flush=True)
-        code, _ = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
-        if code == 404:
-            c, _ = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
-            print(f"create service {name}: {c}", flush=True)
+            log("ERROR", "deployment_get_failed", name=name, status=code, error=_k8s_err(existing))
+            action = "error"
 
-    print("agent-applier started", flush=True)
+        scode, sbody = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
+        if scode == 404:
+            c, body = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
+            if 200 <= c < 300:
+                log("INFO", "service_created", name=name, status=c)
+            else:
+                log("ERROR", "service_create_failed", name=name, status=c, error=_k8s_err(body))
+                action = "error"
+        elif 200 <= scode < 300:
+            log("DEBUG", "service_exists", name=name)
+        else:
+            log("ERROR", "service_get_failed", name=name, status=scode, error=_k8s_err(sbody))
+            action = "error"
+        return action
+
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path in ("/health", "/healthz", "/ready", "/readyz"):
+                ok = STATE["ready"]
+                code = 200 if ok else 503
+                body = json.dumps({
+                    "status": "ok" if ok else "starting",
+                    "lastPollOk": STATE["last_poll_ok"],
+                    "lastPollAt": STATE["last_poll_at"],
+                    "lastError": STATE["last_error"],
+                    "cycles": STATE["cycles"],
+                    "agentsSeen": STATE["agents_seen"],
+                }).encode()
+                self.send_response(code)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            self.send_response(404)
+            self.end_headers()
+
+        def log_message(self, *_args):
+            return
+
+    def start_health_server():
+        srv = HTTPServer(("0.0.0.0", HEALTH_PORT), HealthHandler)
+        t = threading.Thread(target=srv.serve_forever, name="health", daemon=True)
+        t.start()
+        log("INFO", "health_server_started", port=HEALTH_PORT)
+
+    start_health_server()
+    log(
+        "INFO",
+        "applier_started",
+        namespace=NS,
+        catalog=CATALOG,
+        poll_seconds=POLL_SECONDS,
+        log_level=LOG_LEVEL,
+    )
+    # Become ready after first attempt (even if catalog empty/errors) so probes pass once process is alive.
+    STATE["ready"] = True
+
     while True:
-        for ent in catalog_agents():
+        cycle_started = time.monotonic()
+        agents, err = catalog_agents()
+        STATE["cycles"] += 1
+        STATE["last_poll_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        STATE["last_error"] = err
+        STATE["last_poll_ok"] = err is None
+        STATE["agents_seen"] = len(agents)
+
+        created = updated = unchanged = errors = skipped = 0
+        for ent in agents:
             try:
-                ensure(ent)
+                result = ensure(ent)
+                if result == "created":
+                    created += 1
+                elif result == "updated":
+                    updated += 1
+                elif result == "unchanged":
+                    unchanged += 1
+                elif result == "error":
+                    errors += 1
+                else:
+                    skipped += 1
             except Exception as exc:
-                print(f"ensure error: {exc}", flush=True)
-        time.sleep(int(os.environ.get("POLL_SECONDS", "45")))
+                errors += 1
+                name = (ent.get("metadata") or {}).get("name", "?")
+                log("ERROR", "ensure_error", name=name, error=repr(exc))
+
+        ms = int((time.monotonic() - cycle_started) * 1000)
+        log(
+            "INFO",
+            "poll_cycle",
+            cycle=STATE["cycles"],
+            agents=len(agents),
+            created=created,
+            updated=updated,
+            unchanged=unchanged,
+            errors=errors,
+            skipped=skipped,
+            duration_ms=ms,
+            catalog_ok=(err is None),
+        )
+        time.sleep(POLL_SECONDS)
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -233,6 +390,9 @@ spec:
           image: registry.access.redhat.com/ubi9/python-311:latest
           imagePullPolicy: IfNotPresent
           command: ["python3", "-u", "/app/applier.py"]
+          ports:
+            - name: health
+              containerPort: 8080
           env:
             - name: NAMESPACE
               valueFrom:
@@ -253,9 +413,27 @@ spec:
                   key: mcp-token
             - name: POLL_SECONDS
               value: "45"
+            - name: LOG_LEVEL
+              value: {{ .Values.agents.applier.logLevel | default "INFO" | quote }}
+            - name: AGENT_LOG_LEVEL
+              value: {{ .Values.agents.logLevel | default "INFO" | quote }}
+            - name: HEALTH_PORT
+              value: "8080"
           volumeMounts:
             - name: app
               mountPath: /app
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 20
           resources:
             requests:
               cpu: 25m

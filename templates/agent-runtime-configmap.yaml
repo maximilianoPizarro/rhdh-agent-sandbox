@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: agent
 data:
   server.py: |
-    import json, os, urllib.request
+    import json, os, time, uuid, urllib.error, urllib.request
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
     PORT = int(os.environ.get("PORT", "8080"))
@@ -19,19 +19,37 @@ data:
     SPEC = os.environ.get("AGENT_SPEC", "")
     FRAMEWORK = os.environ.get("FRAMEWORK", "")
     LANGUAGE = os.environ.get("LANGUAGE", "")
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+    _LEVELS = {"DEBUG": 10, "INFO": 20, "WARN": 30, "WARNING": 30, "ERROR": 40}
+    _MIN = _LEVELS.get(LOG_LEVEL, 20)
+
+    def log(level, msg, **fields):
+        lvl = level.upper()
+        if _LEVELS.get(lvl, 20) < _MIN:
+            return
+        ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        parts = [f"{k}={v}" for k, v in fields.items() if v is not None and v != ""]
+        extra = (" " + " ".join(parts)) if parts else ""
+        print(f"{ts} {lvl} {msg}{extra}", flush=True)
 
     class Handler(BaseHTTPRequestHandler):
-        def _json(self, code, obj):
+        def _request_id(self):
+            return self.headers.get("X-Request-Id") or self.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
+
+        def _json(self, code, obj, request_id=None):
             body = json.dumps(obj).encode()
             self.send_response(code)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
+            if request_id:
+                self.send_header("X-Request-Id", request_id)
             self.end_headers()
             self.wfile.write(body)
 
         def do_GET(self):
+            rid = self._request_id()
             if self.path in ("/health", "/healthz"):
-                return self._json(200, {"status": "ok", "framework": FRAMEWORK, "language": LANGUAGE})
+                return self._json(200, {"status": "ok", "framework": FRAMEWORK, "language": LANGUAGE}, rid)
             if self.path == "/":
                 return self._json(200, {
                     "service": "rhdh-agent-sandbox-agent",
@@ -39,19 +57,37 @@ data:
                     "language": LANGUAGE,
                     "model": MODEL,
                     "agentSpec": SPEC,
-                })
-            self._json(404, {"error": "not found"})
+                }, rid)
+            log("WARN", "not_found", request_id=rid, path=self.path, method="GET")
+            self._json(404, {"error": "not found", "requestId": rid}, rid)
 
         def do_POST(self):
+            rid = self._request_id()
+            started = time.monotonic()
             if self.path != "/v1/chat":
-                return self._json(404, {"error": "not found"})
+                log("WARN", "not_found", request_id=rid, path=self.path, method="POST")
+                return self._json(404, {"error": "not found", "requestId": rid}, rid)
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length) if length else b"{}"
             try:
                 payload = json.loads(raw.decode() or "{}")
-            except Exception:
-                return self._json(400, {"error": "invalid json"})
+            except Exception as exc:
+                log("WARN", "invalid_json", request_id=rid, error=repr(exc))
+                return self._json(400, {"error": "invalid json", "requestId": rid}, rid)
             user = payload.get("message") or payload.get("prompt") or ""
+            log(
+                "INFO",
+                "chat_start",
+                request_id=rid,
+                model=MODEL,
+                framework=FRAMEWORK,
+                language=LANGUAGE,
+                message_chars=len(user),
+                litellm_base=BASE or "(unset)",
+            )
+            if not BASE or not KEY:
+                log("ERROR", "misconfigured", request_id=rid, has_base=bool(BASE), has_key=bool(KEY))
+                return self._json(500, {"error": "LITELLM_API_BASE/KEY not configured", "requestId": rid}, rid)
             messages = [
                 {"role": "system", "content": f"Framework={FRAMEWORK}. {SPEC}"},
                 {"role": "user", "content": user},
@@ -62,20 +98,66 @@ data:
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {KEY}",
+                    "X-Request-Id": rid,
                 },
                 method="POST",
             )
             try:
                 with urllib.request.urlopen(req, timeout=120) as resp:
+                    upstream = resp.status
                     data = json.loads(resp.read().decode())
                 content = data["choices"][0]["message"]["content"]
-                return self._json(200, {"reply": content, "model": MODEL, "framework": FRAMEWORK})
+                ms = int((time.monotonic() - started) * 1000)
+                log(
+                    "INFO",
+                    "chat_ok",
+                    request_id=rid,
+                    status=200,
+                    upstream_status=upstream,
+                    duration_ms=ms,
+                    reply_chars=len(content or ""),
+                    model=MODEL,
+                )
+                return self._json(200, {"reply": content, "model": MODEL, "framework": FRAMEWORK, "requestId": rid}, rid)
+            except urllib.error.HTTPError as exc:
+                body = ""
+                try:
+                    body = exc.read().decode()[:500]
+                except Exception:
+                    pass
+                ms = int((time.monotonic() - started) * 1000)
+                log(
+                    "ERROR",
+                    "litellm_http_error",
+                    request_id=rid,
+                    status=exc.code,
+                    duration_ms=ms,
+                    error=repr(exc),
+                    body=body.replace("\n", " ")[:300],
+                )
+                return self._json(502, {"error": str(exc), "requestId": rid}, rid)
             except Exception as exc:
-                return self._json(502, {"error": str(exc)})
+                ms = int((time.monotonic() - started) * 1000)
+                log("ERROR", "litellm_failed", request_id=rid, duration_ms=ms, error=repr(exc))
+                return self._json(502, {"error": str(exc), "requestId": rid}, rid)
 
         def log_message(self, fmt, *args):
-            print(fmt % args, flush=True)
+            # Access line with client + path; keep timestamp via log()
+            try:
+                client = self.client_address[0] if self.client_address else "-"
+            except Exception:
+                client = "-"
+            log("DEBUG", "access", client=client, detail=(fmt % args))
 
-    print(f"agent started on :{PORT} framework={FRAMEWORK} language={LANGUAGE} model={MODEL}", flush=True)
+    log(
+        "INFO",
+        "agent_started",
+        port=PORT,
+        framework=FRAMEWORK,
+        language=LANGUAGE,
+        model=MODEL,
+        litellm_base=BASE or "(unset)",
+        log_level=LOG_LEVEL,
+    )
     HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
 {{- end }}

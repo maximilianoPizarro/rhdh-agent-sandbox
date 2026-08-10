@@ -12,6 +12,7 @@
   "framework" .framework
   "model" .model
   "agentSpec" .agentSpec
+  "logLevel" ($.Values.agents.logLevel | default "INFO")
   "fullname" $fullname
   "litellmPort" $port
   "secretsName" $secrets
