@@ -1,5 +1,9 @@
 *.tgz
-charts/*.tgz
+# Packaged umbrella chart for GitHub Pages (/docs) — keep these
+!docs/*.tgz
+!docs/index.yaml
+# Helm dependency packages (redhat-developer-hub) — helm dependency update only
+/charts/
 .idea/
 .vscode/
 *.swp

@@ -1,6 +1,8 @@
 # Agent-friendly Developer Hub on Developer Sandbox
 
-Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen, plus MCP tools and DevSpaces AI workspaces.
+Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen, plus MCP tools, Golden Paths, and DevSpaces AI workspaces.
+
+![One-command install](assets/diagrams/install-one-command.png)
 
 ## What you get
 
@@ -9,6 +11,7 @@ Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift
 | **Developer Hub** | Guest login, catalog, scaffolder, TechDocs, Lightspeed UI |
 | **LiteLLM** | OpenAI-compatible gateway to `sandbox-shared-models` (Granite / Qwen) |
 | **MCP servers** | OpenShift + Kubernetes tools (namespace-scoped) for Lightspeed |
+| **Golden Paths** | Deploy Agent → Pod + Component + Open in DevSpaces (no git push) |
 | **AI catalog** | Skills, prompts, MCP entities, software templates (ConfigMap mount) |
 | **DevSpaces AI** | Browser IDE (Che Code + Continue) talking to the LiteLLM Route |
 | **OpenClaw** (optional) | Personal assistant from sandbox.redhat.com; bring your own LLM keys |
@@ -24,30 +27,44 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 
 ## Recommended path
 
-1. [Quickstart](quickstart.md) — install the chart  
-2. [Verify the install](verify.md) — confirm Hub, LiteLLM, Lightspeed  
-3. [Demo script](demo-script.md) — ~10 minute walkthrough  
-4. [DevSpaces AI](devspaces-ai.md) — browser IDE with Continue  
-5. [OpenClaw](openclaw.md) (optional) — wire a Sandbox-provisioned assistant  
+1. [Quickstart](quickstart.md) — single `helm upgrade --install`  
+2. [Golden Paths](golden-paths.md) — deploy an agent Pod  
+3. [Verify the install](verify.md) — confirm Hub, LiteLLM, agents  
+4. [Demo script](demo-script.md) — ~10 minute walkthrough  
+5. [Agents](agents.md) / [DevSpaces AI](devspaces-ai.md)  
 
 Deeper reading: [Architecture](architecture.md), [Lightspeed & models](lightspeed-models.md), [Troubleshooting](troubleshooting.md).
 
-## Single values file
+## Install
 
-This chart is **Developer Sandbox only**. Configuration lives in one `values.yaml` (no separate sandbox overlay). Override at install time with `--set` for your apps domain and model token.
+Chart source is at the **repo root**. Red Hat Developer Hub is a Helm dependency (`redhat-developer-hub` from `https://charts.openshift.io/`). Pages serves `/docs`, which includes `index.yaml`, `artifacthub-repo.yml`, and the packaged `.tgz`.
 
 ```bash
-export NAMESPACE=$(oc project -q)
-export MODEL_API_KEY=$(oc whoami -t)
-export APPS_DOMAIN=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
+git clone https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
+cd rhdh-agent-sandbox
 
+helm dependency update
 helm upgrade --install rhdh-agent . \
-  --namespace "${NAMESPACE}" \
-  --set secrets.modelApiKey="${MODEL_API_KEY}" \
-  --set rhdh.global.clusterRouterBase="${APPS_DOMAIN}" \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m \
   --wait=false
 ```
+
+Or from the Pages Helm repo:
+
+```bash
+helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
+helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m \
+  --wait=false
+```
+
+If `ingresses.config.openshift.io` is Forbidden, infer the apps domain from any Route host (`oc get route` → drop the first DNS label).
 
 ## Source
 

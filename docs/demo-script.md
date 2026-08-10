@@ -25,22 +25,25 @@ Optional deep check: [Verify the install](verify.md).
 
 1. Open the Developer Hub Route → **Enter as Guest**.  
 2. **Catalog** → filter tag `mcp` → open OpenShift / Kubernetes MCP entities. Mention namespace-scoped RBAC.  
-3. Filter `skill` / `prompt` → open the DevSpaces AI skill and a triage / catalog prompt.  
-4. Open **Lightspeed** → select **vllm/granite** (or granite).  
-5. Ask:
+3. Filter tag `agent` → open a **sample-*-agent** Component → show **Open in DevSpaces**.  
+4. Optional Golden Path: **Create** → **Deploy Agent** (language python, short agentSpec) → wait for Deployment.  
+5. Filter `skill` / `prompt` → open the DevSpaces AI skill and a triage / catalog prompt.  
+6. Open **Lightspeed** → select **vllm/granite** (or granite).  
+7. Ask:
 
    > List pods in this namespace and summarize anything that looks unhealthy. Prefer read-only tools.
 
-6. Talking points while it runs:
+8. Talking points while it runs:
 
    - Guest has **no** OpenShift token; models are wired by the operator.  
    - Inference path: Lightspeed → LiteLLM Service → shared Granite.  
    - MCP tools are ClusterIP-only from Hub.  
+   - Golden Path agents are ClusterIP Pods applied from catalog annotations (no git push).  
    - `permission.enabled: false` is deliberate for this demo.
 
 ## Part B — DevSpaces AI (OpenShift user) — ~5 min
 
-1. In Hub, open Create / Templates → **Agent-friendly DevSpaces AI Workspace** (or clone this repo / use `files/devfiles/devfile.yaml`).  
+1. In Hub, open a sample agent **Open in DevSpaces** link, or Create → **Agent-friendly DevSpaces AI Workspace** (or use `files/devfiles/`).  
 2. Guest scaffolder ends in local/log steps — push or import the generated files yourself if needed.  
 3. In **OpenShift DevSpaces**, start a workspace from `devfile.yaml`.  
 4. In Che Code, open **Continue** and point it at the LiteLLM Route:

@@ -2,6 +2,8 @@
 
 ## End-to-end picture
 
+![Architecture overview](assets/diagrams/architecture-overview.png)
+
 ```mermaid
 flowchart LR
   Guest[Hub Guest] --> Hub[Developer Hub]
@@ -12,6 +14,10 @@ flowchart LR
   LCore --> MCP[OpenShift MCP + K8s MCP]
   MCP --> Ns[User namespace]
   Hub --> Catalog[AI catalog ConfigMap]
+  Hub --> GP[Golden Path Deploy Agent]
+  GP --> Applier[agent-applier]
+  Applier --> AgentPods[Agent Deployments]
+  AgentPods --> LiteLLM
   OcUser[OpenShift Sandbox user] --> DW[DevSpaces workspace]
   DW --> Continue[Continue in Che Code]
   Continue --> LiteLLMRoute[LiteLLM Route]
@@ -32,6 +38,8 @@ flowchart LR
 | OpenShift MCP (Quarkus) | Chart Deployment | ClusterIP `:8080` |
 | Kubernetes MCP | Chart Deployment | ClusterIP `:8085` |
 | AI catalog | ConfigMap `rhdh-agent-sandbox-catalog` | Mounted at `/opt/app-root/src/catalog` |
+| Scaffolder assets | ConfigMap + projected volume | `/opt/app-root/src/scaffolder-assets` |
+| Agent samples + applier | Chart Deployments / SA Role | ClusterIP agents → LiteLLM |
 | DevSpaces | Operator on Sandbox + Devfiles / templates | User-created DevWorkspace |
 | OpenClaw (optional) | Provisioned from sandbox.redhat.com (not this chart) | Managed OpenClaw + your LLM keys |
 
@@ -61,7 +69,7 @@ type: file
 target: /opt/app-root/src/catalog/all.yaml
 ```
 
-The ConfigMap is filled from `files/catalog/*` in this repo (skills, prompts, MCP entities, templates, users/groups). No GitHub URL location is required for the demo.
+The ConfigMap is filled from `files/catalog/*` (skills, prompts, MCP entities, Deploy Agent template, sample agents, users/groups). No GitHub URL location is required for the demo.
 
 ## Lightspeed inference path
 

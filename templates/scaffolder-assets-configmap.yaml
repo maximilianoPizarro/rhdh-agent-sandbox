@@ -1,0 +1,29 @@
+{{- if .Values.catalog.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-scaffolder-assets
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scaffolder-assets
+data:
+  deploy-agent-README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/README.md" | indent 4 }}
+  deploy-agent-catalog-info.yaml: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/catalog-info.yaml" | indent 4 }}
+  deploy-agent-devfile.yaml: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/devfile.yaml" | indent 4 }}
+  python-manifests.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/python/manifests.yaml" | indent 4 }}
+  python-catalog-info.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/python/catalog-info.yaml" | indent 4 }}
+  nodejs-manifests.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/nodejs/manifests.yaml" | indent 4 }}
+  nodejs-catalog-info.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/nodejs/catalog-info.yaml" | indent 4 }}
+  quarkus-manifests.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/quarkus/manifests.yaml" | indent 4 }}
+  quarkus-catalog-info.yaml: |
+{{ .Files.Get "files/templates/agent-runtimes/quarkus/catalog-info.yaml" | indent 4 }}
+{{- end }}

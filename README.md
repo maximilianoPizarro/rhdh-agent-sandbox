@@ -3,56 +3,67 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://maximilianopizarro.github.io/rhdh-agent-sandbox/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-Agent-friendly **Red Hat Developer Hub** umbrella Helm chart for **OpenShift Developer Sandbox**.
+Agent-friendly **Red Hat Developer Hub** on **OpenShift Developer Sandbox**.
 
-It wires:
+- Chart source: **repository root** (`Chart.yaml`, `values.yaml`, `templates/`, `files/`)
+- GitHub Pages: folder **`/docs`** (configured in repo Settings)
+- In `docs/`: MkDocs pages + Helm repo (`index.yaml`, `artifacthub-repo.yml`, packaged `.tgz`)
+- Developer Hub: Helm **dependency** `redhat-developer-hub` from `https://charts.openshift.io/` (`helm dependency update`; not vendored under `/charts` in git)
 
-- Developer Hub 1.10.3 (Lightspeed, TechDocs, Kubernetes/Topology)
-- **LiteLLM** → Granite / Qwen in `sandbox-shared-models`
-- **MCP** servers (OpenShift + Kubernetes) with namespace RBAC
-- AI **Skills / Prompts / MCP catalog** (ConfigMap mount)
-- **DevSpaces AI** Devfiles + Software Templates (Continue → LiteLLM in the browser IDE)
-- Guest login for Hub demos (`permission.enabled: false`)
-
-## Quick install
+## Install
 
 ```bash
-helm dependency update
-export NAMESPACE=$(oc project -q)
-export MODEL_API_KEY=$(oc whoami -t)
-export APPS_DOMAIN=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
+git clone https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
+cd rhdh-agent-sandbox
 
+helm dependency update
 helm upgrade --install rhdh-agent . \
-  --namespace "${NAMESPACE}" \
-  --set secrets.modelApiKey="${MODEL_API_KEY}" \
-  --set rhdh.global.clusterRouterBase="${APPS_DOMAIN}" \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m \
   --wait=false
 ```
 
-Single `values.yaml` — this chart is Sandbox-only (no overlay file).
+From the Pages Helm repo (no clone of chart source):
 
-## Documentation
+```bash
+helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
+helm repo update
+helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m \
+  --wait=false
+```
+
+## Docs
 
 **https://maximilianopizarro.github.io/rhdh-agent-sandbox/**
 
 | Page | Content |
 |---|---|
-| [Quickstart](docs/quickstart.md) | Install step by step |
-| [Verify](docs/verify.md) | Post-install checks (LiteLLM, Lightspeed, catalog) |
-| [Demo script](docs/demo-script.md) | ~10 minute Hub + DevSpaces walkthrough |
-| [Architecture](docs/architecture.md) | Components, tokens, MCP |
-| [OpenClaw](docs/openclaw.md) | Optional Sandbox-provisioned assistant wiring |
-| [Troubleshooting](docs/troubleshooting.md) | Common failures |
+| [Quickstart](docs/quickstart.md) | Clone or install from Pages Helm repo |
+| [Golden Paths](docs/golden-paths.md) | Deploy agents without git push |
+| [Agents](docs/agents.md) | Hub / Pod / DevSpaces agent loops |
+| [Architecture](docs/architecture.md) | Components and tokens |
+| [Verify](docs/verify.md) | Post-install checks |
 
-## Repository layout
+## Layout
 
 ```text
-Chart.yaml / values.yaml / templates/   # umbrella chart (Sandbox-only)
-files/catalog|templates|devfiles        # Hub catalog + scaffolder assets
-community-plugins/                      # optional Quay asset packs (Podman CI)
-docs/                                   # GitHub Pages (MkDocs)
-.github/workflows/                      # CI for charts, pages, Quay
+Chart.yaml            # umbrella + dependency: redhat-developer-hub
+values.yaml
+templates/
+files/                # catalog, scaffolder skeletons, agent-runtimes
+docs/                 # GitHub Pages root
+  index.md            # site home (MkDocs)
+  index.yaml          # Helm repository index
+  artifacthub-repo.yml
+  rhdh-agent-sandbox-*.tgz
+community-plugins/
+.github/workflows/    # lint + refresh docs/*.tgz / index.yaml on main
 ```
 
 ## License

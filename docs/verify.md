@@ -17,6 +17,7 @@ Expect:
 - Hub Deployment available, pod **2/2**
 - LiteLLM **1/1**
 - Both MCP Deployments **1/1**
+- Agent samples (`sample-*-agent`) and `*-agent-applier` **1/1**
 - Routes for `developer-hub` and `litellm`
 
 ## 2. Secret shape (Lightspeed credentials)
@@ -70,7 +71,7 @@ curl -sk "https://${ROUTE}/v1/chat/completions" \
   -d '{"model":"granite","messages":[{"role":"user","content":"Say hi in one word"}],"max_tokens":8}'
 ```
 
-If you get **401** from upstream models, refresh `model-api-key` ([Quickstart §6](quickstart.md#6-refresh-the-model-token-later)).
+If you get **401** from upstream models, refresh `model-api-key` (see [Quickstart](quickstart.md) notes).
 
 ## 4. Hub HTTP + catalog mount
 
@@ -88,9 +89,24 @@ Catalog ConfigMap mount:
 oc exec -n "${NAMESPACE}" "${HUB}" -c backstage-backend -- ls /opt/app-root/src/catalog
 ```
 
-Expect at least: `all.yaml`, `skills.yaml`, `prompts.yaml`, `mcp-servers.yaml`, templates, `users.yaml`.
+Expect at least: `all.yaml`, `skills.yaml`, `prompts.yaml`, `mcp-servers.yaml`, `template-deploy-agent.yaml`, `sample-agents.yaml`, `users.yaml`.
 
-## 5. Lightspeed streaming query
+Scaffolder assets mount:
+
+```bash
+oc exec -n "${NAMESPACE}" "${HUB}" -c backstage-backend -- ls -R /opt/app-root/src/scaffolder-assets
+```
+
+## 5. Sample agents
+
+```bash
+oc get deploy,svc -n "${NAMESPACE}" -l app.kubernetes.io/component=agent
+oc get deploy -n "${NAMESPACE}" -l app.kubernetes.io/component=agent-applier
+```
+
+Expect three sample agent Deployments Ready and the agent-applier Running.
+
+## 6. Lightspeed streaming query
 
 From the Hub pod (sidecar):
 
@@ -110,7 +126,7 @@ print(data[:400])
 
 In the UI: Guest → Lightspeed → select **vllm/granite** (or granite) → ask a short question. You should see streamed tokens, not an empty reply.
 
-## 6. MCP services (cluster DNS)
+## 7. MCP services (cluster DNS)
 
 ```bash
 oc get svc -n "${NAMESPACE}" | grep -E 'mcp|litellm'
@@ -125,7 +141,9 @@ Lightspeed reaches MCP over ClusterIP (no public MCP Routes). Namespace-scoped R
 - [ ] LiteLLM chat completion returns text  
 - [ ] Secret has `ENABLE_VLLM=true` and **no** `ENABLE_OPENAI`  
 - [ ] Catalog files visible under `/opt/app-root/src/catalog`  
+- [ ] Scaffolder assets under `/opt/app-root/src/scaffolder-assets`  
+- [ ] Sample agent Deployments Ready  
 - [ ] Lightspeed streaming_query returns tokens (no error event)  
 - [ ] Guest login works without IdP  
-
+- [ ] Catalog shows Deploy Agent template + sample agents 
 If any step fails, see [Troubleshooting](troubleshooting.md).

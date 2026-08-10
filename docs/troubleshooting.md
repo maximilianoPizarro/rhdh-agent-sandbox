@@ -120,6 +120,22 @@ Namespace Role only. Cluster-scoped tools fail by design. Stay inside the user p
 
 OpenClaw provisioned from sandbox.redhat.com needs **external** Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw](openclaw.md).
 
+## MCP Chat loads but tools never fire
+
+Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set `mcpChat.providers` to openai/claude/gemini with your own API key (Secret + env). See [AI capabilities](ai-capabilities.md).
+
+If **Backstage MCP Actions** shows disconnected at startup, that is an init race (mcp-chat connects before `/api/mcp-actions/v1` is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with `mcp-token`.
+
+## MCP / community OCI plugins fail to install
+
+Init container `install-dynamic-plugins` must pull from `ghcr.io/redhat-developer/rhdh-plugin-export-overlays`. Check:
+
+```bash
+oc logs deploy/rhdh-agent-developer-hub -c install-dynamic-plugins | grep -iE 'mcp-chat|mcp-actions|Successfully installed|ERROR|denied'
+```
+
+Confirm the tag matches RHDH 1.10 / Backstage `1.49.4` (`bs_1.49.4__…`) and the cluster can reach ghcr.io.
+
 ## Stale secret keys after upgrade
 
 If old `ENABLE_OPENAI` keys linger, replace the secret data (chart uses `data:` so Helm merge can drop keys) or:

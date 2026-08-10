@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | default "python-agent" }}
+  annotations:
+    rhdh-agent-sandbox.io/managed-agent: "true"
+    rhdh-agent-sandbox.io/language: python
+    rhdh-agent-sandbox.io/framework: langgraph
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner | default "group:default/developers" }}

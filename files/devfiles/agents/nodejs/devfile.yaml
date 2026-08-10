@@ -1,0 +1,19 @@
+schemaVersion: 2.2.0
+metadata:
+  name: sample-nodejs-agent
+  version: 0.1.0
+  displayName: Sample Node.js agent (LangChain.js)
+  description: DevSpaces workspace for the chart sample Node.js / LangChain.js agent
+  tags: [agent, nodejs, langchain, ai]
+components:
+  - name: tools
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 2Gi
+      mountSources: true
+commands:
+  - id: remind-litellm
+    exec:
+      component: tools
+      commandLine: echo "Point Continue at the LiteLLM Route (litellm-master-key)."
+      workingDir: ${PROJECT_SOURCE}

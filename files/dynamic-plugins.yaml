@@ -18,3 +18,26 @@ plugins:
     disabled: true
   - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
     disabled: true
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+    disabled: false
+  # --- AI / MCP community plugins (ghcr.io overlays for RHDH 1.10 / BS 1.49.4) ---
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:bs_1.49.4__0.1.11!backstage-plugin-mcp-actions-backend
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras:bs_1.49.4__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras:bs_1.49.4__0.2.3!red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras
+    disabled: false
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat:bs_1.49.4__0.6.0!backstage-community-plugin-mcp-chat
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-mcp-chat:
+            dynamicRoutes:
+              - path: /mcp-chat
+                importName: McpChatPage
+                menuItem:
+                  icon: MCPChatIcon
+                  text: MCP Chat
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
+    disabled: false

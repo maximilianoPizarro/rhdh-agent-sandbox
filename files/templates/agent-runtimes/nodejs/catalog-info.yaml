@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | default "nodejs-agent" }}
+  annotations:
+    rhdh-agent-sandbox.io/managed-agent: "true"
+    rhdh-agent-sandbox.io/language: nodejs
+    rhdh-agent-sandbox.io/framework: langchain-js
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner | default "group:default/developers" }}

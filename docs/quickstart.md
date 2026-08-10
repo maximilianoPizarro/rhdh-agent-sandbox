@@ -1,105 +1,57 @@
 # Quickstart
 
-Step-by-step install on **OpenShift Developer Sandbox**.
+Install on **OpenShift Developer Sandbox** with a single Helm release. Chart source lives at the **repository root**. GitHub Pages serves the **`/docs`** folder, which holds the Helm repo (`index.yaml`, `artifacthub-repo.yml`, packaged `.tgz`).
 
-## 1. Prerequisites
-
-| Requirement | Notes |
-|---|---|
-| `oc` logged into Sandbox | `oc whoami` and `oc project` succeed |
-| `helm` 3.14+ | `helm version` |
-| Quota headroom | Roughly: Hub ~1Gi, Postgres ~256Mi, LiteLLM ~512Mi request / 1.5Gi limit, MCP small. Leave room for one modest DevSpaces workspace (~200m / 1Gi). |
-| DevSpaces Operator | Already available on Developer Sandbox (do not install) |
-
-Discover your apps domain:
-
-```bash
-# Preferred when the API allows it:
-oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}{"\n"}'
-
-# On many Developer Sandbox accounts the call above is Forbidden.
-# Infer the domain from any existing Route instead:
-oc get route -A -o jsonpath='{.items[0].spec.host}{"\n"}' | sed 's/^[^.]*\.//'
-# example: apps.rm2.thpm.p1.openshiftapps.com
-```
-
-Or use the default already set in `values.yaml` (`rhdh.global.clusterRouterBase`) if it matches your cluster.
-## 2. Clone and pull chart dependencies
+## Install from clone
 
 ```bash
 git clone https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
 cd rhdh-agent-sandbox
 
 helm dependency update
-```
-
-## 3. Install / upgrade
-
-```bash
-export NAMESPACE=$(oc project -q)
-export MODEL_API_KEY=$(oc whoami -t)
-export APPS_DOMAIN=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
-
 helm upgrade --install rhdh-agent . \
-  --namespace "${NAMESPACE}" \
-  --set secrets.modelApiKey="${MODEL_API_KEY}" \
-  --set rhdh.global.clusterRouterBase="${APPS_DOMAIN}" \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m \
   --wait=false
 ```
 
-!!! tip "Single values file"
-    All Sandbox defaults live in `values.yaml`. You only need `--set` for the model token and apps domain (if it differs from the default in the file).
+`helm dependency update` downloads **Red Hat Developer Hub** (`redhat-developer-hub` 1.10.3 from `charts.openshift.io`) into local `charts/` only. That subchart is **not** committed to git.
 
-First install pulls large images (RHDH, LiteLLM). Expect several minutes before pods are Ready.
-
-## 4. Wait for pods
+## Install from Pages Helm repo
 
 ```bash
-oc get pods -n "${NAMESPACE}" -w
+helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
+helm repo update
+helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
+  --namespace "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m \
+  --wait=false
 ```
 
-Target state (names may include a release prefix):
+!!! tip "Apps domain"
+    Prefer the value already in `values.yaml` (`rhdh.global.clusterRouterBase`) when it matches your cluster.
+    If you need to discover it and `oc get ingresses.config.openshift.io cluster` is Forbidden, take any Route host and drop the first DNS label (example: `my-app-ns.apps.rm2.thpm.p1.openshiftapps.com` → `apps.rm2.thpm.p1.openshiftapps.com`).
 
-| Pod / Deployment | Ready |
+First install pulls large images (RHDH, LiteLLM). Expect several minutes.
+
+## Confirm
+
+```bash
+oc get route | grep developer-hub
+oc get pods
+```
+
+Sign in as **Guest**. Next: [Golden Paths](golden-paths.md) (deploy an agent) and [Verify](verify.md).
+
+## Notes (not install steps)
+
+| Topic | Detail |
 |---|---|
-| `*-developer-hub-*` | `2/2` (backstage-backend + lightspeed-core) |
-| `*-postgresql-0` | `1/1` |
-| `*-litellm-*` | `1/1` |
-| `*-mcp-*` and `*-k8s-mcp-*` | `1/1` |
-
-```bash
-oc rollout status deploy/rhdh-agent-developer-hub -n "${NAMESPACE}" --timeout=10m
-oc rollout status deploy/rhdh-agent-sandbox-litellm -n "${NAMESPACE}" --timeout=5m
-```
-
-## 5. Open Developer Hub
-
-```bash
-oc get route -n "${NAMESPACE}" | grep developer-hub
-```
-
-1. Open the Hub Route URL in a browser.  
-2. On the login page, choose **Enter** / **Guest**.  
-3. Confirm you can open Catalog and the Lightspeed FAB / page.
-
-Guest access is intentional for this demo (`auth.environment: development`, `permission.enabled: false`). No IdP required.
-
-## 6. Refresh the model token later
-
-Shared models sit behind oauth-proxy. The OpenShift user token in `model-api-key` expires about every **24 hours**:
-
-```bash
-oc patch secret/rhdh-agent-sandbox-secrets -n "${NAMESPACE}" --type=merge \
-  -p "{\"stringData\":{\"model-api-key\":\"$(oc whoami -t)\"}}"
-oc rollout restart deploy/rhdh-agent-sandbox-litellm -n "${NAMESPACE}"
-```
-
-!!! warning
-    Do not use `oc set env secret/...` — that command targets Deployments/Pods, not Secrets. Use `oc patch` as above.
-
-## Next steps
-
-- [Verify the install](verify.md) — curl LiteLLM, Lightspeed smoke, catalog mount  
-- [Demo script](demo-script.md) — Hub MCP loop + DevSpaces AI  
-- [Troubleshooting](troubleshooting.md) — common failures  
+| Prerequisites | `oc` logged in, `helm` 3.14+, Sandbox quota for Hub + LiteLLM + one DevSpaces workspace |
+| Model token TTL | Sandbox oauth-proxy ~24h — refresh `model-api-key` on the chart secret and restart LiteLLM when chat 401s |
+| RHDH dependency | Declared in `Chart.yaml`; bump version there when upgrading Developer Hub |
+| Single values file | All Sandbox defaults live in root `values.yaml` |

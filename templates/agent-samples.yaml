@@ -1,0 +1,20 @@
+{{- if .Values.agents.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . -}}
+{{- $ns := .Release.Namespace -}}
+{{- $secrets := .Values.secrets.name -}}
+{{- $port := .Values.litellm.service.port -}}
+{{- range .Values.agents.samples }}
+---
+{{ include "rhdh-agent-sandbox.agentDeployment" (dict
+  "name" .name
+  "namespace" $ns
+  "language" .language
+  "framework" .framework
+  "model" .model
+  "agentSpec" .agentSpec
+  "fullname" $fullname
+  "litellmPort" $port
+  "secretsName" $secrets
+) }}
+{{- end }}
+{{- end }}

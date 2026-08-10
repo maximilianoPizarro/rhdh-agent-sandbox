@@ -1,0 +1,252 @@
+{{- if and .Values.agents.enabled .Values.agents.applier.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-applier
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+data:
+  applier.py: |
+    import json, os, time, urllib.request, ssl
+    from base64 import b64encode
+
+    NS = os.environ["NAMESPACE"]
+    FULLNAME = os.environ["FULLNAME"]
+    SECRETS = os.environ["SECRETS_NAME"]
+    LITELLM_PORT = os.environ.get("LITELLM_PORT", "4000")
+    CATALOG = os.environ.get("CATALOG_URL", "http://localhost:7007").rstrip("/")
+    TOKEN = os.environ.get("MCP_TOKEN", "")
+    SA = open("/var/run/secrets/kubernetes.io/serviceaccount/token").read().strip()
+    CA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    API = "https://kubernetes.default.svc"
+
+    ctx = ssl.create_default_context(cafile=CA)
+
+    def k8s(method, path, body=None):
+        data = None if body is None else json.dumps(body).encode()
+        req = urllib.request.Request(
+            API + path,
+            data=data,
+            method=method,
+            headers={
+                "Authorization": f"Bearer {SA}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
+                raw = resp.read().decode() or "{}"
+                return resp.status, json.loads(raw) if raw else {}
+        except urllib.error.HTTPError as e:
+            raw = e.read().decode() if e.fp else ""
+            try:
+                payload = json.loads(raw) if raw else {}
+            except Exception:
+                payload = {"message": raw}
+            return e.code, payload
+
+    def catalog_agents():
+        req = urllib.request.Request(
+            f"{CATALOG}/api/catalog/entities?filter=kind=component,metadata.annotations.rhdh-agent-sandbox.io/managed-agent=true",
+            headers={"Authorization": f"Bearer {TOKEN}", "Accept": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode())
+        except Exception as exc:
+            print(f"catalog poll error: {exc}", flush=True)
+            return []
+
+    FRAMEWORK = {
+        "python": "langgraph",
+        "nodejs": "langchain-js",
+        "quarkus": "langchain4j",
+    }
+
+    def ensure(agent):
+        meta = agent.get("metadata", {})
+        ann = meta.get("annotations") or {}
+        name = meta.get("name")
+        language = ann.get("rhdh-agent-sandbox.io/language", "python")
+        framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
+        model = ann.get("rhdh-agent-sandbox.io/model", "granite")
+        spec = ann.get("rhdh-agent-sandbox.io/agent-spec", "You are a helpful namespace-scoped agent.")
+        if not name:
+            return
+        deploy = {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "agent",
+                    "rhdh-agent-sandbox.io/language": language,
+                    "rhdh-agent-sandbox.io/framework": framework,
+                },
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {"matchLabels": {"app.kubernetes.io/name": name}},
+                "template": {
+                    "metadata": {"labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "agent"}},
+                    "spec": {
+                        "containers": [{
+                            "name": "agent",
+                            "image": "registry.access.redhat.com/ubi9/python-311:latest",
+                            "imagePullPolicy": "IfNotPresent",
+                            "ports": [{"name": "http", "containerPort": 8080}],
+                            "env": [
+                                {"name": "MODEL", "value": model},
+                                {"name": "FRAMEWORK", "value": framework},
+                                {"name": "LANGUAGE", "value": language},
+                                {"name": "AGENT_SPEC", "value": spec},
+                                {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
+                                {"name": "LITELLM_API_KEY", "valueFrom": {"secretKeyRef": {"name": SECRETS, "key": "litellm-master-key"}}},
+                            ],
+                            "command": ["python3", "-u", "/app/server.py"],
+                            "volumeMounts": [{"name": "app", "mountPath": "/app"}],
+                            "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 5, "periodSeconds": 10},
+                            "resources": {
+                                "requests": {"cpu": "25m", "memory": "64Mi"},
+                                "limits": {"cpu": "200m", "memory": "256Mi"},
+                            },
+                        }],
+                        "volumes": [{"name": "app", "configMap": {"name": f"{FULLNAME}-agent-runtime"}}],
+                    },
+                },
+            },
+        }
+        svc = {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {"name": name, "namespace": NS, "labels": {"app.kubernetes.io/name": name}},
+            "spec": {
+                "selector": {"app.kubernetes.io/name": name},
+                "ports": [{"name": "http", "port": 8080, "targetPort": "http"}],
+            },
+        }
+        code, _ = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
+        if code == 404:
+            c, body = k8s("POST", f"/apis/apps/v1/namespaces/{NS}/deployments", deploy)
+            print(f"create deployment {name}: {c}", flush=True)
+        else:
+            c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
+            print(f"update deployment {name}: {c}", flush=True)
+        code, _ = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
+        if code == 404:
+            c, _ = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
+            print(f"create service {name}: {c}", flush=True)
+
+    print("agent-applier started", flush=True)
+    while True:
+        for ent in catalog_agents():
+            try:
+                ensure(ent)
+            except Exception as exc:
+                print(f"ensure error: {exc}", flush=True)
+        time.sleep(int(os.environ.get("POLL_SECONDS", "45")))
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-applier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+        app.kubernetes.io/component: agent-applier
+    spec:
+      serviceAccountName: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+      containers:
+        - name: applier
+          image: registry.access.redhat.com/ubi9/python-311:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python3", "-u", "/app/applier.py"]
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: FULLNAME
+              value: {{ include "rhdh-agent-sandbox.fullname" . | quote }}
+            - name: SECRETS_NAME
+              value: {{ .Values.secrets.name | quote }}
+            - name: LITELLM_PORT
+              value: {{ .Values.litellm.service.port | quote }}
+            - name: CATALOG_URL
+              value: http://{{ .Release.Name }}-developer-hub:7007
+            - name: MCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.name }}
+                  key: mcp-token
+            - name: POLL_SECONDS
+              value: "45"
+          volumeMounts:
+            - name: app
+              mountPath: /app
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: app
+          configMap:
+            name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
+{{- end }}

@@ -4,6 +4,8 @@ site_url: https://maximilianopizarro.github.io/rhdh-agent-sandbox/
 repo_url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
 repo_name: maximilianoPizarro/rhdh-agent-sandbox
 edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
 
 theme:
   name: material
@@ -35,6 +37,8 @@ nav:
   - Home: index.md
   - Get started:
       - Quickstart: quickstart.md
+      - Golden Paths: golden-paths.md
+      - Agents: agents.md
       - Verify the install: verify.md
       - Demo script: demo-script.md
   - How it works:

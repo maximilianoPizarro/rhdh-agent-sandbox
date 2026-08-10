@@ -100,6 +100,31 @@ catalog:
   # Mount AI catalog entities + software templates into a ConfigMap for RHDH locations
   configMapName: rhdh-agent-sandbox-catalog
 
+# Golden Path agent pods (samples + catalog-driven applier)
+agents:
+  enabled: true
+  applier:
+    enabled: true
+  # Namespace RBAC for Hub SA (scaffolder kubernetes module + optional apply)
+  hubRbac:
+    enabled: true
+  samples:
+    - name: sample-python-agent
+      language: python
+      framework: langgraph
+      model: granite
+      agentSpec: "You are a Python/LangGraph sample agent on Developer Sandbox. Prefer list/get before mutate."
+    - name: sample-nodejs-agent
+      language: nodejs
+      framework: langchain-js
+      model: granite
+      agentSpec: "You are a Node.js/LangChain.js sample agent on Developer Sandbox. Prefer list/get before mutate."
+    - name: sample-quarkus-agent
+      language: quarkus
+      framework: langchain4j
+      model: granite
+      agentSpec: "You are a Quarkus/LangChain4j sample agent on Developer Sandbox. Prefer list/get before mutate."
+
 communityPlugins:
   # OCI asset packs published by CI to Quay (Podman). Tag = <pack>-<tag>.
   enabled: true
@@ -171,6 +196,30 @@ rhdh:
           disabled: true
         - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
           disabled: true
+        # Namespace-scoped scaffolder helpers (Deployments/Services via Hub SA RBAC)
+        - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
+          disabled: false
+        # --- AI / MCP community plugins (ghcr.io overlays for RHDH 1.10 / BS 1.49.4) ---
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:bs_1.49.4__0.1.11!backstage-plugin-mcp-actions-backend
+          disabled: false
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras:bs_1.49.4__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras
+          disabled: false
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras:bs_1.49.4__0.2.3!red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras
+          disabled: false
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat:bs_1.49.4__0.6.0!backstage-community-plugin-mcp-chat
+          disabled: false
+          pluginConfig:
+            dynamicPlugins:
+              frontend:
+                backstage-community.plugin-mcp-chat:
+                  dynamicRoutes:
+                    - path: /mcp-chat
+                      importName: McpChatPage
+                      menuItem:
+                        icon: MCPChatIcon
+                        text: MCP Chat
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
+          disabled: false
     # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:
       extraImages: []
@@ -206,8 +255,8 @@ rhdh:
         backend:
           actions:
             pluginSources:
-              - software-catalog-mcp-tool
-              - techdocs-mcp-tool
+              - software-catalog-mcp-extras
+              - techdocs-mcp-extras
           auth:
             externalAccess:
               - type: legacy
@@ -223,6 +272,46 @@ rhdh:
               - host: github.com
               - host: raw.githubusercontent.com
               - host: "*.github.io"
+        # MCP Chat → LiteLLM (chat works; shared Granite/Qwen lack tool_choice).
+        # For full agentic tool calling, swap provider to openai/claude with your own key.
+        mcpChat:
+          providers:
+            - id: litellm
+              baseUrl: http://rhdh-agent-sandbox-litellm:4000
+              token: ${LITELLM_API_KEY}
+              model: granite
+          mcpServers:
+            # Cluster MCP services are up before Hub; prefer these for reliable connect.
+            - id: openshift-mcp
+              name: OpenShift MCP
+              url: http://rhdh-agent-sandbox-mcp:8080/mcp
+            - id: k8s-mcp
+              name: Kubernetes MCP
+              url: http://rhdh-agent-sandbox-k8s-mcp:8085/mcp
+            # Same-pod Streamable HTTP: may miss first connect while mcp-actions registers.
+            # UI can reconnect; external clients use the Hub Route + mcp-token.
+            - id: backstage-mcp
+              name: Backstage MCP Actions
+              url: http://localhost:7007/api/mcp-actions/v1
+              headers:
+                Authorization: Bearer ${MCP_TOKEN}
+          systemPrompt: >-
+            You are the agent-friendly Developer Hub assistant on OpenShift Developer Sandbox.
+            Prefer catalog and TechDocs MCP tools when available; otherwise use OpenShift/Kubernetes MCP.
+            Stay inside the user namespace. Summarize tool results clearly; list/get before mutate.
+          quickPrompts:
+            - title: Catalog overview
+              description: List components in the software catalog
+              prompt: List the Component entities in our Backstage catalog and summarize what each one does.
+              category: Catalog
+            - title: Namespace pods
+              description: List pods in the current namespace
+              prompt: List pods in this namespace and summarize their status.
+              category: Infrastructure
+            - title: TechDocs search
+              description: Find docs related to MCP or Lightspeed
+              prompt: Search TechDocs for MCP, Lightspeed, or LiteLLM and summarize the key pages.
+              category: Docs
         kubernetes:
           serviceLocatorMethod:
             type: multiTenant
@@ -265,6 +354,11 @@ rhdh:
             secretKeyRef:
               name: rhdh-agent-sandbox-secrets
               key: mcp-token
+        - name: LITELLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-secrets
+              key: litellm-master-key
         - name: POSTGRESQL_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -282,6 +376,9 @@ rhdh:
           mountPath: /tmp
         - name: rhdh-agent-catalog
           mountPath: /opt/app-root/src/catalog
+          readOnly: true
+        - name: scaffolder-assets
+          mountPath: /opt/app-root/src/scaffolder-assets
           readOnly: true
       extraVolumes:
         - name: dynamic-plugins-root
@@ -317,6 +414,30 @@ rhdh:
         - name: rhdh-agent-catalog
           configMap:
             name: rhdh-agent-sandbox-catalog
+        - name: scaffolder-assets
+          projected:
+            sources:
+              - configMap:
+                  name: rhdh-agent-sandbox-scaffolder-assets
+                  items:
+                    - key: deploy-agent-README.md
+                      path: skeletons/deploy-agent/README.md
+                    - key: deploy-agent-catalog-info.yaml
+                      path: skeletons/deploy-agent/catalog-info.yaml
+                    - key: deploy-agent-devfile.yaml
+                      path: skeletons/deploy-agent/devfile.yaml
+                    - key: python-manifests.yaml
+                      path: agent-runtimes/python/manifests.yaml
+                    - key: python-catalog-info.yaml
+                      path: agent-runtimes/python/catalog-info.yaml
+                    - key: nodejs-manifests.yaml
+                      path: agent-runtimes/nodejs/manifests.yaml
+                    - key: nodejs-catalog-info.yaml
+                      path: agent-runtimes/nodejs/catalog-info.yaml
+                    - key: quarkus-manifests.yaml
+                      path: agent-runtimes/quarkus/manifests.yaml
+                    - key: quarkus-catalog-info.yaml
+                      path: agent-runtimes/quarkus/catalog-info.yaml
     postgresql:
       primary:
         persistence:

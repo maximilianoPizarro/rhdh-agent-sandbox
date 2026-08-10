@@ -1,0 +1,26 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  title: ${{ values.name }}
+  description: ${{ values.agentSpec }}
+  tags:
+    - agent
+    - golden-path
+    - ${{ values.language }}
+  annotations:
+    rhdh-agent-sandbox.io/managed-agent: "true"
+    rhdh-agent-sandbox.io/language: ${{ values.language }}
+    rhdh-agent-sandbox.io/framework: ${{ values.framework }}
+    rhdh-agent-sandbox.io/model: ${{ values.model }}
+    rhdh-agent-sandbox.io/agent-type: ${{ values.agentType }}
+    rhdh-agent-sandbox.io/agent-spec: ${{ values.agentSpec }}
+  links:
+    - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ values.language }}
+      title: Open in DevSpaces
+      icon: catalog
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{ values.owner }}
+  system: agent-sandbox

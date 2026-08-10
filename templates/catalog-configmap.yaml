@@ -22,4 +22,8 @@ data:
 {{ .Files.Get "files/catalog/template-devspaces-workspace.yaml" | indent 4 }}
   template-ai-service.yaml: |
 {{ .Files.Get "files/catalog/template-ai-service.yaml" | indent 4 }}
+  template-deploy-agent.yaml: |
+{{ .Files.Get "files/catalog/template-deploy-agent.yaml" | indent 4 }}
+  sample-agents.yaml: |
+{{ .Files.Get "files/catalog/sample-agents.yaml" | indent 4 }}
 {{- end }}

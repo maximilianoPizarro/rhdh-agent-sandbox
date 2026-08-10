@@ -5,10 +5,12 @@ metadata:
   description: AI catalog locations for agent-friendly Developer Hub demo
 spec:
   targets:
-    # Paths relative to this file (ConfigMap mount and GitHub tree both flatten these keys/siblings).
+    # Paths relative to this file (ConfigMap mount flattens siblings).
     - ./mcp-servers.yaml
     - ./skills.yaml
     - ./prompts.yaml
     - ./users.yaml
     - ./template-devspaces-workspace.yaml
     - ./template-ai-service.yaml
+    - ./template-deploy-agent.yaml
+    - ./sample-agents.yaml

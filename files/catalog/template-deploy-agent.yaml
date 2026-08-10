@@ -1,0 +1,168 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: deploy-agent
+  title: Deploy Agent (Golden Path)
+  description: >
+    Create a namespace-scoped agent Pod without git push. Framework is chosen
+    deterministically from language (python→LangGraph, nodejs→LangChain.js, quarkus→LangChain4j).
+  tags:
+    - golden-path
+    - agent
+    - ai
+    - mcp
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: Agent identity
+      required: [name, owner, language, agentSpec]
+      properties:
+        name:
+          title: Agent name
+          description: DNS-1123 name for the Deployment/Service (e.g. my-triage-agent)
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
+        owner:
+          title: Owner
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [Group]
+        language:
+          title: Language
+          description: Selects the recommended agent framework (deterministic map)
+          type: string
+          default: python
+          enum:
+            - python
+            - nodejs
+            - quarkus
+          enumNames:
+            - Python → LangGraph
+            - Node.js → LangChain.js
+            - Quarkus → LangChain4j
+        agentType:
+          title: Agent type
+          type: string
+          default: tool-agent
+          enum: [tool-agent, chat-agent, rag-agent]
+        agentSpec:
+          title: Agent specification
+          description: What should this agent do? Stored as AGENT_SPEC on the Pod.
+          type: string
+          ui:widget: textarea
+        model:
+          title: LiteLLM model
+          type: string
+          default: granite
+          enum: [granite, qwen3]
+  steps:
+    - id: map-framework
+      name: Resolve framework from language
+      action: debug:log
+      input:
+        message: >
+          language=${{ parameters.language }} → framework=${{
+            parameters.language === 'python' ? 'langgraph' :
+            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
+          }} agentType=${{ parameters.agentType }}
+    - id: fetch
+      name: Materialize agent skeleton (local scaffolder-assets)
+      action: fetch:template
+      input:
+        url: file:/opt/app-root/src/scaffolder-assets/skeletons/deploy-agent
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          language: ${{ parameters.language }}
+          agentType: ${{ parameters.agentType }}
+          agentSpec: ${{ parameters.agentSpec }}
+          model: ${{ parameters.model }}
+          framework: ${{
+            parameters.language === 'python' ? 'langgraph' :
+            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
+          }}
+    - id: fetch-runtime
+      name: Materialize language runtime manifests
+      action: fetch:template
+      input:
+        url: file:/opt/app-root/src/scaffolder-assets/agent-runtimes/${{ parameters.language }}
+        targetPath: ./runtime
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          language: ${{ parameters.language }}
+          agentType: ${{ parameters.agentType }}
+          agentSpec: ${{ parameters.agentSpec }}
+          model: ${{ parameters.model }}
+          framework: ${{
+            parameters.language === 'python' ? 'langgraph' :
+            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
+          }}
+    - id: write
+      name: Write Component to catalog workspace
+      action: catalog:write
+      input:
+        entity:
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.name }}
+            title: ${{ parameters.name }}
+            description: ${{ parameters.agentSpec }}
+            tags:
+              - agent
+              - golden-path
+              - ${{ parameters.language }}
+            annotations:
+              rhdh-agent-sandbox.io/managed-agent: "true"
+              rhdh-agent-sandbox.io/language: ${{ parameters.language }}
+              rhdh-agent-sandbox.io/framework: ${{
+                parameters.language === 'python' ? 'langgraph' :
+                parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
+              }}
+              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
+              rhdh-agent-sandbox.io/agent-type: ${{ parameters.agentType }}
+              rhdh-agent-sandbox.io/agent-spec: ${{ parameters.agentSpec }}
+            links:
+              - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}
+                title: Open in DevSpaces
+                icon: catalog
+          spec:
+            type: service
+            lifecycle: experimental
+            owner: ${{ parameters.owner }}
+            system: agent-sandbox
+    - id: register
+      name: Register Component in Hub catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.write.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+    - id: apply-hint
+      name: Namespace apply via agent-applier
+      action: debug:log
+      input:
+        message: >
+          Component registered with managed-agent annotations. Chart agent-applier
+          creates/updates Deployment+Service (ClusterIP) from those annotations
+          within about one poll interval. Hub SA also has namespace RBAC for
+          scaffolder-backend-module-kubernetes-dynamic.
+  output:
+    links:
+      - title: Open Component
+        icon: catalog
+        entityRef: component:default/${{ parameters.name }}
+    text:
+      - title: Agent created
+        content: |
+          Framework: ${{ parameters.language === 'python' ? 'langgraph' : parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j' }}
+          Model: ${{ parameters.model }}
+
+          Check the Pod:
+            oc get deploy/${{ parameters.name }}
+            oc logs deploy/${{ parameters.name }}
+
+          Open in DevSpaces from the Component page link (factory URL uses this repo's skeleton for ${{ parameters.language }}).

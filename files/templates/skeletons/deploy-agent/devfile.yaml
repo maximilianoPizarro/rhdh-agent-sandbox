@@ -1,0 +1,23 @@
+schemaVersion: 2.2.0
+metadata:
+  name: ${{ values.name }}
+  version: 0.1.0
+  displayName: Agent (${{ values.language }} / ${{ values.framework }})
+  description: ${{ values.agentSpec }}
+  tags: [agent, ${{ values.language }}, ai]
+components:
+  - name: tools
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 2Gi
+      mountSources: true
+      endpoints:
+        - name: http
+          targetPort: 8080
+commands:
+  - id: remind-litellm
+    exec:
+      component: tools
+      commandLine: |
+        echo "Wire Continue to LiteLLM Route; AGENT_SPEC describes: ${{ values.agentSpec }}"
+      workingDir: ${PROJECT_SOURCE}

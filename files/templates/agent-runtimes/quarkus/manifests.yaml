@@ -1,0 +1,71 @@
+# Reference manifests for Quarkus / LangChain4j agent (applied by chart agent-applier).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.name | default "quarkus-agent" }}
+  labels:
+    app.kubernetes.io/component: agent
+    rhdh-agent-sandbox.io/language: quarkus
+    rhdh-agent-sandbox.io/framework: langchain4j
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${{ values.name | default "quarkus-agent" }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${{ values.name | default "quarkus-agent" }}
+        app.kubernetes.io/component: agent
+    spec:
+      containers:
+        - name: agent
+          image: registry.access.redhat.com/ubi9/python-311:latest
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: LANGUAGE
+              value: quarkus
+            - name: FRAMEWORK
+              value: langchain4j
+            - name: MODEL
+              value: ${{ values.model | default "granite" }}
+            - name: AGENT_SPEC
+              value: ${{ values.agentSpec | default "Quarkus LangChain4j agent" }}
+            - name: LITELLM_API_BASE
+              value: http://rhdh-agent-sandbox-litellm:4000/v1
+            - name: LITELLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rhdh-agent-sandbox-secrets
+                  key: litellm-master-key
+          command: ["python3", "-u", "/app/server.py"]
+          volumeMounts:
+            - name: app
+              mountPath: /app
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: app
+          configMap:
+            name: rhdh-agent-sandbox-agent-runtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${{ values.name | default "quarkus-agent" }}
+  labels:
+    app.kubernetes.io/component: agent
+spec:
+  selector:
+    app.kubernetes.io/name: ${{ values.name | default "quarkus-agent" }}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
