@@ -56,6 +56,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/devspaces-journey/" class="masthead-nav-link">DevSpaces journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
         
         
@@ -102,6 +106,12 @@
     
     <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/devspaces-journey/" class="pf-v6-c-nav__link">DevSpaces journey</a>
     </li>
     
     
@@ -177,6 +187,10 @@
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/devspaces-ai/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">DevSpaces AI</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-journey/" class="pf-v6-c-nav__link">DevSpaces journey</a>
         </li>
         
         <li class="pf-v6-c-nav__item">
@@ -319,7 +333,7 @@ spec:
 <span class="nb">export </span><span class="nv">LITELLM_API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-continue <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LITELLM_API_KEY}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
 </code></pre></div></div>
 
-<p>Open the <strong>Continue</strong> sidebar in Che Code and send a short chat.</p>
+<p>Continue is <strong>preinstalled</strong> on workspace start (<code class="language-plaintext highlighter-rouge">DEFAULT_EXTENSIONS</code> + OpenVSX download; CLI fallback). Open the <strong>Continue</strong> sidebar in Che Code and send a short chat.</p>
 
 <blockquote>
   <p><strong>Tip</strong></p>
@@ -354,6 +368,10 @@ spec:
       <td>Recommends Continue</td>
     </tr>
     <tr>
+      <td>Devfile <code class="language-plaintext highlighter-rouge">DEFAULT_EXTENSIONS</code> + <code class="language-plaintext highlighter-rouge">download-continue-extension</code></td>
+      <td>Preinstalls Continue from OpenVSX (linux-x64 <code class="language-plaintext highlighter-rouge">.vsix</code>)</td>
+    </tr>
+    <tr>
       <td><code class="language-plaintext highlighter-rouge">docs/prompts/*</code></td>
       <td>Prompts aligned with Hub catalog</td>
     </tr>
@@ -362,7 +380,15 @@ spec:
 
 <h2 id="mcp-from-the-ide">MCP from the IDE?</h2>
 
-<p>Not required for the demo. MCP ClusterIP services are consumed from <strong>Hub Lightspeed</strong>. The IDE path is Continue → LiteLLM Route → Granite/Qwen.</p>
+<p><strong>Hub mcp-actions</strong> are reachable from DevSpaces over the Hub Route with <code class="language-plaintext highlighter-rouge">mcp-token</code> (catalog / TechDocs tools). OpenShift/Kubernetes MCP remain <strong>ClusterIP</strong> and are consumed from <strong>Hub Lightspeed / MCP Chat</strong>, not from the IDE.</p>
+
+<p>Continue chat path: Continue → LiteLLM Route → Granite/Qwen. Step-by-step screenshots: <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</p>
+
+<blockquote>
+  <p><strong>Info: Continue v2</strong></p>
+
+  <p>Continue 2.x stores live keys in <code class="language-plaintext highlighter-rouge">~/.continue/config.yaml</code> (local only). <code class="language-plaintext highlighter-rouge">wire-continue</code> also writes placeholder <code class="language-plaintext highlighter-rouge">.continue/config.json</code> in the repo tree — do not paste real keys into git.</p>
+</blockquote>
 
 <h2 id="stop-when-done">Stop when done</h2>
 
