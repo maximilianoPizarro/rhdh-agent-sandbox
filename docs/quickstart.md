@@ -14,10 +14,16 @@ Step-by-step install on **OpenShift Developer Sandbox**.
 Discover your apps domain:
 
 ```bash
+# Preferred when the API allows it:
 oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}{"\n"}'
+
+# On many Developer Sandbox accounts the call above is Forbidden.
+# Infer the domain from any existing Route instead:
+oc get route -A -o jsonpath='{.items[0].spec.host}{"\n"}' | sed 's/^[^.]*\.//'
 # example: apps.rm2.thpm.p1.openshiftapps.com
 ```
 
+Or use the default already set in `values.yaml` (`rhdh.global.clusterRouterBase`) if it matches your cluster.
 ## 2. Clone and pull chart dependencies
 
 ```bash
