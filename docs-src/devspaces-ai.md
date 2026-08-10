@@ -79,7 +79,7 @@ export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath
 export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)"
 ```
 
-Continue is **preinstalled** on workspace start (`DEFAULT_EXTENSIONS` + OpenVSX download; CLI fallback). Open the **Continue** sidebar in Che Code and send a short chat.
+Continue is **preinstalled** on workspace start (`DEFAULT_EXTENSIONS` + OpenVSX download; CLI fallback). Open the **Continue** sidebar in Che Code, select **Granite (LiteLLM)**, and send a short chat (for example `Reply with exactly: DevSpaces Continue OK`). Screenshots of the **query → reply** and Hub MCP **action → reaction** loop: [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
 
 > **Tip**
 >
