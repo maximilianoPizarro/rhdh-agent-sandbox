@@ -35,7 +35,7 @@ spec:
       name: Fetch AI service skeleton
       action: fetch:template
       input:
-        url: ./skeletons/ai-service
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/ai-service
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}

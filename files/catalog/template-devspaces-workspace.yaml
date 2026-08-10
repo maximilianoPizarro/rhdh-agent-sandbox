@@ -47,7 +47,7 @@ spec:
       name: Fetch skeleton
       action: fetch:template
       input:
-        url: ./skeletons/${{ parameters.stack }}
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.stack }}
         values:
           name: ${{ parameters.name }}
           description: ${{ parameters.description }}
