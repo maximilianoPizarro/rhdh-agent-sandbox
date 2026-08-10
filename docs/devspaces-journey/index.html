@@ -238,12 +238,12 @@
       <div class="pf-v6-c-content">
         <h1 id="devspaces--continue-ai-journey">DevSpaces + Continue AI journey</h1>
 
-<p class="muted">Open OpenShift Dev Spaces from the Developer Sandbox, wire <strong>Continue</strong> to this chart’s LiteLLM Route, and call Hub MCP Actions from the IDE over the public Hub Route.</p>
+<p class="muted">Open OpenShift Dev Spaces from the Developer Sandbox, send a real <strong>Continue</strong> chat to this chart’s LiteLLM Route, and show an MCP <strong>tool action → catalog reaction</strong> from the IDE over the public Hub Route.</p>
 
 <div class="journey-carousel" id="journey-carousel" role="region" aria-roledescription="carousel" aria-label="DevSpaces Continue journey" tabindex="0">
 <div class="journey-viewport" id="journey-viewport">
 
-<figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 8">
+<figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 9">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-dashboard-workspaces.png" alt="Dev Spaces dashboard listing workspaces including rhdh-agent-ai-demo" />
 <figcaption>
 <span class="slide-num">Step 01</span>
@@ -252,7 +252,7 @@
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 8" hidden="">
+<figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 9" hidden="">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-create-workspace.png" alt="Create Workspace page with Git URL pointing at rhdh-agent-sandbox files/devfiles" />
 <figcaption>
 <span class="slide-num">Step 02</span>
@@ -261,7 +261,7 @@
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 8" hidden="">
+<figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 9" hidden="">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-secret.png" alt="OpenShift Secret rhdh-agent-sandbox-continue with LITELLM_API_BASE and LITELLM_API_KEY" />
 <figcaption>
 <span class="slide-num">Step 03</span>
@@ -270,7 +270,7 @@
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 8" hidden="">
+<figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 9" hidden="">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-ide-home.png" alt="Che Code IDE opened on rhdh-agent-sandbox with explorer and chat sidebars" />
 <figcaption>
 <span class="slide-num">Step 04</span>
@@ -279,7 +279,7 @@
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 8" hidden="">
+<figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 9" hidden="">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-trust-workspace.png" alt="Workspace Trust dialog comparing Trusted Workspace vs Restricted Mode" />
 <figcaption>
 <span class="slide-num">Step 05</span>
@@ -288,28 +288,37 @@
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 of 8" hidden="">
+<figure class="journey-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 of 9" hidden="">
 <img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-ready.png" alt="Continue sidebar with Granite (LiteLLM) model selected in Che Code" />
 <figcaption>
 <span class="slide-num">Step 06</span>
-<strong>Continue → LiteLLM</strong>
-<span class="desc">Continue is <strong>preinstalled</strong> (Devfile downloads the OpenVSX linux-x64 <code>.vsix</code> into <code>/tmp/continue.vsix</code> and Che Code installs it via <code>DEFAULT_EXTENSIONS</code>). Run <code>wire-continue</code> so Continue v2 writes <code>~/.continue/config.yaml</code> with <code>granite</code> / <code>qwen3</code> → LiteLLM. Select <strong>Granite (LiteLLM)</strong> and chat.</span>
+<strong>Continue wired to LiteLLM</strong>
+<span class="desc">Continue is <strong>preinstalled</strong> (Devfile downloads the OpenVSX linux-x64 <code>.vsix</code> into <code>/tmp/continue.vsix</code>). Run <code>wire-continue</code> so Continue v2 writes <code>~/.continue/config.yaml</code> with <code>granite</code> / <code>qwen3</code> → LiteLLM. Select <strong>Granite (LiteLLM)</strong> (ignore the optional OpenAI/Anthropic/Gemini Connect panel).</span>
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 of 8" hidden="">
-<img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-mcp-smoke.png" alt="Continue with Granite selected beside smoke file showing LiteLLM reply and MCP catalog tool call" />
+<figure class="journey-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 of 9" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-chat.png" alt="Continue chat showing user query Reply with exactly DevSpaces Continue OK and Granite LiteLLM reply" />
 <figcaption>
 <span class="slide-num">Step 07</span>
-<strong>MCP from the IDE (Hub Route)</strong>
-<span class="desc">From the workspace, call Hub <code>/api/mcp-actions/v1</code> with <code>mcp-token</code> from <code>rhdh-agent-sandbox-secrets</code>. Proven here: LiteLLM reply <em>DevSpaces Continue OK</em> and MCP <code>query-catalog-entities</code> listing sample agents. Wire the same URL into Continue <code>mcpServers</code> (see below).</span>
+<strong>Continue query → model reply</strong>
+<span class="desc">In the Continue sidebar, ask: <em>Reply with exactly: DevSpaces Continue OK</em>. Granite answers via LiteLLM Route <code>/v1</code>. This is the chat loop the journey must show — not only model selection.</span>
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 8" hidden="">
-<img src="/rhdh-agent-sandbox/assets/screenshots/mcp-chat-toolcall-result.png" alt="Hub MCP Chat showing Kubernetes tool call results for pods in namespace" />
+<figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 9" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-mcp-action.png" alt="Continue showing MCP tool query-catalog-entities and reply listing sample agent components beside smoke markdown" />
 <figcaption>
 <span class="slide-num">Step 08</span>
+<strong>MCP action → catalog reaction</strong>
+<span class="desc">With Hub MCP wired in <code>mcpServers</code>, ask Continue to list Components tagged <code>agent</code>. Action: <code>software-catalog-mcp-extras.query-catalog-entities</code>. Reaction: sample-python / nodejs / quarkus agents from the Hub catalog (same entities as the smoke markdown on the right).</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="8" role="group" aria-roledescription="slide" aria-label="9 of 9" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/mcp-chat-toolcall-result.png" alt="Hub MCP Chat showing Kubernetes tool call results for pods in namespace" />
+<figcaption>
+<span class="slide-num">Step 09</span>
 <strong>Cluster MCP stays in Hub</strong>
 <span class="desc">OpenShift/Kubernetes MCP services are <strong>ClusterIP only</strong> — not reachable from DevSpaces. For K8s tool demos with <code>litemaas-qwen</code>, use Hub <a href="/rhdh-agent-sandbox/tool-calling-journey/">Lightspeed / MCP Chat</a>. Stop the workspace when finished to free Sandbox quota.</span>
 </figcaption>
@@ -323,7 +332,7 @@
 <button type="button" class="journey-btn" id="journey-fs" aria-label="Toggle fullscreen" aria-pressed="false">Fullscreen</button>
 </div>
 <div class="journey-dots" id="journey-dots" role="tablist" aria-label="Slide picker"></div>
-<span class="journey-status" id="journey-status" aria-live="polite">1 / 8</span>
+<span class="journey-status" id="journey-status" aria-live="polite">1 / 9</span>
 </div>
 </div>
 
@@ -340,16 +349,16 @@
   </thead>
   <tbody>
     <tr>
-      <td>Continue chat</td>
+      <td>Continue <strong>query → reply</strong></td>
       <td>LiteLLM Route <code class="language-plaintext highlighter-rouge">/v1</code></td>
       <td><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code></td>
-      <td>Yes (Granite / Qwen3 chat)</td>
+      <td>Yes (Step 07)</td>
     </tr>
     <tr>
-      <td>Hub MCP Actions</td>
+      <td>Continue <strong>MCP action → reaction</strong></td>
       <td>Hub Route <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code></td>
       <td><code class="language-plaintext highlighter-rouge">mcp-token</code></td>
-      <td>Yes (catalog / TechDocs tools)</td>
+      <td>Yes (Step 08 catalog tools)</td>
     </tr>
     <tr>
       <td>OpenShift / K8s MCP</td>
@@ -360,7 +369,7 @@
   </tbody>
 </table>
 
-<p>Shared Sandbox models via LiteLLM drop tool calling for Continue. Full K8s tool rounds stay on Hub with <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> or OpenClaw + LiteMaaS.</p>
+<p>Shared Sandbox models via LiteLLM drop tool calling for Continue chat models. Catalog/TechDocs MCP actions still work from the IDE over the Hub Route. Full K8s tool rounds stay on Hub with <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> or OpenClaw + LiteMaaS.</p>
 
 <h2 id="wire-continue-v2--optional-hub-mcp">Wire Continue (v2) + optional Hub MCP</h2>
 
@@ -384,6 +393,22 @@
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get secret rhdh-agent-sandbox-secrets <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.mcp-token}'</span> | <span class="nb">base64</span> <span class="nt">-d</span>
 </code></pre></div></div>
+
+<h3 id="try-the-same-prompts">Try the same prompts</h3>
+
+<p><strong>Continue chat (Step 07):</strong></p>
+
+<blockquote>
+  <p>Reply with exactly: DevSpaces Continue OK</p>
+</blockquote>
+
+<p><strong>MCP action (Step 08):</strong></p>
+
+<blockquote>
+  <p>Use Hub MCP to list sample agent Components tagged agent.</p>
+</blockquote>
+
+<p>Expected reaction names: <code class="language-plaintext highlighter-rouge">sample-python-agent</code>, <code class="language-plaintext highlighter-rouge">sample-nodejs-agent</code>, <code class="language-plaintext highlighter-rouge">sample-quarkus-agent</code>.</p>
 
 <h2 id="stop-when-done">Stop when done</h2>
 

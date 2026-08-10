@@ -333,7 +333,7 @@ spec:
 <span class="nb">export </span><span class="nv">LITELLM_API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-continue <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LITELLM_API_KEY}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
 </code></pre></div></div>
 
-<p>Continue is <strong>preinstalled</strong> on workspace start (<code class="language-plaintext highlighter-rouge">DEFAULT_EXTENSIONS</code> + OpenVSX download; CLI fallback). Open the <strong>Continue</strong> sidebar in Che Code and send a short chat.</p>
+<p>Continue is <strong>preinstalled</strong> on workspace start (<code class="language-plaintext highlighter-rouge">DEFAULT_EXTENSIONS</code> + OpenVSX download; CLI fallback). Open the <strong>Continue</strong> sidebar in Che Code, select <strong>Granite (LiteLLM)</strong>, and send a short chat (for example <code class="language-plaintext highlighter-rouge">Reply with exactly: DevSpaces Continue OK</code>). Screenshots of the <strong>query → reply</strong> and Hub MCP <strong>action → reaction</strong> loop: <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</p>
 
 <blockquote>
   <p><strong>Tip</strong></p>
