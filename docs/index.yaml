@@ -3,6 +3,13 @@ entries:
   rhdh-agent-sandbox:
   - annotations:
       artifacthub.io/category: ai-machine-learning
+      artifacthub.io/changes: |
+        - kind: fixed
+          description: Include chart README.md in the packaged .tgz so Artifact Hub can render docs
+        - kind: added
+          description: LiteMaaS Qwen (litemaas-qwen) with function calling for Lightspeed and MCP Chat
+        - kind: added
+          description: Chart-managed DevSpaces Continue Secret (rhdh-agent-sandbox-continue)
       artifacthub.io/images: |
         - name: litellm
           image: litellm/litellm-non_root:v1.82.3-stable
@@ -20,7 +27,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-10T18:37:52.111931191Z"
+    created: "2026-08-10T18:41:13.666381201Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -29,7 +36,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: 79cc6e3e1e3572d9d69ff08a1981fcd99d3145956972b1d23334bd16a8f98330
+    digest: c683de35b23c1ecabe296d09be85b85f6dceb3324dee49f23a8107d3dd14ad31
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -51,6 +58,6 @@ entries:
     - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
-    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.0.tgz
-    version: 0.1.0
-generated: "2026-08-10T18:37:52.097969786Z"
+    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.1.tgz
+    version: 0.1.1
+generated: "2026-08-10T18:41:13.64671296Z"
