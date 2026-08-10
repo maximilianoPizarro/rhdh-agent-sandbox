@@ -9,18 +9,28 @@
 <meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="Troubleshooting" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
-<meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<meta name="description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<meta name="twitter:description" property="og:description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
 <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/" />
 <meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/" />
 <meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta property="og:type" content="website" />
-<meta name="twitter:card" content="summary" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta name="twitter:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta name="twitter:title" content="Troubleshooting" />
+<meta name="twitter:site" content="@" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"Troubleshooting","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring.","headline":"Troubleshooting","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/"}</script>
 <!-- End Jekyll SEO tag -->
-
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/rhdh-agent-sandbox/assets/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="/rhdh-agent-sandbox/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -389,7 +399,38 @@ oc rollout status deploy/rhdh-agent-developer-hub
 
 <h2 id="openclaw-cannot-use-tools-with-shared-models">OpenClaw cannot use tools with shared models</h2>
 
-<p>OpenClaw provisioned from sandbox.redhat.com needs <strong>external</strong> Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject <code class="language-plaintext highlighter-rouge">tool_choice</code> / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep <code class="language-plaintext highlighter-rouge">agents.defaults.sandbox.mode: "off"</code> on Developer Sandbox (no Docker daemon). See <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw</a>.</p>
+<p>OpenClaw provisioned from sandbox.redhat.com needs <strong>LiteMaaS Qwen</strong> (or an external vendor key) for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject <code class="language-plaintext highlighter-rouge">tool_choice</code> / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep <code class="language-plaintext highlighter-rouge">agents.defaults.sandbox.mode: "off"</code> on Developer Sandbox (no Docker daemon). See <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw</a>.</p>
+
+<h2 id="openclaw-mcp-probe-fails-against-hub-403--405">OpenClaw MCP probe fails against Hub (403 / 405)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Symptom</th>
+      <th>Cause</th>
+      <th>Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Proxy response (403)</code></td>
+      <td>Hub Route host not on claw-proxy allowlist</td>
+      <td>Declare Hub MCP on the <strong>Claw CR</strong> (<code class="language-plaintext highlighter-rouge">spec.mcpServers</code> + credential). Operator regenerates proxy routes. Manual <code class="language-plaintext highlighter-rouge">openclaw mcp add</code> alone is not enough on Sandbox.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Non-200 status code (405)</code> with <code class="language-plaintext highlighter-rouge">transport: sse</code></td>
+      <td>RHDH MCP Actions expects streamable HTTP</td>
+      <td>Set <code class="language-plaintext highlighter-rouge">transport: streamable-http</code> on <code class="language-plaintext highlighter-rouge">spec.mcpServers.hub-mcp-actions</code></td>
+    </tr>
+    <tr>
+      <td>ClusterIP Hub Service timeout from <code class="language-plaintext highlighter-rouge">*-claw</code></td>
+      <td>Cross-namespace NetworkPolicy</td>
+      <td>Use the <strong>public Hub Route</strong> (allowlisted via Claw CR), not <code class="language-plaintext highlighter-rouge">*.svc</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Verify: <code class="language-plaintext highlighter-rouge">oc exec -n &lt;claw-ns&gt; deploy/claw -c gateway -- openclaw mcp probe</code> → <code class="language-plaintext highlighter-rouge">hub-mcp-actions: 4 tools</code>.</p>
 
 <h2 id="mcp-chat-loads-but-tools-never-fire">MCP Chat loads but tools never fire</h2>
 

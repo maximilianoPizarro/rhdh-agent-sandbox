@@ -9,18 +9,28 @@
 <meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="OpenClaw journey" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
-<meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<meta name="description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<meta name="twitter:description" property="og:description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
 <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw-journey/" />
 <meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw-journey/" />
 <meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta property="og:type" content="website" />
-<meta name="twitter:card" content="summary" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta name="twitter:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta name="twitter:title" content="OpenClaw journey" />
+<meta name="twitter:site" content="@" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"OpenClaw journey","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw-journey/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring.","headline":"OpenClaw journey","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw-journey/"}</script>
 <!-- End Jekyll SEO tag -->
-
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/rhdh-agent-sandbox/assets/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="/rhdh-agent-sandbox/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -310,8 +320,8 @@
 <img src="/rhdh-agent-sandbox/assets/screenshots/openclaw-devhub-integration.png" alt="Illustrative concept of OpenClaw beside Developer Hub catalog while deploying an agent" />
 <figcaption>
 <span class="slide-num">Step 08</span>
-<strong>OpenClaw + Developer Hub <em>(illustrative)</em></strong>
-<span class="desc"><strong>Concept image only</strong> — not a live capture. Today OpenClaw on Sandbox proves kubectl tool calling against your namespace (Step 07). Deploying agents via the Hub scaffolder from OpenClaw is not wired yet; use the <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a> in Developer Hub Guest for that flow.</span>
+<strong>OpenClaw + Developer Hub</strong>
+<span class="desc">Kubectl tools (Step 07) stay in-namespace. For <strong>Hub catalog / TechDocs MCP</strong>, declare <code>spec.mcpServers</code> on the Claw CR (<code>streamable-http</code> + Hub Route) — proven with <code>openclaw mcp probe</code> → 4 tools. Full scaffolder deploy-from-OpenClaw UI is still optional; Golden Paths remain in Hub Guest. Details: <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw setup</a>.</span>
 </figcaption>
 </figure>
 
@@ -403,12 +413,12 @@
       <td><strong>Proven</strong> — Step 07 (real chat capture)</td>
     </tr>
     <tr>
-      <td>Split Hub catalog + OpenClaw scaffolder deploy UI</td>
-      <td><strong>Illustrative</strong> — Step 08 concept art only</td>
+      <td>Split Hub catalog MCP from OpenClaw</td>
+      <td><strong>Proven via Claw CR</strong> — <code class="language-plaintext highlighter-rouge">spec.mcpServers</code> + <code class="language-plaintext highlighter-rouge">openclaw mcp probe</code> (4 tools); see <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw</a></td>
     </tr>
     <tr>
       <td>Deploy agents via Golden Path</td>
-      <td><strong>Proven in Hub Guest</strong> — see <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>, not via OpenClaw yet</td>
+      <td><strong>Proven in Hub Guest</strong> — see <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>, not via OpenClaw scaffolder UI yet</td>
     </tr>
   </tbody>
 </table>

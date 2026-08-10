@@ -9,18 +9,28 @@
 <meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="OpenClaw (optional)" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
-<meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
+<meta name="description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<meta name="twitter:description" property="og:description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
 <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/" />
 <meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/" />
 <meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta property="og:type" content="website" />
-<meta name="twitter:card" content="summary" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta name="twitter:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
 <meta name="twitter:title" content="OpenClaw (optional)" />
+<meta name="twitter:site" content="@" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"OpenClaw (optional)","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring.","headline":"OpenClaw (optional)","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/"}</script>
 <!-- End Jekyll SEO tag -->
-
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/rhdh-agent-sandbox/assets/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="/rhdh-agent-sandbox/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -459,12 +469,73 @@ oc get route <span class="nt">-n</span> <span class="s2">"</span><span class="k"
   <p>With Granite/Qwen via LiteLLM, OpenClaw will <strong>not</strong> get reliable tool calls. Use this path only for plain Q&amp;A. For agentic work (code, shell, multi-step tools), use LiteMaaS Qwen or an external API key.</p>
 </blockquote>
 
+<h2 id="wire-hub-mcp-actions-into-openclaw-proven">Wire Hub MCP Actions into OpenClaw (proven)</h2>
+
+<p>There is <strong>no OpenClaw plugin for Developer Hub</strong>. OpenClaw is the MCP <strong>client</strong>; Hub already exposes catalog/TechDocs tools at <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code>.</p>
+
+<p>On Developer Sandbox, OpenClaw egress goes through <code class="language-plaintext highlighter-rouge">claw-proxy</code> with an allowlist. Do <strong>not</strong> only edit <code class="language-plaintext highlighter-rouge">~/.openclaw/openclaw.json</code> — declare MCP on the <strong>Claw CR</strong> so the operator:</p>
+
+<ol>
+  <li>Injects <code class="language-plaintext highlighter-rouge">mcp.servers</code> into the gateway config</li>
+  <li>Adds the Hub Route host to the proxy allowlist</li>
+  <li>Injects the bearer token from a Secret (gateway never stores the raw key in git)</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">DEV_NS</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>   <span class="c"># chart namespace (*-dev)</span>
+<span class="nv">CLAW_NS</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get project <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{range .items[*]}{.metadata.name}{"\n"}{end}'</span> | <span class="nb">grep</span> <span class="nt">--</span> <span class="s1">'-claw$'</span> | <span class="nb">head</span> <span class="nt">-1</span><span class="si">)</span><span class="s2">"</span>
+<span class="nb">export </span><span class="nv">HUB_HOST</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get route <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$DEV_NS</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/name<span class="o">=</span>developer-hub <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.items[0].spec.host}'</span><span class="si">)</span><span class="s2">"</span>
+<span class="nv">MCP_TOKEN</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-secrets <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$DEV_NS</span><span class="s2">"</span> <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.mcp-token}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
+
+oc create secret generic hub-mcp-credentials <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$CLAW_NS</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--from-literal</span><span class="o">=</span>mcp-token<span class="o">=</span><span class="s2">"</span><span class="nv">$MCP_TOKEN</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--dry-run</span><span class="o">=</span>client <span class="nt">-o</span> yaml | oc apply <span class="nt">-f</span> -
+
+oc get claw claw <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$CLAW_NS</span><span class="s2">"</span> <span class="nt">-o</span> json <span class="o">&gt;</span> /tmp/claw.json
+python3 - <span class="o">&lt;&lt;</span><span class="sh">'</span><span class="no">PY</span><span class="sh">' | oc apply -f -
+import json, os
+hub = os.environ["HUB_HOST"]
+obj = json.load(open("/tmp/claw.json"))
+creds = [c for c in (obj["spec"].get("credentials") or []) if c.get("name") != "hub-mcp"]
+creds.append({
+  "name": "hub-mcp",
+  "domain": hub,
+  "type": "bearer",
+  "secretRef": [{"name": "hub-mcp-credentials", "key": "mcp-token"}],
+  "allowedPaths": ["/api/mcp-actions/"],
+})
+obj["spec"]["credentials"] = creds
+obj["spec"]["mcpServers"] = {
+  "hub-mcp-actions": {
+    "url": f"https://{hub}/api/mcp-actions/v1",
+    "transport": "streamable-http",
+    "credentialRef": "hub-mcp",
+  }
+}
+obj.pop("status", None)
+obj.get("metadata", {}).pop("managedFields", None)
+print(json.dumps(obj))
+</span><span class="no">PY
+</span></code></pre></div></div>
+
+<p>Verify inside the gateway pod:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">exec</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$CLAW_NS</span><span class="s2">"</span> deploy/claw <span class="nt">-c</span> gateway <span class="nt">--</span> openclaw mcp probe
+<span class="c"># expect: hub-mcp-actions: 4 tools (catalog + TechDocs)</span>
+</code></pre></div></div>
+
+<p>Use <strong><code class="language-plaintext highlighter-rouge">streamable-http</code></strong> (not <code class="language-plaintext highlighter-rouge">sse</code>) against current RHDH MCP Actions — SSE returns HTTP 405.</p>
+
+<p>Ask OpenClaw something like: <em>List Hub Components tagged agent</em> — it should call <code class="language-plaintext highlighter-rouge">query-catalog-entities</code>.</p>
+
+<p>Upstream plugin docs (OpenClaw-native plugins, not Hub): <a href="https://docs.openclaw.ai/tools/plugin">OpenClaw Plugins</a>.</p>
+
 <h2 id="what-this-chart-does-not-do">What this chart does <em>not</em> do</h2>
 
 <ul>
   <li>Does <strong>not</strong> deploy OpenClaw (no <code class="language-plaintext highlighter-rouge">openclaw:</code> block in <code class="language-plaintext highlighter-rouge">values.yaml</code>).</li>
-  <li>Does <strong>not</strong> create OpenClaw Secrets or Routes.</li>
-  <li>Does <strong>not</strong> expose public MCP Routes — Lightspeed still uses ClusterIP MCP only. OpenClaw on Sandbox should not require opening MCP to the internet.</li>
+  <li>Does <strong>not</strong> create OpenClaw Secrets or Routes (those live in the <code class="language-plaintext highlighter-rouge">*-claw</code> namespace).</li>
+  <li>Does <strong>not</strong> ship an OpenClaw UI plugin inside Developer Hub.</li>
+  <li>ClusterIP OpenShift/Kubernetes MCP remains Hub-local; OpenClaw reaches Hub MCP over the <strong>public Hub Route</strong> via the Sandbox claw-proxy allowlist.</li>
 </ul>
 
 <h2 id="identity-reminder">Identity reminder</h2>
