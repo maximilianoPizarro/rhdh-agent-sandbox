@@ -67,6 +67,6 @@ spec:
         content: |
           1. Commit/push the generated workspace (or download and import).
           2. In OpenShift DevSpaces, create a workspace from `devfile.yaml`.
-          3. Set LITELLM_API_BASE / LITELLM_API_KEY and run `wire-continue`.
+          3. Continue is preinstalled on start; run `wire-continue` (uses chart Secret `rhdh-agent-sandbox-continue`).
           4. Skills are under `.continue/skills/`; prompts under `docs/prompts/`.
           5. Use Developer Hub **Guest** login for Lightspeed + MCP triage.

@@ -1,9 +1,9 @@
 schemaVersion: 2.2.0
 metadata:
   name: agent-friendly-workspace
-  version: 0.2.0
+  version: 0.3.0
   displayName: Agent-friendly DevSpaces AI Workspace
-  description: Browser IDE (Che Code) with Continue → LiteLLM on Developer Sandbox
+  description: Browser IDE (Che Code) with Continue preinstalled → LiteLLM on Developer Sandbox
   tags:
     - continue
     - mcp
@@ -31,6 +31,9 @@ components:
       env:
         - name: SHELL
           value: /bin/bash
+        # Preinstall Continue (Che Code reads DEFAULT_EXTENSIONS at startup).
+        - name: DEFAULT_EXTENSIONS
+          value: /tmp/continue.vsix
         # Set these when starting the workspace (or edit .continue/config.json).
         - name: LITELLM_API_BASE
           value: ""
@@ -40,6 +43,55 @@ components:
       attributes:
         controller.devfile.io/merge-contribution: true
 commands:
+  - id: download-continue-extension
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        OUT=/tmp/continue.vsix
+        if [[ -s "${OUT}" ]]; then
+          echo "Continue vsix already present: ${OUT}"
+          exit 0
+        fi
+        META_URL="https://open-vsx.org/api/Continue/continue/linux-x64/latest"
+        echo "Resolving Continue linux-x64 from OpenVSX..."
+        URL="$(curl -fsSL "${META_URL}" | python3 -c 'import sys,json; print(json.load(sys.stdin)["files"]["download"])')"
+        echo "Downloading ${URL}"
+        curl -fsSL --retry 3 --retry-delay 2 -o "${OUT}.partial" "${URL}"
+        mv "${OUT}.partial" "${OUT}"
+        echo "Wrote ${OUT} ($(wc -c < "${OUT}") bytes)"
+  - id: ensure-continue-extension
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        OUT=/tmp/continue.vsix
+        # Wait briefly for Che Code IPC (DEFAULT_EXTENSIONS may already install in background).
+        SOCK=""
+        for _ in $(seq 1 45); do
+          SOCK="$(ls /tmp/vscode-ipc-*.sock 2>/dev/null | head -1 || true)"
+          [[ -n "${SOCK}" ]] && break
+          sleep 2
+        done
+        if [[ -z "${SOCK}" || ! -s "${OUT}" ]]; then
+          echo "Skip CLI install (ipc=${SOCK:-none} vsix=$([ -s "${OUT}" ] && echo yes || echo no))"
+          exit 0
+        fi
+        export VSCODE_IPC_HOOK_CLI="${SOCK}"
+        CODE="$(command -v code-oss || true)"
+        if [[ -z "${CODE}" ]]; then
+          CODE="/checode/checode-linux-libc/ubi9/bin/remote-cli/code-oss"
+        fi
+        if [[ ! -x "${CODE}" ]]; then
+          echo "code-oss not found; relying on DEFAULT_EXTENSIONS"
+          exit 0
+        fi
+        if "${CODE}" --list-extensions 2>/dev/null | grep -qi '^continue.continue'; then
+          echo "Continue already installed"
+          exit 0
+        fi
+        echo "Installing Continue from ${OUT} via CLI..."
+        "${CODE}" --install-extension "${OUT}" || echo "CLI install deferred; DEFAULT_EXTENSIONS should apply"
   - id: print-ai-help
     exec:
       component: tools
@@ -47,7 +99,7 @@ commands:
         cat <<'EOF'
         DevSpaces AI workspace
         ----------------------
-        1) Open Continue in Che Code (sidebar).
+        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS). Open it in the Che Code sidebar.
         2) Env LITELLM_API_* from Secret rhdh-agent-sandbox-continue (chart), or set manually then wire-continue.
              oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d
         3) Models: granite | qwen3
@@ -101,5 +153,7 @@ commands:
         echo "Wrote ${CFG}"
 events:
   postStart:
+    - download-continue-extension
+    - ensure-continue-extension
     - print-ai-help
     - wire-continue

@@ -1,0 +1,23 @@
+{{- if and .Values.litellm.enabled .Values.litellm.route.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
+{{/*
+  Mount DEFAULT_EXTENSIONS into every DevWorkspace in this namespace so Che Code
+  auto-installs Continue once postStart (or a prior run) places /tmp/continue.vsix.
+  Complements Devfile commands download-continue-extension / ensure-continue-extension.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullname }}-vscode-continue
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: continue
+    controller.devfile.io/mount-to-devworkspace: "true"
+    controller.devfile.io/watch-configmap: "true"
+  annotations:
+    controller.devfile.io/mount-as: env
+    rhdh-agent-sandbox/purpose: "Che Code DEFAULT_EXTENSIONS → Continue"
+data:
+  DEFAULT_EXTENSIONS: "/tmp/continue.vsix"
+{{- end }}

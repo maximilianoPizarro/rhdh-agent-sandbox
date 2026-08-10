@@ -6,6 +6,9 @@
 /charts/
 .idea/
 .vscode/
+# Ship Continue recommendation into DevSpaces scaffolds
+!files/**/.vscode/
+!files/**/.vscode/extensions.json
 *.swp
 .DS_Store
 tmp/
@@ -19,3 +22,6 @@ node_modules/
 .helm/
 secrets.env
 *.pem
+# Continue local configs may contain API keys — never commit
+.continue/
+**/.continue/config.yaml

@@ -31,7 +31,7 @@ Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift
 </div>
 <div class="card">
 <h3>DevSpaces AI</h3>
-<p>Browser IDE (Che Code + Continue) connected to the LiteLLM Route for AI-assisted coding.</p>
+<p>Browser IDE (Che Code + Continue) connected to the LiteLLM Route, with Hub MCP Actions over the Hub Route. <a href="{{ '/devspaces-journey/' | relative_url }}">See the journey</a>.</p>
 </div>
 <div class="card">
 <h3>AI Catalog</h3>
@@ -62,8 +62,9 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 2. [Verify the install]({{ '/verify/' | relative_url }}) — confirm Hub, LiteLLM, routes  
 3. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — deploy an agent Pod from the catalog  
 4. [Agents]({{ '/agents/' | relative_url }}) — Hub Guest, agent Pods, DevSpaces loops  
-5. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — browser IDE with Continue → LiteLLM  
-6. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
+5. [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}) — Continue → LiteLLM + Hub MCP from the IDE  
+6. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — reference for Devfile / Secret wiring  
+7. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
 
 Deeper reading: [Architecture]({{ '/architecture/' | relative_url }}), [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}), [AI capabilities]({{ '/ai-capabilities/' | relative_url }}), [OpenClaw]({{ '/openclaw/' | relative_url }}), [Troubleshooting]({{ '/troubleshooting/' | relative_url }}), [Community packs]({{ '/community-plugins-quay/' | relative_url }}).
 

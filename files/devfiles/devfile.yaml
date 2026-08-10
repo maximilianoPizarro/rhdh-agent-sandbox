@@ -1,9 +1,9 @@
 schemaVersion: 2.2.0
 metadata:
   name: agent-friendly-workspace
-  version: 0.2.0
+  version: 0.3.0
   displayName: Agent-friendly DevSpaces AI Workspace
-  description: Browser IDE (Che Code) with Continue → LiteLLM on Developer Sandbox
+  description: Browser IDE (Che Code) with Continue preinstalled → LiteLLM on Developer Sandbox
   tags:
     - continue
     - mcp
@@ -31,6 +31,9 @@ components:
       env:
         - name: SHELL
           value: /bin/bash
+        # Preinstall Continue (Che Code reads DEFAULT_EXTENSIONS at startup).
+        - name: DEFAULT_EXTENSIONS
+          value: /tmp/continue.vsix
         # Prefer chart Secret rhdh-agent-sandbox-continue (LITELLM_API_*).
         # Override here only if the workspace cannot mount that Secret.
         - name: LITELLM_API_BASE
@@ -40,6 +43,55 @@ components:
       attributes:
         controller.devfile.io/merge-contribution: true
 commands:
+  - id: download-continue-extension
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        OUT=/tmp/continue.vsix
+        if [[ -s "${OUT}" ]]; then
+          echo "Continue vsix already present: ${OUT}"
+          exit 0
+        fi
+        META_URL="https://open-vsx.org/api/Continue/continue/linux-x64/latest"
+        echo "Resolving Continue linux-x64 from OpenVSX..."
+        URL="$(curl -fsSL "${META_URL}" | python3 -c 'import sys,json; print(json.load(sys.stdin)["files"]["download"])')"
+        echo "Downloading ${URL}"
+        curl -fsSL --retry 3 --retry-delay 2 -o "${OUT}.partial" "${URL}"
+        mv "${OUT}.partial" "${OUT}"
+        echo "Wrote ${OUT} ($(wc -c < "${OUT}") bytes)"
+  - id: ensure-continue-extension
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        OUT=/tmp/continue.vsix
+        # Wait briefly for Che Code IPC (DEFAULT_EXTENSIONS may already install in background).
+        SOCK=""
+        for _ in $(seq 1 45); do
+          SOCK="$(ls /tmp/vscode-ipc-*.sock 2>/dev/null | head -1 || true)"
+          [[ -n "${SOCK}" ]] && break
+          sleep 2
+        done
+        if [[ -z "${SOCK}" || ! -s "${OUT}" ]]; then
+          echo "Skip CLI install (ipc=${SOCK:-none} vsix=$([ -s "${OUT}" ] && echo yes || echo no))"
+          exit 0
+        fi
+        export VSCODE_IPC_HOOK_CLI="${SOCK}"
+        CODE="$(command -v code-oss || true)"
+        if [[ -z "${CODE}" ]]; then
+          CODE="/checode/checode-linux-libc/ubi9/bin/remote-cli/code-oss"
+        fi
+        if [[ ! -x "${CODE}" ]]; then
+          echo "code-oss not found; relying on DEFAULT_EXTENSIONS"
+          exit 0
+        fi
+        if "${CODE}" --list-extensions 2>/dev/null | grep -qi '^continue.continue'; then
+          echo "Continue already installed"
+          exit 0
+        fi
+        echo "Installing Continue from ${OUT} via CLI..."
+        "${CODE}" --install-extension "${OUT}" || echo "CLI install deferred; DEFAULT_EXTENSIONS should apply"
   - id: print-ai-help
     exec:
       component: tools
@@ -47,22 +99,23 @@ commands:
         cat <<'EOF'
         DevSpaces AI workspace
         ----------------------
-        1) Open Continue in Che Code (sidebar).
+        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS). Open it in the Che Code sidebar.
         2) Env LITELLM_API_BASE / LITELLM_API_KEY come from Secret
            rhdh-agent-sandbox-continue (created by the Helm chart), or set them
            manually then run wire-continue.
              oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d
         3) Models: granite | qwen3 (chat). Tool calling demos use Hub Lightspeed/MCP Chat
            with litemaas-qwen or OpenClaw + LiteMaaS.
-        4) Skills live under .continue/skills/ — prompts under docs/prompts/
-        5) Hub Lightspeed + MCP stay in Developer Hub (guest login).
+        4) Optional: wire-continue also adds Hub mcp-actions (catalog/TechDocs) via Hub Route
+           + mcp-token. ClusterIP OpenShift/K8s MCP is not reachable from the IDE.
+        5) Skills live under .continue/skills/ — prompts under docs/prompts/
+        6) Hub Lightspeed + Cluster MCP stay in Developer Hub (guest login).
         EOF
   - id: wire-continue
     exec:
       component: tools
       commandLine: |
         set -euo pipefail
-        CFG=".continue/config.json"
         if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
           if oc get secret rhdh-agent-sandbox-continue >/dev/null 2>&1; then
             export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)"
@@ -73,36 +126,73 @@ commands:
           echo "Set LITELLM_API_BASE and LITELLM_API_KEY (or mount rhdh-agent-sandbox-continue), then re-run wire-continue."
           exit 0
         fi
-        mkdir -p .continue
-        cat > "${CFG}" <<EOF
-        {
-          "models": [
-            {
-              "title": "Granite (LiteLLM)",
-              "provider": "openai",
-              "model": "granite",
-              "apiBase": "${LITELLM_API_BASE}",
-              "apiKey": "${LITELLM_API_KEY}"
-            },
-            {
-              "title": "Qwen3 (LiteLLM)",
-              "provider": "openai",
-              "model": "qwen3",
-              "apiBase": "${LITELLM_API_BASE}",
-              "apiKey": "${LITELLM_API_KEY}"
-            }
-          ],
-          "tabAutocompleteModel": {
-            "title": "Granite autocomplete",
-            "provider": "openai",
-            "model": "granite",
-            "apiBase": "${LITELLM_API_BASE}",
-            "apiKey": "${LITELLM_API_KEY}"
-          }
-        }
-        EOF
-        echo "Wrote ${CFG}"
+        export HUB_ROUTE="$(oc get route -l app.kubernetes.io/name=developer-hub -o jsonpath='{.items[0].spec.host}' 2>/dev/null || true)"
+        export MCP_TOKEN=""
+        if oc get secret rhdh-agent-sandbox-secrets >/dev/null 2>&1; then
+          export MCP_TOKEN="$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.mcp-token}' | base64 -d)"
+        fi
+        mkdir -p "${HOME}/.continue" .continue
+        sed 's/^        //' <<'PY' | python3
+        import os
+        from pathlib import Path
+        base = os.environ["LITELLM_API_BASE"]
+        key = os.environ["LITELLM_API_KEY"]
+        hub = os.environ.get("HUB_ROUTE") or ""
+        mcp = os.environ.get("MCP_TOKEN") or ""
+        lines = [
+            "name: Main Config",
+            "version: 1.0.0",
+            "schema: v1",
+            "models:",
+            "  - name: Granite (LiteLLM)",
+            "    provider: openai",
+            "    model: granite",
+            f"    apiBase: {base}",
+            f"    apiKey: {key}",
+            "    roles: [chat, edit, apply, autocomplete]",
+            "  - name: Qwen3 (LiteLLM)",
+            "    provider: openai",
+            "    model: qwen3",
+            f"    apiBase: {base}",
+            f"    apiKey: {key}",
+            "    roles: [chat, edit, apply]",
+        ]
+        if hub and mcp:
+            lines += [
+                "mcpServers:",
+                "  - name: hub-mcp-actions",
+                "    type: sse",
+                f"    url: https://{hub}/api/mcp-actions/v1",
+                "    requestOptions:",
+                "      headers:",
+                f"        Authorization: Bearer {mcp}",
+            ]
+        Path(os.path.expanduser("~/.continue/config.yaml")).write_text("\n".join(lines) + "\n")
+        Path(".continue/config.json").write_text(
+            '{\n'
+            '  "models": [\n'
+            '    {\n'
+            '      "title": "Granite (LiteLLM)",\n'
+            '      "provider": "openai",\n'
+            '      "model": "granite",\n'
+            '      "apiBase": "${LITELLM_API_BASE}",\n'
+            '      "apiKey": "${LITELLM_API_KEY}"\n'
+            '    },\n'
+            '    {\n'
+            '      "title": "Qwen3 (LiteLLM)",\n'
+            '      "provider": "openai",\n'
+            '      "model": "qwen3",\n'
+            '      "apiBase": "${LITELLM_API_BASE}",\n'
+            '      "apiKey": "${LITELLM_API_KEY}"\n'
+            '    }\n'
+            '  ]\n'
+            '}\n'
+        )
+        print("Wrote ~/.continue/config.yaml and .continue/config.json (placeholders)")
+        PY
 events:
   postStart:
+    - download-continue-extension
+    - ensure-continue-extension
     - print-ai-help
     - wire-continue

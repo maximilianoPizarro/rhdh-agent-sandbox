@@ -4,6 +4,8 @@
   url: /journey/
 - title: Hub tool calling
   url: /tool-calling-journey/
+- title: DevSpaces journey
+  url: /devspaces-journey/
 - title: OpenClaw journey
   url: /openclaw-journey/
 - title: Get started
@@ -30,6 +32,8 @@
   children:
     - title: DevSpaces AI
       url: /devspaces-ai/
+    - title: DevSpaces journey
+      url: /devspaces-journey/
     - title: Cursor (optional)
       url: /devspaces-cursor/
     - title: OpenClaw (optional)

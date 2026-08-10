@@ -1,0 +1,6 @@
+{
+  "continue.enableTabAutocomplete": true,
+  "files.exclude": {
+    "**/.continue/**/__pycache__": true
+  }
+}

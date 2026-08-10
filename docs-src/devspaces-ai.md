@@ -79,7 +79,7 @@ export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath
 export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)"
 ```
 
-Open the **Continue** sidebar in Che Code and send a short chat.
+Continue is **preinstalled** on workspace start (`DEFAULT_EXTENSIONS` + OpenVSX download; CLI fallback). Open the **Continue** sidebar in Che Code and send a short chat.
 
 > **Tip**
 >
@@ -93,11 +93,18 @@ Open the **Continue** sidebar in Che Code and send a short chat.
 | `.continue/config.json` | OpenAI-compatible models → LiteLLM |
 | `.continue/skills/*` | DevSpaces AI, OpenShift MCP notes, Lightspeed RAG |
 | `.vscode/extensions.json` | Recommends Continue |
+| Devfile `DEFAULT_EXTENSIONS` + `download-continue-extension` | Preinstalls Continue from OpenVSX (linux-x64 `.vsix`) |
 | `docs/prompts/*` | Prompts aligned with Hub catalog |
 
 ## MCP from the IDE?
 
-Not required for the demo. MCP ClusterIP services are consumed from **Hub Lightspeed**. The IDE path is Continue → LiteLLM Route → Granite/Qwen.
+**Hub mcp-actions** are reachable from DevSpaces over the Hub Route with `mcp-token` (catalog / TechDocs tools). OpenShift/Kubernetes MCP remain **ClusterIP** and are consumed from **Hub Lightspeed / MCP Chat**, not from the IDE.
+
+Continue chat path: Continue → LiteLLM Route → Granite/Qwen. Step-by-step screenshots: [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
+
+> **Info: Continue v2**
+>
+> Continue 2.x stores live keys in `~/.continue/config.yaml` (local only). `wire-continue` also writes placeholder `.continue/config.json` in the repo tree — do not paste real keys into git.
 
 ## Stop when done
 
