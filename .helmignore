@@ -2,6 +2,8 @@
 .github
 community-plugins
 site
+docs
+docs-src
 *.md
 .gitignore
 .helmignore
@@ -9,5 +11,3 @@ tmp
 dist
 mkdocs.yml
 artifacthub-repo.yml
-# Parent GitHub Pages content must not enter the chart package
-../

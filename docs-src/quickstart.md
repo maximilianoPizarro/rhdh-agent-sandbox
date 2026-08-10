@@ -2,6 +2,10 @@
 
 Install on **OpenShift Developer Sandbox** with a single Helm release. Chart source lives at the **repository root**. GitHub Pages serves the **`/docs`** folder, which holds the Helm repo (`index.yaml`, `artifacthub-repo.yml`, packaged `.tgz`).
 
+!!! warning "Replace `<your-sandbox>` before running"
+    Both install methods use the placeholder `apps.<your-sandbox>.openshiftapps.com`. Replace it with your cluster's apps domain **before** you copy-paste.
+    If `oc get ingresses.config.openshift.io cluster` is Forbidden, take any Route host and drop the first DNS label (example: `my-app-ns.apps.rm2.thpm.p1.openshiftapps.com` → `apps.rm2.thpm.p1.openshiftapps.com`).
+
 ## Install from clone
 
 ```bash
@@ -32,11 +36,18 @@ helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
   --wait=false
 ```
 
-!!! tip "Apps domain"
-    Prefer the value already in `values.yaml` (`rhdh.global.clusterRouterBase`) when it matches your cluster.
-    If you need to discover it and `oc get ingresses.config.openshift.io cluster` is Forbidden, take any Route host and drop the first DNS label (example: `my-app-ns.apps.rm2.thpm.p1.openshiftapps.com` → `apps.rm2.thpm.p1.openshiftapps.com`).
+!!! warning "Model token TTL ~24 h"
+    `secrets.modelApiKey` uses your Sandbox oauth-proxy token, which expires in **~24 hours**. When Lightspeed or LiteLLM returns **401**, refresh the secret and restart LiteLLM:
 
-First install pulls large images (RHDH, LiteLLM). Expect several minutes.
+    ```bash
+    oc set data secret/rhdh-agent-sandbox-secrets \
+      --from-literal=model-api-key="$(oc whoami -t)"
+    oc rollout restart deploy/rhdh-agent-litellm
+    ```
+
+!!! info "Expected resources and time"
+    First install pulls large images (RHDH ~1.5 GB, LiteLLM ~500 MB). **Expect 5–10 minutes** on Developer Sandbox.
+    Approximate quota: Hub pod (**1 CPU / 2.5 Gi**), LiteLLM pod (**0.5 CPU / 512 Mi**), plus one DevSpaces workspace if you follow the full demo.
 
 ## Confirm
 
@@ -51,7 +62,6 @@ Sign in as **Guest**. Next: [Golden Paths](golden-paths.md) (deploy an agent) an
 
 | Topic | Detail |
 |---|---|
-| Prerequisites | `oc` logged in, `helm` 3.14+, Sandbox quota for Hub + LiteLLM + one DevSpaces workspace |
-| Model token TTL | Sandbox oauth-proxy ~24h — refresh `model-api-key` on the chart secret and restart LiteLLM when chat 401s |
+| Prerequisites | `oc` logged in, `helm` 3.14+, Sandbox quota available |
 | RHDH dependency | Declared in `Chart.yaml`; bump version there when upgrading Developer Hub |
 | Single values file | All Sandbox defaults live in root `values.yaml` |

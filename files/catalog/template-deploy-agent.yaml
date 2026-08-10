@@ -40,9 +40,9 @@ spec:
             - nodejs
             - quarkus
           enumNames:
-            - Python → LangGraph
-            - Node.js → LangChain.js
-            - Quarkus → LangChain4j
+            - "Python → LangGraph"
+            - "Node.js → LangChain.js"
+            - "Quarkus → LangChain4j"
         agentType:
           title: Agent type
           type: string
@@ -63,16 +63,12 @@ spec:
       name: Resolve framework from language
       action: debug:log
       input:
-        message: >
-          language=${{ parameters.language }} → framework=${{
-            parameters.language === 'python' ? 'langgraph' :
-            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
-          }} agentType=${{ parameters.agentType }}
+        message: "language=${{ parameters.language }} agentType=${{ parameters.agentType }}"
     - id: fetch
-      name: Materialize agent skeleton (local scaffolder-assets)
+      name: Materialize agent skeleton
       action: fetch:template
       input:
-        url: file:/opt/app-root/src/scaffolder-assets/skeletons/deploy-agent
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
@@ -80,15 +76,12 @@ spec:
           agentType: ${{ parameters.agentType }}
           agentSpec: ${{ parameters.agentSpec }}
           model: ${{ parameters.model }}
-          framework: ${{
-            parameters.language === 'python' ? 'langgraph' :
-            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
-          }}
+          framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
     - id: fetch-runtime
       name: Materialize language runtime manifests
       action: fetch:template
       input:
-        url: file:/opt/app-root/src/scaffolder-assets/agent-runtimes/${{ parameters.language }}
+        url: "https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/agent-runtimes/${{ parameters.language }}"
         targetPath: ./runtime
         values:
           name: ${{ parameters.name }}
@@ -97,10 +90,7 @@ spec:
           agentType: ${{ parameters.agentType }}
           agentSpec: ${{ parameters.agentSpec }}
           model: ${{ parameters.model }}
-          framework: ${{
-            parameters.language === 'python' ? 'langgraph' :
-            parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
-          }}
+          framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
     - id: write
       name: Write Component to catalog workspace
       action: catalog:write
@@ -119,15 +109,12 @@ spec:
             annotations:
               rhdh-agent-sandbox.io/managed-agent: "true"
               rhdh-agent-sandbox.io/language: ${{ parameters.language }}
-              rhdh-agent-sandbox.io/framework: ${{
-                parameters.language === 'python' ? 'langgraph' :
-                parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j'
-              }}
+              rhdh-agent-sandbox.io/framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
               rhdh-agent-sandbox.io/model: ${{ parameters.model }}
               rhdh-agent-sandbox.io/agent-type: ${{ parameters.agentType }}
               rhdh-agent-sandbox.io/agent-spec: ${{ parameters.agentSpec }}
             links:
-              - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}
+              - url: "https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}"
                 title: Open in DevSpaces
                 icon: catalog
           spec:
@@ -145,24 +132,19 @@ spec:
       name: Namespace apply via agent-applier
       action: debug:log
       input:
-        message: >
-          Component registered with managed-agent annotations. Chart agent-applier
-          creates/updates Deployment+Service (ClusterIP) from those annotations
-          within about one poll interval. Hub SA also has namespace RBAC for
-          scaffolder-backend-module-kubernetes-dynamic.
+        message: "Component registered with managed-agent annotations. Chart agent-applier creates/updates Deployment+Service within about one poll interval."
   output:
     links:
       - title: Open Component
         icon: catalog
-        entityRef: component:default/${{ parameters.name }}
+        entityRef: "component:default/${{ parameters.name }}"
     text:
       - title: Agent created
         content: |
-          Framework: ${{ parameters.language === 'python' ? 'langgraph' : parameters.language === 'nodejs' ? 'langchain-js' : 'langchain4j' }}
           Model: ${{ parameters.model }}
 
           Check the Pod:
             oc get deploy/${{ parameters.name }}
             oc logs deploy/${{ parameters.name }}
 
-          Open in DevSpaces from the Component page link (factory URL uses this repo's skeleton for ${{ parameters.language }}).
+          Open in DevSpaces from the Component page link.
