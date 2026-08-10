@@ -1,4 +1,4 @@
-# ${{ values.name | default "quarkus-service" }}
+# ${{ values.name }}
 
 Agent-friendly workspace for OpenShift DevSpaces (browser IDE + Continue → LiteLLM).
 

@@ -1,4 +1,4 @@
-# ${{ values.name | default "nodejs-service" }}
+# ${{ values.name }}
 
 Agent-friendly workspace for OpenShift DevSpaces (browser IDE + Continue → LiteLLM).
 
