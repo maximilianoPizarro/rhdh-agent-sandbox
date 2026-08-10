@@ -1071,6 +1071,11 @@
 
 <h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
 <p>Install on <strong>OpenShift Developer Sandbox</strong> with a single Helm release. Chart source lives at the <strong>repository root</strong>. GitHub Pages serves the <strong><code>/docs</code></strong> folder, which holds the Helm repo (<code>index.yaml</code>, <code>artifacthub-repo.yml</code>, packaged <code>.tgz</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Replace <code>&lt;your-sandbox&gt;</code> before running</p>
+<p>Both install methods use the placeholder <code>apps.&lt;your-sandbox&gt;.openshiftapps.com</code>. Replace it with your cluster's apps domain <strong>before</strong> you copy-paste.
+If <code>oc get ingresses.config.openshift.io cluster</code> is Forbidden, take any Route host and drop the first DNS label (example: <code>my-app-ns.apps.rm2.thpm.p1.openshiftapps.com</code> → <code>apps.rm2.thpm.p1.openshiftapps.com</code>).</p>
+</div>
 <h2 id="install-from-clone">Install from clone<a class="headerlink" href="#install-from-clone" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>rhdh-agent-sandbox
@@ -1094,15 +1099,22 @@
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>--timeout<span class="w"> </span>20m<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--wait<span class="o">=</span><span class="nb">false</span>
 </code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Apps domain</p>
-<p>Prefer the value already in <code>values.yaml</code> (<code>rhdh.global.clusterRouterBase</code>) when it matches your cluster.
-If you need to discover it and <code>oc get ingresses.config.openshift.io cluster</code> is Forbidden, take any Route host and drop the first DNS label (example: <code>my-app-ns.apps.rm2.thpm.p1.openshiftapps.com</code> → <code>apps.rm2.thpm.p1.openshiftapps.com</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Model token TTL ~24 h</p>
+<p><code>secrets.modelApiKey</code> uses your Sandbox oauth-proxy token, which expires in <strong>~24 hours</strong>. When Lightspeed or LiteLLM returns <strong>401</strong>, refresh the secret and restart LiteLLM:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>oc<span class="w"> </span><span class="nb">set</span><span class="w"> </span>data<span class="w"> </span>secret/rhdh-agent-sandbox-secrets<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>model-api-key<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>oc<span class="w"> </span>whoami<span class="w"> </span>-t<span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>oc<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deploy/rhdh-agent-litellm
+</code></pre></div>
 </div>
-<p>First install pulls large images (RHDH, LiteLLM). Expect several minutes.</p>
+<div class="admonition info">
+<p class="admonition-title">Expected resources and time</p>
+<p>First install pulls large images (RHDH ~1.5 GB, LiteLLM ~500 MB). <strong>Expect 5–10 minutes</strong> on Developer Sandbox.
+Approximate quota: Hub pod (<strong>1 CPU / 2.5 Gi</strong>), LiteLLM pod (<strong>0.5 CPU / 512 Mi</strong>), plus one DevSpaces workspace if you follow the full demo.</p>
+</div>
 <h2 id="confirm">Confirm<a class="headerlink" href="#confirm" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>oc<span class="w"> </span>get<span class="w"> </span>route<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>developer-hub
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>oc<span class="w"> </span>get<span class="w"> </span>route<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>developer-hub
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods
 </code></pre></div>
 <p>Sign in as <strong>Guest</strong>. Next: <a href="../golden-paths/">Golden Paths</a> (deploy an agent) and <a href="../verify/">Verify</a>.</p>
 <h2 id="notes-not-install-steps">Notes (not install steps)<a class="headerlink" href="#notes-not-install-steps" title="Permanent link">&para;</a></h2>
@@ -1116,11 +1128,7 @@ If you need to discover it and <code>oc get ingresses.config.openshift.io cluste
 <tbody>
 <tr>
 <td>Prerequisites</td>
-<td><code>oc</code> logged in, <code>helm</code> 3.14+, Sandbox quota for Hub + LiteLLM + one DevSpaces workspace</td>
-</tr>
-<tr>
-<td>Model token TTL</td>
-<td>Sandbox oauth-proxy ~24h — refresh <code>model-api-key</code> on the chart secret and restart LiteLLM when chat 401s</td>
+<td><code>oc</code> logged in, <code>helm</code> 3.14+, Sandbox quota available</td>
 </tr>
 <tr>
 <td>RHDH dependency</td>
