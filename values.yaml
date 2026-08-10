@@ -101,10 +101,10 @@ catalog:
   configMapName: rhdh-agent-sandbox-catalog
 
 communityPlugins:
-  # OCI packages published by this repo's CI to GHCR
+  # OCI asset packs published by CI to Quay (Podman). Tag = <pack>-<tag>.
   enabled: true
-  registry: ghcr.io
-  repositoryPrefix: maximilianoPizarro/rhdh-agent-sandbox
+  registry: quay.io
+  repository: maximilianopizarro/rhdh-agent-sandbox
   tag: "0.1.0"
   packages:
     - name: ai-skills-pack
@@ -171,7 +171,7 @@ rhdh:
           disabled: true
         - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
           disabled: true
-    # Asset packs publish to GHCR. Do not wire a non-janus image as catalogIndex.extraImages.
+    # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:
       extraImages: []
   upstream:

@@ -1,11 +1,11 @@
-# Community AI asset packs (GHCR)
+# Community AI asset packs (Quay)
 
-These packages ship **installable AI assets** (skills, prompts, catalog index) for the sandbox demo.
+These packages ship **installable AI assets** (skills, prompts, catalog index) related to the sandbox demo that are **not** included in the Developer Hub image.
 
-Images are published by CI to:
+Images are published by CI (Podman) to:
 
 ```text
-ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/<name>:<tag>
+quay.io/maximilianopizarro/rhdh-agent-sandbox:<name>-<tag>
 ```
 
 | Pack | Purpose |
@@ -14,15 +14,16 @@ ghcr.io/maximilianoPizarro/rhdh-agent-sandbox/<name>:<tag>
 | `ai-prompts-pack` | Saved prompts for Lightspeed / MCP workflows |
 | `plugin-catalog-index` | Extra catalog index image for Extensions discovery |
 
-## Local build
+## Local build (Podman)
 
 ```bash
-./community-plugins/build-and-push.sh 0.1.0
+printf '%s' "$QUAY_PASSWORD" | podman login quay.io -u "$QUAY_USERNAME" --password-stdin
+ENGINE=podman REGISTRY=quay.io REPO=maximilianopizarro/rhdh-agent-sandbox \
+  ./community-plugins/build-and-push.sh 0.1.0
 ```
 
-Requires `docker` or `podman` and permission to push to GHCR (`echo $GITHUB_TOKEN | docker login ghcr.io -u USER --password-stdin`).
+Requires Podman and a Quay robot account with push access.
 
 ## RHDH dynamic plugins note
 
-CI pushes packs to GHCR and attempts to mark them **public** (required for anonymous Sandbox pulls). Hub catalog entities still load from GitHub `files/catalog/` URLs — do not point `catalogIndex.extraImages` at these asset packs unless they are real RHDH catalog-index images.
-Asset packs above complement that with demo-specific Skills / Prompts / MCP catalog entities mounted by the Helm chart ConfigMap.
+CI pushes packs to Quay. Make the Quay repository **public** (or use a pull secret) for Sandbox anonymous pulls. Hub catalog entities still load from the chart ConfigMap (`files/catalog/`) — do not point `catalogIndex.extraImages` at these asset packs unless they are real RHDH catalog-index images.

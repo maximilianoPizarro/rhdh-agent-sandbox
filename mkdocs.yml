@@ -47,7 +47,7 @@ nav:
       - OpenClaw (optional): openclaw.md
   - Operations:
       - Troubleshooting: troubleshooting.md
-      - Community packs / GHCR: community-plugins-ghcr.md
+      - Community packs / Quay: community-plugins-quay.md
 
 markdown_extensions:
   - admonition

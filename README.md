@@ -50,9 +50,9 @@ Single `values.yaml` — this chart is Sandbox-only (no overlay file).
 ```text
 Chart.yaml / values.yaml / templates/   # umbrella chart (Sandbox-only)
 files/catalog|templates|devfiles        # Hub catalog + scaffolder assets
-community-plugins/                      # optional GHCR asset packs
+community-plugins/                      # optional Quay asset packs (Podman CI)
 docs/                                   # GitHub Pages (MkDocs)
-.github/workflows/                      # CI for charts, pages, GHCR
+.github/workflows/                      # CI for charts, pages, Quay
 ```
 
 ## License

@@ -53,7 +53,7 @@ Catalog annotations point at these stable paths so Hub and the IDE tell the same
 
 | Topic | Reality |
 |---|---|
-| GHCR community packs | Optional asset bundles for Continue/skills. **Not** loaded as RHDH dynamic plugins. |
+| Quay community packs | Optional OCI asset bundles for Continue/skills (not in the Hub image). **Not** loaded as RHDH dynamic plugins. |
 | Cursor Remote SSH / proxy | Out of the primary demo path (see [optional note](devspaces-cursor.md)). |
 | Public MCP Routes | Not exposed; Hub uses ClusterIP. |
 | RBAC / `permission.enabled: true` | Off for Guest demo. |
