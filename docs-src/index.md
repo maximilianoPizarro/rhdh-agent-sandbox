@@ -28,16 +28,21 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 ## Recommended path
 
 1. [Quickstart](quickstart.md) — single `helm upgrade --install`  
-2. [Golden Paths](golden-paths.md) — deploy an agent Pod  
-3. [Verify the install](verify.md) — confirm Hub, LiteLLM, agents  
-4. [Demo script](demo-script.md) — ~10 minute walkthrough  
-5. [Agents](agents.md) / [DevSpaces AI](devspaces-ai.md)  
+2. [Verify the install](verify.md) — confirm Hub, LiteLLM, routes  
+3. [Golden Paths](golden-paths.md) — deploy an agent Pod from the catalog  
+4. [Agents](agents.md) — Hub Guest, agent Pods, DevSpaces loops  
+5. [DevSpaces AI](devspaces-ai.md) — browser IDE with Continue → LiteLLM  
+6. [Demo script](demo-script.md) — guided ~10 minute walkthrough  
 
-Deeper reading: [Architecture](architecture.md), [Lightspeed & models](lightspeed-models.md), [Troubleshooting](troubleshooting.md).
+Deeper reading: [Architecture](architecture.md), [Lightspeed & models](lightspeed-models.md), [AI capabilities](ai-capabilities.md), [OpenClaw](openclaw.md), [Troubleshooting](troubleshooting.md), [Community packs](community-plugins-quay.md).
 
 ## Install
 
 Chart source is at the **repo root**. Red Hat Developer Hub is a Helm dependency (`redhat-developer-hub` from `https://charts.openshift.io/`). Pages serves `/docs`, which includes `index.yaml`, `artifacthub-repo.yml`, and the packaged `.tgz`.
+
+!!! warning "Replace `<your-sandbox>` before running"
+    Both commands use the placeholder `apps.<your-sandbox>.openshiftapps.com`. Replace it with your cluster's apps domain.
+    See [Quickstart](quickstart.md) for how to discover it.
 
 ```bash
 git clone https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
@@ -64,7 +69,8 @@ helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
   --wait=false
 ```
 
-If `ingresses.config.openshift.io` is Forbidden, infer the apps domain from any Route host (`oc get route` → drop the first DNS label).
+!!! warning "Model token TTL ~24 h"
+    `secrets.modelApiKey` uses your Sandbox token, which expires in **~24 hours**. When chat returns **401**, refresh the secret and restart LiteLLM. Details in [Quickstart — Notes](quickstart.md).
 
 ## Source
 
