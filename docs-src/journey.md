@@ -6,7 +6,7 @@
 <div class="journey-viewport" id="journey-viewport">
 
 <figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 10">
-<img src="assets/screenshots/hub-home.png" alt="Developer Hub home page with Welcome back greeting" />
+<img src="../assets/screenshots/hub-home.png" alt="Developer Hub home page with Welcome back greeting" />
 <figcaption>
 <span class="slide-num">Step 01</span>
 <strong>Developer Hub home</strong>
@@ -15,7 +15,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 10" hidden>
-<img src="assets/screenshots/templates-all-3.png" alt="Self-service page showing 3 Golden Path templates" />
+<img src="../assets/screenshots/templates-all-3.png" alt="Self-service page showing 3 Golden Path templates" />
 <figcaption>
 <span class="slide-num">Step 02</span>
 <strong>Three Golden Paths</strong>
@@ -24,7 +24,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 10" hidden>
-<img src="assets/screenshots/deploy-agent-form.png" alt="Deploy Agent form with agent name, owner, language and specification fields" />
+<img src="../assets/screenshots/deploy-agent-form.png" alt="Deploy Agent form with agent name, owner, language and specification fields" />
 <figcaption>
 <span class="slide-num">Step 03</span>
 <strong>Deploy Agent — form</strong>
@@ -33,7 +33,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 10" hidden>
-<img src="assets/screenshots/deploy-agent-success.png" alt="All 5 steps completed successfully with green checkmarks" />
+<img src="../assets/screenshots/deploy-agent-success.png" alt="All 5 steps completed successfully with green checkmarks" />
 <figcaption>
 <span class="slide-num">Step 04</span>
 <strong>Deploy Agent — success</strong>
@@ -42,7 +42,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 10" hidden>
-<img src="assets/screenshots/devspaces-form.png" alt="DevSpaces AI Workspace form with name, owner and stack fields" />
+<img src="../assets/screenshots/devspaces-form.png" alt="DevSpaces AI Workspace form with name, owner and stack fields" />
 <figcaption>
 <span class="slide-num">Step 05</span>
 <strong>DevSpaces Workspace — form</strong>
@@ -51,7 +51,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 of 10" hidden>
-<img src="assets/screenshots/devspaces-review.png" alt="DevSpaces template review showing all parameters" />
+<img src="../assets/screenshots/devspaces-review.png" alt="DevSpaces template review showing all parameters" />
 <figcaption>
 <span class="slide-num">Step 06</span>
 <strong>DevSpaces Workspace — review</strong>
@@ -60,7 +60,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 of 10" hidden>
-<img src="assets/screenshots/devspaces-success.png" alt="DevSpaces template executed successfully with both steps green" />
+<img src="../assets/screenshots/devspaces-success.png" alt="DevSpaces template executed successfully with both steps green" />
 <figcaption>
 <span class="slide-num">Step 07</span>
 <strong>DevSpaces Workspace — success</strong>
@@ -69,7 +69,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 10" hidden>
-<img src="assets/screenshots/ai-service-form.png" alt="AI Service with MCP wiring form with name, owner and model fields" />
+<img src="../assets/screenshots/ai-service-form.png" alt="AI Service with MCP wiring form with name, owner and model fields" />
 <figcaption>
 <span class="slide-num">Step 08</span>
 <strong>AI Service with MCP — form</strong>
@@ -78,7 +78,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="8" role="group" aria-roledescription="slide" aria-label="9 of 10" hidden>
-<img src="assets/screenshots/ai-service-review.png" alt="AI Service review page showing granite model, name and owner" />
+<img src="../assets/screenshots/ai-service-review.png" alt="AI Service review page showing granite model, name and owner" />
 <figcaption>
 <span class="slide-num">Step 09</span>
 <strong>AI Service with MCP — review</strong>
@@ -87,7 +87,7 @@
 </figure>
 
 <figure class="journey-slide" data-slide="9" role="group" aria-roledescription="slide" aria-label="10 of 10" hidden>
-<img src="assets/screenshots/ai-service-success.png" alt="AI Service template executed successfully showing Connect to Lightspeed output" />
+<img src="../assets/screenshots/ai-service-success.png" alt="AI Service template executed successfully showing Connect to Lightspeed output" />
 <figcaption>
 <span class="slide-num">Step 10</span>
 <strong>AI Service with MCP — success</strong>
