@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "rhdh-agent-sandbox",
+  "description": "Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox",
+  "type": "object",
+  "required": ["secrets", "rhdh"],
+  "properties": {
+    "nameOverride": {
+      "type": "string",
+      "title": "Name Override",
+      "description": "Override the chart name (leave empty for default)",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "title": "Full Name Override",
+      "description": "Override the fully qualified release name",
+      "default": "rhdh-agent-sandbox"
+    },
+    "secrets": {
+      "type": "object",
+      "title": "Secrets",
+      "description": "Bootstrap secrets for the Hub, LiteLLM, and MCP",
+      "required": ["modelApiKey"],
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "title": "Create Secrets",
+          "description": "Create the Kubernetes Secret resource (auto-generates missing keys)",
+          "default": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Secret Name",
+          "default": "rhdh-agent-sandbox-secrets"
+        },
+        "backendSecret": {
+          "type": "string",
+          "title": "Backend Secret",
+          "description": "Backstage backend auth secret (auto-generated if empty)"
+        },
+        "litellmMasterKey": {
+          "type": "string",
+          "title": "LiteLLM Master Key",
+          "description": "LiteLLM proxy master key (auto-generated if empty)"
+        },
+        "mcpToken": {
+          "type": "string",
+          "title": "MCP Token",
+          "description": "Static token for MCP external access (auto-generated if empty)"
+        },
+        "modelApiKey": {
+          "type": "string",
+          "title": "Model API Key",
+          "description": "OpenShift user token for sandbox-shared-models oauth-proxy (oc whoami -t). Required; ~24h TTL."
+        }
+      }
+    },
+    "litellm": {
+      "type": "object",
+      "title": "LiteLLM Proxy",
+      "description": "OpenAI-compatible proxy that routes to Sandbox shared models (Granite, Qwen3)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable LiteLLM",
+          "default": true
+        },
+        "image": {
+          "type": "object",
+          "title": "Container Image",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "default": "litellm/litellm-non_root"
+            },
+            "tag": {
+              "type": "string",
+              "default": "v1.82.3-stable"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["Always", "IfNotPresent", "Never"],
+              "default": "IfNotPresent"
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "integer",
+              "title": "Service Port",
+              "default": 4000
+            }
+          }
+        },
+        "route": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Create OpenShift Route",
+              "default": true
+            }
+          }
+        },
+        "models": {
+          "type": "array",
+          "title": "Model Backends",
+          "description": "Models proxied through LiteLLM to Sandbox shared inference services",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Alias used by clients (e.g. granite, qwen3)"
+              },
+              "modelId": {
+                "type": "string",
+                "description": "InferenceService model name"
+              },
+              "apiBase": {
+                "type": "string",
+                "description": "vLLM /v1 endpoint URL"
+              }
+            }
+          }
+        },
+        "defaultModel": {
+          "type": "string",
+          "title": "Default Model",
+          "default": "granite"
+        },
+        "resources": {
+          "type": "object",
+          "title": "Resource Requests/Limits",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": { "type": "string", "default": "50m" },
+                "memory": { "type": "string", "default": "512Mi" }
+              }
+            },
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": { "type": "string", "default": "500m" },
+                "memory": { "type": "string", "default": "1536Mi" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "title": "MCP Servers",
+      "description": "Model Context Protocol servers for cluster introspection and management",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable MCP Servers",
+          "default": true
+        },
+        "quarkus": {
+          "type": "object",
+          "title": "OpenShift MCP (Quarkus)",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": { "type": "string", "default": "quay.io/maximilianopizarro/openshift-mcp-server" },
+                "tag": { "type": "string", "default": "latest" }
+              }
+            },
+            "service": {
+              "type": "object",
+              "properties": {
+                "port": { "type": "integer", "default": 8080 }
+              }
+            }
+          }
+        },
+        "kubernetes": {
+          "type": "object",
+          "title": "Kubernetes MCP",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": { "type": "string" },
+                "tag": { "type": "string", "default": "latest" }
+              }
+            },
+            "service": {
+              "type": "object",
+              "properties": {
+                "port": { "type": "integer", "default": 8085 }
+              }
+            }
+          }
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "create": { "type": "boolean", "default": true },
+            "name": { "type": "string", "default": "rhdh-agent-mcp" }
+          }
+        },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "create": { "type": "boolean", "default": true }
+          }
+        }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "title": "Software Catalog",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable AI Catalog ConfigMap",
+          "description": "Mount catalog entities (Components, Templates, APIs) as a file location in RHDH",
+          "default": true
+        },
+        "configMapName": {
+          "type": "string",
+          "default": "rhdh-agent-sandbox-catalog"
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "title": "Agent Pods (Golden Path)",
+      "description": "Sample agents and the catalog-driven agent-applier controller",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable Agents",
+          "default": true
+        },
+        "applier": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Enable Agent Applier",
+              "description": "Reconciler that creates Deployment+Service from managed-agent catalog annotations",
+              "default": true
+            }
+          }
+        },
+        "hubRbac": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Enable Hub Namespace RBAC",
+              "description": "Role/RoleBinding for Hub SA to create Deployments/Services via scaffolder-kubernetes",
+              "default": true
+            }
+          }
+        },
+        "samples": {
+          "type": "array",
+          "title": "Sample Agents",
+          "description": "Pre-created agent Deployments (python/nodejs/quarkus)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "language": { "type": "string", "enum": ["python", "nodejs", "quarkus"] },
+              "framework": { "type": "string" },
+              "model": { "type": "string" },
+              "agentSpec": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "communityPlugins": {
+      "type": "object",
+      "title": "Community Plugins (OCI Asset Packs)",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "registry": { "type": "string", "default": "quay.io" },
+        "repository": { "type": "string", "default": "maximilianopizarro/rhdh-agent-sandbox" },
+        "tag": { "type": "string", "default": "0.1.0" }
+      }
+    },
+    "rhdh": {
+      "type": "object",
+      "title": "Red Hat Developer Hub (Subchart)",
+      "description": "Official RHDH Helm subchart — configure routing, auth, plugins, and AI integrations",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable Developer Hub",
+          "default": true
+        },
+        "global": {
+          "type": "object",
+          "title": "Global Configuration",
+          "required": ["clusterRouterBase"],
+          "properties": {
+            "clusterRouterBase": {
+              "type": "string",
+              "title": "Cluster Router Base",
+              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required for Route generation."
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ maintainers:
 sources:
   - https://github.com/maximilianoPizarro/rhdh-agent-sandbox
 annotations:
-  artifacthub.io/category: developer-tools
+  artifacthub.io/category: ai-machine-learning
   artifacthub.io/license: Apache-2.0
   artifacthub.io/prerelease: "true"
   artifacthub.io/links: |
