@@ -8,7 +8,6 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: mcp-server
     app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-  annotations:
     app.openshift.io/runtime: quarkus
 spec:
   replicas: 1
@@ -22,7 +21,6 @@ spec:
         app.kubernetes.io/component: mcp-server
         app.kubernetes.io/name: openshift-mcp
         app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-      annotations:
         app.openshift.io/runtime: quarkus
     spec:
       serviceAccountName: {{ .Values.mcp.serviceAccount.name }}

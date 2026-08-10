@@ -8,9 +8,7 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: litellm
     app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-  annotations:
     app.openshift.io/runtime: python
-    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ include "rhdh-agent-sandbox.fullname" . }}-litellm"}]'
 spec:
   replicas: 1
   selector:
@@ -23,7 +21,6 @@ spec:
         app.kubernetes.io/component: litellm
         app.kubernetes.io/name: litellm
         app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-      annotations:
         app.openshift.io/runtime: python
     spec:
       containers:

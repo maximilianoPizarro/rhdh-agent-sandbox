@@ -8,7 +8,6 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: k8s-mcp
     app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-  annotations:
     app.openshift.io/runtime: golang
 spec:
   replicas: 1
@@ -22,7 +21,6 @@ spec:
         app.kubernetes.io/component: k8s-mcp
         app.kubernetes.io/name: k8s-mcp
         app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-      annotations:
         app.openshift.io/runtime: golang
     spec:
       serviceAccountName: {{ .Values.mcp.serviceAccount.name }}
