@@ -52,6 +52,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
         
         
@@ -92,6 +96,12 @@
     
     <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
     </li>
     
     
@@ -222,22 +232,30 @@
   <thead>
     <tr>
       <th>LiteLLM alias</th>
-      <th>Upstream InferenceService</th>
+      <th>Upstream</th>
+      <th>Tools</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">granite</code></td>
       <td><code class="language-plaintext highlighter-rouge">isvc-granite-31-8b-fp8</code> in <code class="language-plaintext highlighter-rouge">sandbox-shared-models</code></td>
+      <td>Dropped (chat-only)</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">qwen3</code></td>
       <td><code class="language-plaintext highlighter-rouge">isvc-qwen3-8b-fp8</code> in <code class="language-plaintext highlighter-rouge">sandbox-shared-models</code></td>
+      <td>Dropped (chat-only)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">litemaas-qwen</code></td>
+      <td>LiteMaaS <code class="language-plaintext highlighter-rouge">Qwen3.6-35B-A3B</code></td>
+      <td><strong>ON</strong> (function calling)</td>
     </tr>
   </tbody>
 </table>
 
-<p>In the Lightspeed UI / llama-stack, models appear as <strong><code class="language-plaintext highlighter-rouge">vllm/granite</code></strong> and <strong><code class="language-plaintext highlighter-rouge">vllm/qwen3</code></strong>. Hub <code class="language-plaintext highlighter-rouge">lightspeed.servers</code> in <code class="language-plaintext highlighter-rouge">values.yaml</code> uses those ids.</p>
+<p>In the Lightspeed UI / llama-stack, models appear as <strong><code class="language-plaintext highlighter-rouge">vllm/granite</code></strong>, <strong><code class="language-plaintext highlighter-rouge">vllm/qwen3</code></strong>, and <strong><code class="language-plaintext highlighter-rouge">vllm/litemaas-qwen</code></strong>. MCP Chat defaults to <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> for tool demos. See the <a href="/rhdh-agent-sandbox/tool-calling-journey/">Hub tool calling journey</a>.</p>
 
 <h2 id="how-hub-lightspeed-is-wired">How Hub Lightspeed is wired</h2>
 
@@ -296,7 +314,7 @@
 
 <h2 id="litellm-behaviour-on-sandbox">LiteLLM behaviour on Sandbox</h2>
 
-<p>Shared Granite/Qwen reject <code class="language-plaintext highlighter-rouge">tool_choice=auto</code> (they are not started with <code class="language-plaintext highlighter-rouge">--enable-auto-tool-choice</code>). The chart sets:</p>
+<p>Shared Granite/Qwen reject <code class="language-plaintext highlighter-rouge">tool_choice=auto</code> (they are not started with <code class="language-plaintext highlighter-rouge">--enable-auto-tool-choice</code>). For those aliases the chart sets:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">supports_function_calling: false</code></li>
@@ -305,9 +323,11 @@
 
 <p>Without that, Lightspeed returns HTTP 200 with an empty stream and <code class="language-plaintext highlighter-rouge">Error while obtaining answer</code> in <code class="language-plaintext highlighter-rouge">lightspeed-core</code> logs.</p>
 
+<p>For <strong>tool calling</strong> in Hub Lightspeed / MCP Chat, use <strong><code class="language-plaintext highlighter-rouge">litemaas-qwen</code></strong>. Create Secret <code class="language-plaintext highlighter-rouge">litemaas-credentials</code> with key <code class="language-plaintext highlighter-rouge">api-key</code> (LiteMaaS bearer). The chart mounts it as <code class="language-plaintext highlighter-rouge">LITEMAAS_API_KEY</code> into LiteLLM — never commit the key to git.</p>
+
 <h2 id="devspaces-continue">DevSpaces Continue</h2>
 
-<p>Continue uses the <strong>LiteLLM Route</strong> (public) + <code class="language-plaintext highlighter-rouge">litellm-master-key</code>, models <code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code>. See <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>.</p>
+<p>The chart creates Secret <strong><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code></strong> with <code class="language-plaintext highlighter-rouge">LITELLM_API_BASE</code> (LiteLLM Route) and <code class="language-plaintext highlighter-rouge">LITELLM_API_KEY</code> (<code class="language-plaintext highlighter-rouge">litellm-master-key</code>). Devfile <code class="language-plaintext highlighter-rouge">wire-continue</code> reads that Secret (or env) and writes <code class="language-plaintext highlighter-rouge">.continue/config.json</code> for models <code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code>. See <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>.</p>
 
 <h2 id="refresh-model-token-24h">Refresh model token (~24h)</h2>
 

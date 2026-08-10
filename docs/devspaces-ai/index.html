@@ -52,6 +52,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
         
         
@@ -92,6 +96,12 @@
     
     <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
     </li>
     
     
@@ -280,25 +290,41 @@ spec:
 
 <h2 id="wire-continue--litellm">Wire Continue → LiteLLM</h2>
 
-<p>Inside the workspace terminal (or before start via env):</p>
+<p>The Helm chart creates Secret <strong><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code></strong> with:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">LITELLM_API_BASE</span><span class="o">=</span><span class="s2">"https://</span><span class="si">$(</span>oc get route <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>litellm <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.items[0].spec.host}'</span><span class="si">)</span><span class="s2">/v1"</span>
-<span class="nb">export </span><span class="nv">LITELLM_API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-secrets <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.litellm-master-key}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">LITELLM_API_BASE</code></td>
+      <td>LiteLLM Route URL (<code class="language-plaintext highlighter-rouge">…/v1</code>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">LITELLM_API_KEY</code></td>
+      <td><code class="language-plaintext highlighter-rouge">litellm-master-key</code> from <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Inside the workspace terminal, run Devfile command <strong><code class="language-plaintext highlighter-rouge">wire-continue</code></strong>. It prefers env vars if set; otherwise it loads that Secret via <code class="language-plaintext highlighter-rouge">oc</code> and writes <code class="language-plaintext highlighter-rouge">.continue/config.json</code> (models <code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code>).</p>
+
+<p>Manual fallback:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">LITELLM_API_BASE</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-continue <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LITELLM_API_BASE}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
+<span class="nb">export </span><span class="nv">LITELLM_API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-continue <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LITELLM_API_KEY}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
 </code></pre></div></div>
-
-<p>Then either:</p>
-
-<ul>
-  <li>Run the Devfile command <strong><code class="language-plaintext highlighter-rouge">wire-continue</code></strong>, or</li>
-  <li>Edit <code class="language-plaintext highlighter-rouge">.continue/config.json</code> with <code class="language-plaintext highlighter-rouge">apiBase</code> = <code class="language-plaintext highlighter-rouge">$LITELLM_API_BASE</code>, <code class="language-plaintext highlighter-rouge">apiKey</code> = <code class="language-plaintext highlighter-rouge">$LITELLM_API_KEY</code>, models <code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code>.</li>
-</ul>
 
 <p>Open the <strong>Continue</strong> sidebar in Che Code and send a short chat.</p>
 
 <blockquote>
   <p><strong>Tip</strong></p>
 
-  <p>Use <strong><code class="language-plaintext highlighter-rouge">litellm-master-key</code></strong>, not your OpenShift user token. The user token is only for LiteLLM → shared models (<code class="language-plaintext highlighter-rouge">model-api-key</code>).</p>
+  <p>Use <strong><code class="language-plaintext highlighter-rouge">litellm-master-key</code></strong> (via the Continue Secret), not your OpenShift user token. The user token is only for LiteLLM → shared models (<code class="language-plaintext highlighter-rouge">model-api-key</code>). Hub tool demos use LiteMaaS via Lightspeed/MCP Chat — not Continue.</p>
 </blockquote>
 
 <h2 id="what-ships-in-skeletons">What ships in skeletons</h2>

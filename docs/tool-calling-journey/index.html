@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Community packs / Quay | rhdh-agent-sandbox</title>
+<title>Hub tool calling journey | rhdh-agent-sandbox</title>
 <!-- Begin Jekyll SEO tag v2.9.0 -->
-<title>Community packs / Quay | rhdh-agent-sandbox</title>
+<title>Hub tool calling journey | rhdh-agent-sandbox</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Community packs / Quay" />
+<meta property="og:title" content="Hub tool calling journey" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
 <meta name="twitter:description" property="og:description" content="Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox" />
-<link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/community-plugins-quay/" />
-<meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/community-plugins-quay/" />
+<link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/tool-calling-journey/" />
+<meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/tool-calling-journey/" />
 <meta property="og:site_name" content="rhdh-agent-sandbox" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Community packs / Quay" />
+<meta name="twitter:title" content="Hub tool calling journey" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"Community packs / Quay","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/community-plugins-quay/"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox","headline":"Hub tool calling journey","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/tool-calling-journey/"}</script>
 <!-- End Jekyll SEO tag -->
 
 <link rel="icon" href="/rhdh-agent-sandbox/assets/icon.png" type="image/png">
@@ -52,7 +52,7 @@
         
         
         
-        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link pf-m-current">Hub tool calling</a>
         
         
         
@@ -101,7 +101,7 @@
     
     
     <li class="pf-v6-c-nav__item">
-      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Hub tool calling</a>
     </li>
     
     
@@ -208,7 +208,7 @@
         </li>
         
         <li class="pf-v6-c-nav__item">
-          <a href="/rhdh-agent-sandbox/community-plugins-quay/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Community packs / Quay</a>
+          <a href="/rhdh-agent-sandbox/community-plugins-quay/" class="pf-v6-c-nav__link">Community packs / Quay</a>
         </li>
         
       </ul>
@@ -222,73 +222,108 @@
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="community-packs-on-quay">Community packs on Quay</h1>
+        <h1 id="hub-tool-calling-journey-lightspeed--mcp-chat">Hub tool calling journey (Lightspeed + MCP Chat)</h1>
 
-<p>CI publishes <strong>optional asset packs</strong> (skills / prompts / catalog index) for related community content that is <strong>not</strong> baked into the Developer Hub image. Images go to:</p>
+<p class="muted">Evidence that Guest Hub AI can call Kubernetes/OpenShift MCP tools with LiteMaaS Qwen (<code>litemaas-qwen</code>). Shared Granite/Qwen stay chat-only.</p>
 
-<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>quay.io/maximilianopizarro/rhdh-agent-sandbox:&lt;pack&gt;-&lt;tag&gt;
-</code></pre></div></div>
+<div class="journey-carousel" id="journey-carousel" role="region" aria-roledescription="carousel" aria-label="Hub tool calling journey" tabindex="0">
+<div class="journey-viewport" id="journey-viewport">
+
+<figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 5">
+<img src="/rhdh-agent-sandbox/assets/screenshots/lightspeed-toolcall-result.png" alt="Lightspeed chat showing Tool response chips for pods_list and pods_log with litemaas-qwen" />
+<figcaption>
+<span class="slide-num">Step 01</span>
+<strong>Lightspeed — tool rounds</strong>
+<span class="desc">Open Lightspeed, select <code>litemaas-qwen</code>, ask to list pods and check sample agents. The UI shows Tool response chips (<code>pods_list</code>, <code>pods_list_in_namespace</code>, <code>pods_log</code>).</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 5" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/lightspeed-toolcall-summary.png" alt="Lightspeed summary confirming sample-python, nodejs, and quarkus agents Running with health 200" />
+<figcaption>
+<span class="slide-num">Step 02</span>
+<strong>Lightspeed — action result</strong>
+<span class="desc">Final answer cites real pod names and <code>/health</code> 200 lines for sample-python-agent, sample-nodejs-agent, and sample-quarkus-agent.</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 5" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/mcp-chat-home.png" alt="MCP Chat landing page with Catalog, Namespace pods, and TechDocs suggested prompts" />
+<figcaption>
+<span class="slide-num">Step 03</span>
+<strong>MCP Chat — start</strong>
+<span class="desc">Sidebar <strong>MCP Chat</strong> offers suggested prompts (Catalog, Namespace pods, TechDocs) wired to the same LiteLLM + MCP servers.</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 5" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/mcp-chat-toolcall-config.png" alt="MCP Chat status panel showing Connected provider litemaas-qwen and OpenShift plus Kubernetes MCP servers" />
+<figcaption>
+<span class="slide-num">Step 04</span>
+<strong>MCP Chat — connected</strong>
+<span class="desc">Status shows Provider Connected, model <code>litemaas-qwen</code>, OpenShift MCP (19 tools) and Kubernetes MCP (23 tools) enabled.</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 5" hidden="">
+<img src="/rhdh-agent-sandbox/assets/screenshots/mcp-chat-toolcall-result.png" alt="MCP Chat reply listing three Running sample agent pods with Tools used pods_list_in_namespace" />
+<figcaption>
+<span class="slide-num">Step 05</span>
+<strong>MCP Chat — tool result</strong>
+<span class="desc">Ask for <code>pods_list_in_namespace</code> in your Sandbox namespace. Reply lists the three sample-*-agent pods and shows <strong>Tools used (1) pods_list_in_namespace</strong>.</span>
+</figcaption>
+</figure>
+
+</div>
+<div class="journey-controls">
+<div class="journey-nav">
+<button type="button" class="journey-btn" id="journey-prev" aria-label="Previous slide">&#8592; Prev</button>
+<button type="button" class="journey-btn" id="journey-next" aria-label="Next slide">Next &#8594;</button>
+<button type="button" class="journey-btn" id="journey-fs" aria-label="Toggle fullscreen" aria-pressed="false">Fullscreen</button>
+</div>
+<div class="journey-dots" id="journey-dots" role="tablist" aria-label="Slide picker"></div>
+<span class="journey-status" id="journey-status" aria-live="polite">1 / 5</span>
+</div>
+</div>
+
+<h2 id="models">Models</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Pack</th>
-      <th>Image tag example</th>
-      <th>Contents</th>
+      <th>Alias</th>
+      <th>Tools</th>
+      <th>Use for</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">ai-skills-pack</code></td>
-      <td><code class="language-plaintext highlighter-rouge">ai-skills-pack-0.1.0</code></td>
-      <td>Skill markdown bundles</td>
+      <td><code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code></td>
+      <td>Dropped by LiteLLM</td>
+      <td>Everyday Hub chat</td>
     </tr>
     <tr>
-      <td><code class="language-plaintext highlighter-rouge">ai-prompts-pack</code></td>
-      <td><code class="language-plaintext highlighter-rouge">ai-prompts-pack-0.1.0</code></td>
-      <td>Prompt markdown bundles</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">plugin-catalog-index</code></td>
-      <td><code class="language-plaintext highlighter-rouge">plugin-catalog-index-0.1.0</code></td>
-      <td>Extra catalog/index assets for packaging demos</td>
+      <td><code class="language-plaintext highlighter-rouge">litemaas-qwen</code> → LiteMaaS <code class="language-plaintext highlighter-rouge">Qwen3.6-35B-A3B</code></td>
+      <td>ON</td>
+      <td>Lightspeed + MCP Chat tool demos</td>
     </tr>
   </tbody>
 </table>
 
-<p>Repository: <a href="https://quay.io/repository/maximilianopizarro/rhdh-agent-sandbox">quay.io/maximilianopizarro/rhdh-agent-sandbox</a></p>
+<p>Store the LiteMaaS key only in cluster Secret <code class="language-plaintext highlighter-rouge">litemaas-credentials</code> (never in git). See <a href="/rhdh-agent-sandbox/lightspeed-models/">Lightspeed &amp; models</a>.</p>
 
-<h2 id="build-locally-podman">Build locally (Podman)</h2>
+<h2 id="related-journeys">Related journeys</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">printf</span> <span class="s1">'%s'</span> <span class="s2">"</span><span class="nv">$QUAY_PASSWORD</span><span class="s2">"</span> | podman login quay.io <span class="nt">-u</span> <span class="s2">"</span><span class="nv">$QUAY_USERNAME</span><span class="s2">"</span> <span class="nt">--password-stdin</span>
+<ul>
+  <li><a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a> — Deploy Agent / DevSpaces / AI Service templates</li>
+  <li><a href="/rhdh-agent-sandbox/openclaw-journey/">OpenClaw journey</a> — Sandbox OpenClaw + LiteMaaS kubectl tools</li>
+</ul>
 
-<span class="nv">ENGINE</span><span class="o">=</span>podman <span class="nv">REGISTRY</span><span class="o">=</span>quay.io <span class="nv">REPO</span><span class="o">=</span>maximilianopizarro/rhdh-agent-sandbox <span class="se">\</span>
-  ./community-plugins/build-and-push.sh 0.1.0
-</code></pre></div></div>
+<h2 id="devspaces-continue-secret">DevSpaces Continue Secret</h2>
 
-<p>Requires <strong>Podman</strong> (default engine). Override with <code class="language-plaintext highlighter-rouge">ENGINE=…</code> only if you know what you are doing.</p>
+<p>The chart also creates <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code> for Che Code Continue → LiteLLM (chat models). Devfile <code class="language-plaintext highlighter-rouge">wire-continue</code> consumes it:</p>
 
-<h2 id="github-actions">GitHub Actions</h2>
-
-<p>On push to <code class="language-plaintext highlighter-rouge">main</code> / <code class="language-plaintext highlighter-rouge">workflow_dispatch</code>, the <code class="language-plaintext highlighter-rouge">quay</code> job:</p>
-
-<ol>
-  <li>Installs Podman</li>
-  <li>Logs into Quay with secrets <code class="language-plaintext highlighter-rouge">QUAY_USERNAME</code> and <code class="language-plaintext highlighter-rouge">QUAY_PASSWORD</code></li>
-  <li>Builds and pushes the three tags above</li>
-</ol>
-
-<p>Set the repo visibility in Quay to <strong>public</strong> for anonymous Developer Sandbox pulls, or configure a pull secret in the namespace.</p>
-
-<h2 id="what-actually-loads-in-rhdh">What actually loads in RHDH</h2>
-
-<blockquote>
-  <p><strong>Important</strong></p>
-
-  <p>These Quay packs are <strong>not</strong> installed as RHDH dynamic plugins. Hub AI entities come from the Helm ConfigMap <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-catalog</code> (<code class="language-plaintext highlighter-rouge">files/catalog/*</code> mounted at <code class="language-plaintext highlighter-rouge">/opt/app-root/src/catalog</code>).</p>
-</blockquote>
-
-<p>Use Quay packs to distribute the same skills/prompts as OCI artifacts for Continue or other tooling. Keep <code class="language-plaintext highlighter-rouge">catalogIndex.extraImages</code> empty unless the image is a real RHDH catalog index — a wrong image fails <code class="language-plaintext highlighter-rouge">install-dynamic-plugins</code> and blocks the Hub pod.</p>
+<p><img src="/rhdh-agent-sandbox/assets/screenshots/devspaces-continue-secret.png" alt="Continue Secret keys LITELLM_API_BASE and LITELLM_API_KEY" /></p>
 
       </div>
     </section>
@@ -302,6 +337,8 @@
 </footer>
 
   <script src="/rhdh-agent-sandbox/assets/js/nav.js"></script>
+  
+  <script src="/rhdh-agent-sandbox/assets/js/carousel.js"></script>
   
 </body>
 </html>

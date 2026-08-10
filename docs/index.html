@@ -52,6 +52,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
         
         
@@ -92,6 +96,12 @@
     
     <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
     </li>
     
     
@@ -224,7 +234,7 @@
       <div class="pf-v6-c-content">
         <h1 id="agent-friendly-developer-hub-on-developer-sandbox">Agent-friendly Developer Hub on Developer Sandbox</h1>
 
-<p>Umbrella Helm chart that deploys <strong>Red Hat Developer Hub 1.10.3</strong> on <strong>OpenShift Developer Sandbox</strong> with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen, plus MCP tools, Golden Paths, and DevSpaces AI workspaces.</p>
+<p>Umbrella Helm chart that deploys <strong>Red Hat Developer Hub 1.10.3</strong> on <strong>OpenShift Developer Sandbox</strong> with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen (chat) or LiteMaaS Qwen (tool calling), plus MCP tools, Golden Paths, and DevSpaces AI workspaces.</p>
 
 <p><img src="/rhdh-agent-sandbox/assets/diagrams/install-one-command.png" alt="One-command install" /></p>
 
@@ -254,6 +264,10 @@
 <div class="card">
 <h3>AI Catalog</h3>
 <p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
+</div>
+<div class="card">
+<h3>Hub tool calling</h3>
+<p>Lightspeed + MCP Chat with <code>litemaas-qwen</code> call real Kubernetes tools. <a href="/rhdh-agent-sandbox/tool-calling-journey/">See the journey</a>.</p>
 </div>
 <div class="card">
 <h3>OpenClaw + Qwen</h3>

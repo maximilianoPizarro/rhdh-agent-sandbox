@@ -52,6 +52,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
         
         
@@ -92,6 +96,12 @@
     
     <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
     </li>
     
     
@@ -314,17 +324,38 @@
   </tbody>
 </table>
 
-<p>After install, open <strong>MCP Chat</strong> in the Hub sidebar. Provider defaults to LiteLLM (<code class="language-plaintext highlighter-rouge">granite</code>). MCP Chat connects to OpenShift MCP, Kubernetes MCP, and Hub mcp-actions (catalog / TechDocs extras). External MCP clients (Cursor, Continue) can call <code class="language-plaintext highlighter-rouge">https://&lt;hub-route&gt;/api/mcp-actions/v1</code> with the <code class="language-plaintext highlighter-rouge">mcp-token</code> from the chart secret.</p>
+<p>After install, open <strong>MCP Chat</strong> in the Hub sidebar. Provider defaults to LiteLLM (<code class="language-plaintext highlighter-rouge">litemaas-qwen</code> for tool demos). MCP Chat connects to OpenShift MCP, Kubernetes MCP, and Hub mcp-actions (catalog / TechDocs extras). External MCP clients (Cursor, Continue) can call <code class="language-plaintext highlighter-rouge">https://&lt;hub-route&gt;/api/mcp-actions/v1</code> with the <code class="language-plaintext highlighter-rouge">mcp-token</code> from the chart secret.</p>
 
-<h3 id="tool-calling-limitation">Tool calling limitation</h3>
+<h3 id="tool-calling">Tool calling</h3>
 
-<p>Shared Granite / Qwen behind Sandbox oauth-proxy do <strong>not</strong> support <code class="language-plaintext highlighter-rouge">tool_choice</code> / function calling:</p>
+<table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Tools</th>
+      <th>Where</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code></td>
+      <td>Dropped by LiteLLM (chat-only)</td>
+      <td>Everyday Hub chat</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">litemaas-qwen</code> (LiteMaaS Qwen3.6-35B-A3B)</td>
+      <td>ON</td>
+      <td>Lightspeed + MCP Chat demos — see <a href="/rhdh-agent-sandbox/tool-calling-journey/">Hub tool calling journey</a></td>
+    </tr>
+    <tr>
+      <td>OpenClaw + LiteMaaS</td>
+      <td>ON</td>
+      <td><a href="/rhdh-agent-sandbox/openclaw-journey/">OpenClaw journey</a></td>
+    </tr>
+  </tbody>
+</table>
 
-<ul>
-  <li>MCP Chat + LiteLLM: chat works; the model will not autonomously call MCP tools (you can still browse tools in the UI).</li>
-  <li>MCP Chat + your own OpenAI / Claude / Gemini key: full agentic tool use.</li>
-  <li>MCP Actions Backend: always usable from clients that bring their own model.</li>
-</ul>
+<p>Store the LiteMaaS key only in Secret <code class="language-plaintext highlighter-rouge">litemaas-credentials</code> (never in git).</p>
 
 <h3 id="evaluated-and-not-included">Evaluated and not included</h3>
 
