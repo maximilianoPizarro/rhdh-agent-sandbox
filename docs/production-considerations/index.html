@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production considerations | rhdh-agent-sandbox</title>
+<!-- Begin Jekyll SEO tag v2.9.0 -->
+<title>Production considerations | rhdh-agent-sandbox</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Production considerations" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<meta name="twitter:description" property="og:description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/production-considerations/" />
+<meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/production-considerations/" />
+<meta property="og:site_name" content="rhdh-agent-sandbox" />
+<meta property="og:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
+<meta name="twitter:image:alt" content="Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift" />
+<meta name="twitter:title" content="Production considerations" />
+<meta name="twitter:site" content="@" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring.","headline":"Production considerations","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/production-considerations/"}</script>
+<!-- End Jekyll SEO tag -->
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/rhdh-agent-sandbox/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/rhdh-agent-sandbox/assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@6.0.0/patternfly.min.css">
+<link rel="stylesheet" href="/rhdh-agent-sandbox/assets/css/main.css">
+
+</head>
+<body class="pf-v6-c-page">
+  <header class="pf-v6-c-page__header">
+    <div class="pf-v6-c-masthead" id="masthead">
+  <div class="pf-v6-c-masthead__main">
+    <div class="pf-v6-c-masthead__brand">
+      <a href="/rhdh-agent-sandbox/" class="masthead-logo" aria-label="Home">
+        <img src="/rhdh-agent-sandbox/assets/icon.png" alt="" width="36" height="36" class="site-logo" />
+        <span class="masthead-title">rhdh-agent-sandbox</span>
+      </a>
+    </div>
+    <div class="pf-v6-c-masthead__content">
+      <nav class="masthead-nav" aria-label="Main navigation">
+        
+        
+        <a href="/rhdh-agent-sandbox/" class="masthead-nav-link">Home</a>
+        
+        
+        
+        <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
+        
+        
+        
+        <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="masthead-nav-link">Hub tool calling</a>
+        
+        
+        
+        <a href="/rhdh-agent-sandbox/devspaces-journey/" class="masthead-nav-link">DevSpaces journey</a>
+        
+        
+        
+        <a href="/rhdh-agent-sandbox/openclaw-journey/" class="masthead-nav-link">OpenClaw journey</a>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      </nav>
+      <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" class="masthead-github" aria-label="GitHub repository" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </a>
+      <button class="masthead-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M1 2.75A.75.75 0 011.75 2h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 2.75zm0 5A.75.75 0 011.75 7h12.5a.75.75 0 010 1.5H1.75A.75.75 0 011 7.75zm0 5a.75.75 0 011.75-.75h12.5a.75.75 0 010 1.5H1.75a.75.75 0 01-.75-.75z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+  </header>
+  <div class="pf-v6-c-page__sidebar">
+    <nav class="pf-v6-c-nav" aria-label="Side navigation" id="sidebar-nav">
+  <ul class="pf-v6-c-nav__list">
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/" class="pf-v6-c-nav__link">Home</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/tool-calling-journey/" class="pf-v6-c-nav__link">Hub tool calling</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/devspaces-journey/" class="pf-v6-c-nav__link">DevSpaces journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/openclaw-journey/" class="pf-v6-c-nav__link">OpenClaw journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Get started
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/golden-paths/" class="pf-v6-c-nav__link">Golden Paths</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/agents/" class="pf-v6-c-nav__link">Agents</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/verify/" class="pf-v6-c-nav__link">Verify the install</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/demo-script/" class="pf-v6-c-nav__link">Demo script</a>
+        </li>
+        
+      </ul>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        How it works
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/architecture/" class="pf-v6-c-nav__link">Architecture</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/lightspeed-models/" class="pf-v6-c-nav__link">Lightspeed & models</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/ai-capabilities/" class="pf-v6-c-nav__link">AI capabilities</a>
+        </li>
+        
+      </ul>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Workspaces
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-ai/" class="pf-v6-c-nav__link">DevSpaces AI</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-journey/" class="pf-v6-c-nav__link">DevSpaces journey</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/devspaces-cursor/" class="pf-v6-c-nav__link">Cursor (optional)</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/openclaw/" class="pf-v6-c-nav__link">OpenClaw (optional)</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/openclaw-journey/" class="pf-v6-c-nav__link">OpenClaw journey</a>
+        </li>
+        
+      </ul>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        Operations
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/production-considerations/" class="pf-v6-c-nav__link pf-m-current" aria-current="page">Production considerations</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/troubleshooting/" class="pf-v6-c-nav__link">Troubleshooting</a>
+        </li>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/community-plugins-quay/" class="pf-v6-c-nav__link">Community packs / Quay</a>
+        </li>
+        
+      </ul>
+    </li>
+    
+    
+  </ul>
+</nav>
+
+  </div>
+  <main class="pf-v6-c-page__main" id="main-content">
+    <section class="pf-v6-c-page__main-section">
+      <div class="pf-v6-c-content">
+        <h1 id="production-considerations">Production considerations</h1>
+
+<blockquote>
+  <p><strong>Sandbox demo vs production</strong></p>
+
+  <p>This umbrella chart targets <strong>OpenShift Developer Sandbox</strong>: Guest Hub login, chart-generated Secrets, shared Granite/Qwen via LiteLLM, and optional OpenClaw. The products below are <strong>enterprise recommendations</strong> when you move the same agentic RHDH pattern to a managed OpenShift cluster. They are <strong>not</strong> installed by this Helm chart.</p>
+</blockquote>
+
+<p>Use this page as a short map from “what works in Sandbox” to “what to add for production identity, secrets, gateway control, AI safety, and CI/CD”.</p>
+
+<pre><code class="language-mermaid">flowchart LR
+  subgraph sandbox [Sandbox_today]
+    Guest[Hub_Guest]
+    ChartSecrets[Chart_Secrets]
+    LiteLLM[LiteLLM_Route]
+    Agents[Sample_agents]
+  end
+  subgraph prod [Production_next]
+    RHBK[RHBK_OIDC]
+    VaultESO[Vault_plus_ESO]
+    RHCL[Connectivity_Link]
+    TRL[TokenRateLimitPolicy]
+    Guard[OpenShift_AI_Guardrails]
+    TSSC[Trusted_Software_Supply_Chain]
+  end
+  Guest -.-&gt; RHBK
+  ChartSecrets -.-&gt; VaultESO
+  LiteLLM -.-&gt; RHCL
+  RHCL --&gt; TRL
+  Agents -.-&gt; Guard
+  Agents -.-&gt; TSSC
+</code></pre>
+
+<h2 id="at-a-glance">At a glance</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Capability</th>
+      <th>Replaces / hardens in this demo</th>
+      <th>Primary product</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Identity</td>
+      <td>Hub Guest + static <code class="language-plaintext highlighter-rouge">mcp-token</code></td>
+      <td>Red Hat build of Keycloak</td>
+    </tr>
+    <tr>
+      <td>Secrets</td>
+      <td>Literals in <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code></td>
+      <td>Vault + External Secrets Operator</td>
+    </tr>
+    <tr>
+      <td>North–south API control</td>
+      <td>Open Routes to LiteLLM / Hub</td>
+      <td>Red Hat Connectivity Link</td>
+    </tr>
+    <tr>
+      <td>Fair / cost-aware LLM use</td>
+      <td>No token quotas</td>
+      <td><code class="language-plaintext highlighter-rouge">TokenRateLimitPolicy</code></td>
+    </tr>
+    <tr>
+      <td>Prompt / response safety</td>
+      <td>No content detectors</td>
+      <td>OpenShift AI Guardrails (TrustyAI)</td>
+    </tr>
+    <tr>
+      <td>Agent image / template CI/CD</td>
+      <td>Manual / ad-hoc builds</td>
+      <td>Trusted Software Supply Chain (RHADS-SSC)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="1-red-hat-connectivity-link">1. Red Hat Connectivity Link</h2>
+
+<p><strong>Why:</strong> Put Gateway API policies in front of LiteLLM, Hub APIs, and agent HTTP endpoints so auth, routing, and rate limits are enforced outside the pods.</p>
+
+<p><strong>Vs Sandbox today:</strong> LiteLLM and Hub are exposed with OpenShift Routes and chart secrets; there is no AuthPolicy / GatewayPolicy layer.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_connectivity_link/">Red Hat Connectivity Link documentation</a></li>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3/html/configuring_and_deploying_gateway_policies/rhcl-config-deploy-gateway-policies">Configuring and deploying gateway policies</a> (AuthPolicy, RateLimitPolicy, DNSPolicy)</li>
+</ul>
+
+<hr />
+
+<h2 id="2-tokenratelimitpolicy-controlled-agent-usage">2. TokenRateLimitPolicy (controlled agent usage)</h2>
+
+<p><strong>Why:</strong> LLM cost tracks <strong>tokens</strong>, not request count. <code class="language-plaintext highlighter-rouge">TokenRateLimitPolicy</code> extracts OpenAI-style <code class="language-plaintext highlighter-rouge">usage.total_tokens</code> and enforces per-user or per-group budgets (for example free vs pro), returning HTTP 429 when limits are exceeded. Pair with Connectivity Link <code class="language-plaintext highlighter-rouge">AuthPolicy</code> so identity drives the limit.</p>
+
+<p><strong>Vs Sandbox today:</strong> Shared models and LiteMaaS have no chart-managed token budget; a noisy agent can consume quota freely.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.2/html/configuring_and_deploying_gateway_policies/proc-configure-token-based-rate-limiting_rhcl">Configure token-based rate limiting with TokenRateLimitPolicy</a></li>
+  <li><a href="https://developers.redhat.com/articles/2026/02/18/manage-ai-resource-use-tokenratelimitpolicy">Manage AI resource use with TokenRateLimitPolicy</a> (Red Hat Developer)</li>
+</ul>
+
+<hr />
+
+<h2 id="3-red-hat-build-of-keycloak-rhbk">3. Red Hat build of Keycloak (RHBK)</h2>
+
+<p><strong>Why:</strong> Replace anonymous Guest (and long-lived static MCP tokens) with enterprise OIDC: realms, groups, MFA, and short-lived tokens for Hub, Lightspeed, and gateway AuthPolicy.</p>
+
+<p><strong>Vs Sandbox today:</strong> Hub Guest for demos; <code class="language-plaintext highlighter-rouge">mcp-token</code> / <code class="language-plaintext highlighter-rouge">litellm-master-key</code> are chart-generated Secrets.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/">Red Hat build of Keycloak documentation</a></li>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/26.6/html/operator_guide/installation-">RHBK Operator guide</a></li>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_build_of_keycloak/26.4/html/server_administration_guide/red_hat_build_of_keycloak_features_and_concepts">Server Administration Guide — features and concepts</a></li>
+</ul>
+
+<hr />
+
+<h2 id="4-vault--external-secrets-operator">4. Vault + External Secrets Operator</h2>
+
+<p><strong>Why:</strong> Keep <code class="language-plaintext highlighter-rouge">litellm-master-key</code>, <code class="language-plaintext highlighter-rouge">mcp-token</code>, LiteMaaS / model keys, and agent credentials in a vault (for example HashiCorp Vault). Sync them into Kubernetes with <strong>External Secrets Operator for Red Hat OpenShift</strong> so pods never depend on Helm <code class="language-plaintext highlighter-rouge">--set</code> secrets or unrotated literals.</p>
+
+<p><strong>Vs Sandbox today:</strong> Secrets are created/preserved by the chart; rotation of <code class="language-plaintext highlighter-rouge">model-api-key</code> is a manual <code class="language-plaintext highlighter-rouge">oc whoami -t</code> patch.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/security_and_compliance/external-secrets-operator-for-red-hat-openshift">External Secrets Operator for Red Hat OpenShift</a> (providers include HashiCorp Vault, cloud secret managers)</li>
+  <li><a href="https://developer.hashicorp.com/vault/docs">HashiCorp Vault documentation</a></li>
+</ul>
+
+<hr />
+
+<h2 id="5-openshift-ai-guardrails-ai-safety">5. OpenShift AI Guardrails (AI safety)</h2>
+
+<p><strong>Why:</strong> Run detectors on LLM <strong>inputs and outputs</strong> (PII, hate/profanity, prompt injection, custom rules) via TrustyAI-managed Guardrails Orchestrator / FMS Guardrails — in front of or beside the same LiteLLM / model path agents use.</p>
+
+<p><strong>Vs Sandbox today:</strong> Lightspeed, Continue, sample agents, and OpenClaw call models with no content-safety orchestrator in this chart.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.4/html-single/enabling_ai_safety_with_guardrails/index">Ensuring AI safety with guardrails</a> (OpenShift AI Self-Managed)</li>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.5/html/enabling_ai_safety_with_guardrails/using-guardrails-for-ai-safety_safety">Using FMS Guardrails for AI safety</a></li>
+</ul>
+
+<hr />
+
+<h2 id="6-trusted-software-supply-chain-cicd-for-agents">6. Trusted Software Supply Chain (CI/CD for agents)</h2>
+
+<p><strong>Why:</strong> Treat agent images, scaffolder skeletons, and MCP sidecars like any production workload: signed builds, SBOM, CVE scan, and policy gates before they land in the cluster. Red Hat’s portfolio (productized as <strong>Red Hat Advanced Developer Suite — software supply chain</strong>, formerly Trusted Application Pipeline / Trusted Software Supply Chain) combines Developer Hub templates with Pipelines, Quay, Trusted Artifact Signer, Profile Analyzer, and ACS.</p>
+
+<p><strong>Vs Sandbox today:</strong> Sample agents are chart ConfigMap stubs; Golden Paths deploy without a signed supply-chain pipeline.</p>
+
+<p><strong>Learn more:</strong></p>
+
+<ul>
+  <li><a href="https://docs.redhat.com/en/documentation/red_hat_advanced_developer_suite_-_software_supply_chain/1.9/html-single/understanding_red_hat_advanced_developer_suite_-_software_supply_chain/index">Understanding RHADS — software supply chain</a></li>
+  <li><a href="https://developers.redhat.com/products/trusted-software-supply-chain">Red Hat Trusted Software Supply Chain (product overview)</a></li>
+  <li>Related building blocks: <a href="https://docs.redhat.com/en/documentation/red_hat_openshift_pipelines/">OpenShift Pipelines</a>, <a href="https://docs.redhat.com/en/documentation/red_hat_quay/">Red Hat Quay</a></li>
+</ul>
+
+<hr />
+
+<h2 id="suggested-adoption-order">Suggested adoption order</h2>
+
+<ol>
+  <li><strong>RHBK + Vault/ESO</strong> — stop Guest-only and secret sprawl.</li>
+  <li><strong>Connectivity Link + TokenRateLimitPolicy</strong> — protect LiteLLM / agent Routes and budget tokens.</li>
+  <li><strong>Guardrails</strong> — safety on the inference path.</li>
+  <li><strong>Trusted Software Supply Chain</strong> — harden how agent artifacts are built and promoted.</li>
+</ol>
+
+<h2 id="related">Related</h2>
+
+<ul>
+  <li><a href="/rhdh-agent-sandbox/architecture/">Architecture</a> — what this chart deploys today</li>
+  <li><a href="/rhdh-agent-sandbox/lightspeed-models/">Lightspeed &amp; models</a> — Sandbox model aliases and LiteMaaS</li>
+  <li><a href="/rhdh-agent-sandbox/ai-capabilities/">AI capabilities</a> — Hub / MCP / agents surface</li>
+  <li><a href="/rhdh-agent-sandbox/troubleshooting/">Troubleshooting</a> — Sandbox-specific failures</li>
+</ul>
+
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+  <div class="site-footer__inner">
+    <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" target="_blank" rel="noopener">maximilianoPizarro/rhdh-agent-sandbox</a>
+    <span class="site-footer__sep">&middot;</span>
+    <span>Docs</span>
+  </div>
+</footer>
+
+  <script src="/rhdh-agent-sandbox/assets/js/nav.js"></script>
+  
+</body>
+</html>
