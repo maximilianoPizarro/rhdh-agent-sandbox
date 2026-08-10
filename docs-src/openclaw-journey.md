@@ -51,7 +51,7 @@ carousel: true
 <figcaption>
 <span class="slide-num">Step 05</span>
 <strong>Configure Qwen + LiteMaaS</strong>
-<span class="desc">Fill: <strong>Endpoint URL</strong> = your LiteMaaS /v1 endpoint, <strong>API Format</strong> = OpenAI Completions, <strong>API Key</strong> = your bearer token (never commit to git!), <strong>Model Name</strong> = Qwen3.6-35B-A3B, <strong>Display Name</strong> = friendly label. Click <strong>Provision</strong>.</span>
+<span class="desc">Fill Endpoint URL (LiteMaaS /v1), API Format = OpenAI Completions, API Key (never commit to git), Model Name = Qwen3.6-35B-A3B, Display Name = friendly label. Then click Provision.</span>
 </figcaption>
 </figure>
 
