@@ -102,5 +102,7 @@ jobs:
             echo "No docs changes"
           else
             git commit -m "chore(pages): rebuild site and refresh Helm chart package"
+            # Avoid races when multiple pushes land on main (previous failure: non-FF push).
+            git pull --rebase origin main
             git push
           fi

@@ -1,13 +1,15 @@
+# Patterns for helm package (gitignore-like; no ** or ! negation support).
+# Keep root README.md — Artifact Hub renders docs from README inside the .tgz.
 .git
 .github
 community-plugins
 site
 docs
 docs-src
-*.md
 .gitignore
 .helmignore
 tmp
 dist
 mkdocs.yml
 artifacthub-repo.yml
+.helm
