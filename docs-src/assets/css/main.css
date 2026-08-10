@@ -697,9 +697,9 @@ body.journey-fs-open { overflow: hidden }
 
 @media (max-width: 640px) {
   .journey-status { display: none }
-  .journey-viewport { min-height: 320px }
-  .journey-slide img,
-  .journey-slide .slide-cta { height: auto; min-height: 240px }
+  .journey-viewport { min-height: 240px }
+  .journey-slide img { max-height: min(55vh, 420px) }
+  .journey-slide .slide-cta { min-height: 240px }
 
   .hero-title {
     font-size: 1.6rem;
