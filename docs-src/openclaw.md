@@ -147,11 +147,72 @@ export LITELLM_KEY=$(oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}" 
 >
 > With Granite/Qwen via LiteLLM, OpenClaw will **not** get reliable tool calls. Use this path only for plain Q&A. For agentic work (code, shell, multi-step tools), use LiteMaaS Qwen or an external API key.
 
+## Wire Hub MCP Actions into OpenClaw (proven)
+
+There is **no OpenClaw plugin for Developer Hub**. OpenClaw is the MCP **client**; Hub already exposes catalog/TechDocs tools at `/api/mcp-actions/v1`.
+
+On Developer Sandbox, OpenClaw egress goes through `claw-proxy` with an allowlist. Do **not** only edit `~/.openclaw/openclaw.json` — declare MCP on the **Claw CR** so the operator:
+
+1. Injects `mcp.servers` into the gateway config  
+2. Adds the Hub Route host to the proxy allowlist  
+3. Injects the bearer token from a Secret (gateway never stores the raw key in git)
+
+```bash
+DEV_NS="$(oc project -q)"   # chart namespace (*-dev)
+CLAW_NS="$(oc get project -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -- '-claw$' | head -1)"
+export HUB_HOST="$(oc get route -n "$DEV_NS" -l app.kubernetes.io/name=developer-hub -o jsonpath='{.items[0].spec.host}')"
+MCP_TOKEN="$(oc get secret rhdh-agent-sandbox-secrets -n "$DEV_NS" -o jsonpath='{.data.mcp-token}' | base64 -d)"
+
+oc create secret generic hub-mcp-credentials -n "$CLAW_NS" \
+  --from-literal=mcp-token="$MCP_TOKEN" \
+  --dry-run=client -o yaml | oc apply -f -
+
+oc get claw claw -n "$CLAW_NS" -o json > /tmp/claw.json
+python3 - <<'PY' | oc apply -f -
+import json, os
+hub = os.environ["HUB_HOST"]
+obj = json.load(open("/tmp/claw.json"))
+creds = [c for c in (obj["spec"].get("credentials") or []) if c.get("name") != "hub-mcp"]
+creds.append({
+  "name": "hub-mcp",
+  "domain": hub,
+  "type": "bearer",
+  "secretRef": [{"name": "hub-mcp-credentials", "key": "mcp-token"}],
+  "allowedPaths": ["/api/mcp-actions/"],
+})
+obj["spec"]["credentials"] = creds
+obj["spec"]["mcpServers"] = {
+  "hub-mcp-actions": {
+    "url": f"https://{hub}/api/mcp-actions/v1",
+    "transport": "streamable-http",
+    "credentialRef": "hub-mcp",
+  }
+}
+obj.pop("status", None)
+obj.get("metadata", {}).pop("managedFields", None)
+print(json.dumps(obj))
+PY
+```
+
+Verify inside the gateway pod:
+
+```bash
+oc exec -n "$CLAW_NS" deploy/claw -c gateway -- openclaw mcp probe
+# expect: hub-mcp-actions: 4 tools (catalog + TechDocs)
+```
+
+Use **`streamable-http`** (not `sse`) against current RHDH MCP Actions — SSE returns HTTP 405.
+
+Ask OpenClaw something like: *List Hub Components tagged agent* — it should call `query-catalog-entities`.
+
+Upstream plugin docs (OpenClaw-native plugins, not Hub): [OpenClaw Plugins](https://docs.openclaw.ai/tools/plugin).
+
 ## What this chart does *not* do
 
 - Does **not** deploy OpenClaw (no `openclaw:` block in `values.yaml`).
-- Does **not** create OpenClaw Secrets or Routes.
-- Does **not** expose public MCP Routes — Lightspeed still uses ClusterIP MCP only. OpenClaw on Sandbox should not require opening MCP to the internet.
+- Does **not** create OpenClaw Secrets or Routes (those live in the `*-claw` namespace).
+- Does **not** ship an OpenClaw UI plugin inside Developer Hub.
+- ClusterIP OpenShift/Kubernetes MCP remains Hub-local; OpenClaw reaches Hub MCP over the **public Hub Route** via the Sandbox claw-proxy allowlist.
 
 ## Identity reminder
 

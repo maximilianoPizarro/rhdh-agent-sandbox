@@ -122,7 +122,17 @@ Namespace Role only. Cluster-scoped tools fail by design. Stay inside the user p
 
 ## OpenClaw cannot use tools with shared models
 
-OpenClaw provisioned from sandbox.redhat.com needs **external** Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw]({{ '/openclaw/' | relative_url }}).
+OpenClaw provisioned from sandbox.redhat.com needs **LiteMaaS Qwen** (or an external vendor key) for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw]({{ '/openclaw/' | relative_url }}).
+
+## OpenClaw MCP probe fails against Hub (403 / 405)
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Proxy response (403)` | Hub Route host not on claw-proxy allowlist | Declare Hub MCP on the **Claw CR** (`spec.mcpServers` + credential). Operator regenerates proxy routes. Manual `openclaw mcp add` alone is not enough on Sandbox. |
+| `Non-200 status code (405)` with `transport: sse` | RHDH MCP Actions expects streamable HTTP | Set `transport: streamable-http` on `spec.mcpServers.hub-mcp-actions` |
+| ClusterIP Hub Service timeout from `*-claw` | Cross-namespace NetworkPolicy | Use the **public Hub Route** (allowlisted via Claw CR), not `*.svc` |
+
+Verify: `oc exec -n <claw-ns> deploy/claw -c gateway -- openclaw mcp probe` → `hub-mcp-actions: 4 tools`.
 
 ## MCP Chat loads but tools never fire
 

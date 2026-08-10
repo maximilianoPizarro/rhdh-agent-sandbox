@@ -1,8 +1,18 @@
 title: rhdh-agent-sandbox
-description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
+tagline: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
+description: >-
+  Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer
+  Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue,
+  and optional OpenClaw → Hub MCP wiring.
 url: https://maximilianopizarro.github.io
 baseurl: /rhdh-agent-sandbox
 repository: maximilianoPizarro/rhdh-agent-sandbox
+lang: en_US
+
+# Social / Open Graph (jekyll-seo-tag) — same 1200×630 contract as streams-sizing
+logo: /assets/brand/og-preview.png
+twitter:
+  card: summary_large_image
 
 permalink: /:title/
 
@@ -11,6 +21,11 @@ defaults:
       path: ""
     values:
       layout: default
+      image:
+        path: /assets/brand/og-preview.png
+        width: 1200
+        height: 630
+        alt: Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift
 
 exclude:
   - Gemfile

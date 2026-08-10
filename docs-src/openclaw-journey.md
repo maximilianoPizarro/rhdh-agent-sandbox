@@ -77,8 +77,8 @@ carousel: true
 <img src="{{ '/assets/screenshots/openclaw-devhub-integration.png' | relative_url }}" alt="Illustrative concept of OpenClaw beside Developer Hub catalog while deploying an agent" />
 <figcaption>
 <span class="slide-num">Step 08</span>
-<strong>OpenClaw + Developer Hub <em>(illustrative)</em></strong>
-<span class="desc"><strong>Concept image only</strong> — not a live capture. Today OpenClaw on Sandbox proves kubectl tool calling against your namespace (Step 07). Deploying agents via the Hub scaffolder from OpenClaw is not wired yet; use the <a href="{{ '/journey/' | relative_url }}">Golden Path journey</a> in Developer Hub Guest for that flow.</span>
+<strong>OpenClaw + Developer Hub</strong>
+<span class="desc">Kubectl tools (Step 07) stay in-namespace. For <strong>Hub catalog / TechDocs MCP</strong>, declare <code>spec.mcpServers</code> on the Claw CR (<code>streamable-http</code> + Hub Route) — proven with <code>openclaw mcp probe</code> → 4 tools. Full scaffolder deploy-from-OpenClaw UI is still optional; Golden Paths remain in Hub Guest. Details: <a href="{{ '/openclaw/' | relative_url }}">OpenClaw setup</a>.</span>
 </figcaption>
 </figure>
 
@@ -127,8 +127,8 @@ The provision form securely stores the key in a Secret that only the OpenClaw po
 |---|---|
 | Provision OpenClaw + LiteMaaS Qwen (tool calling) | **Proven** — Steps 01–06 |
 | `kubectl` list Deployments/Pods in Hub namespace | **Proven** — Step 07 (real chat capture) |
-| Split Hub catalog + OpenClaw scaffolder deploy UI | **Illustrative** — Step 08 concept art only |
-| Deploy agents via Golden Path | **Proven in Hub Guest** — see [Golden Path journey]({{ '/journey/' | relative_url }}), not via OpenClaw yet |
+| Split Hub catalog MCP from OpenClaw | **Proven via Claw CR** — `spec.mcpServers` + `openclaw mcp probe` (4 tools); see [OpenClaw]({{ '/openclaw/' | relative_url }}) |
+| Deploy agents via Golden Path | **Proven in Hub Guest** — see [Golden Path journey]({{ '/journey/' | relative_url }}), not via OpenClaw scaffolder UI yet |
 
 ### Reproducing Step 07 (real)
 
