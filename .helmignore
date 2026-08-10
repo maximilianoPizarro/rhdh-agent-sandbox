@@ -2,8 +2,11 @@
 .github
 docs
 community-plugins
+site
 *.md
 .gitignore
 .helmignore
 tmp
 dist
+mkdocs.yml
+artifacthub-repo.yml
