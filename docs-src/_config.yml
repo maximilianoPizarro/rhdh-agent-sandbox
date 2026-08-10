@@ -25,7 +25,7 @@ defaults:
         path: /assets/brand/og-preview.png
         width: 1200
         height: 630
-        alt: Developer Hub Agent Sandbox — rhdh-agent-sandbox on OpenShift
+        alt: Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw
 
 exclude:
   - Gemfile

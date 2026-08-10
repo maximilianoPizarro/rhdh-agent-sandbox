@@ -1,7 +1,15 @@
 ---
 layout: home
-title: Home
+title: Developer Hub Agent Sandbox
+description: >-
+  Umbrella Helm chart for Red Hat Developer Hub on OpenShift Developer Sandbox —
+  Lightspeed, LiteLLM, MCP, Golden Paths, DevSpaces Continue, and OpenClaw.
 permalink: /
+image:
+  path: /assets/brand/og-preview.png
+  width: 1200
+  height: 630
+  alt: Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw
 ---
 
 # Agent-friendly Developer Hub on Developer Sandbox
