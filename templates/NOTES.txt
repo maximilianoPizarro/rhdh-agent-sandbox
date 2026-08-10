@@ -31,4 +31,4 @@ Next steps:
   4. AI catalog is mounted from ConfigMap {{ .Values.catalog.configMapName }}
      at /opt/app-root/src/catalog (file location).
 
-Docs: https://maximilianoPizarro.github.io/rhdh-agent-sandbox
+Docs: https://maximilianopizarro.github.io/rhdh-agent-sandbox

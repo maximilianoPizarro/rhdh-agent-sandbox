@@ -1,6 +1,6 @@
 site_name: rhdh-agent-sandbox
 site_description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
-site_url: https://maximilianoPizarro.github.io/rhdh-agent-sandbox/
+site_url: https://maximilianopizarro.github.io/rhdh-agent-sandbox/
 repo_url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
 repo_name: maximilianoPizarro/rhdh-agent-sandbox
 edit_uri: edit/main/docs/
@@ -44,6 +44,7 @@ nav:
   - Workspaces:
       - DevSpaces AI: devspaces-ai.md
       - Cursor (optional): devspaces-cursor.md
+      - OpenClaw (optional): openclaw.md
   - Operations:
       - Troubleshooting: troubleshooting.md
       - Community packs / GHCR: community-plugins-ghcr.md

@@ -87,14 +87,14 @@ jobs:
           python-version: "3.12"
       - name: Build docs
         run: |
-          pip install mkdocs-material
+          pip install 'mkdocs-material==9.7.7'
           mkdocs build --strict
       - name: Package Helm chart for Artifact Hub / Pages
         run: |
           helm dependency update
           mkdir -p site/charts
           helm package . -d site/charts
-          helm repo index site/charts --url https://maximilianoPizarro.github.io/rhdh-agent-sandbox/charts
+          helm repo index site/charts --url https://maximilianopizarro.github.io/rhdh-agent-sandbox/charts
           cp artifacthub-repo.yml site/charts/artifacthub-repo.yml
       - uses: actions/upload-pages-artifact@v3
         with:

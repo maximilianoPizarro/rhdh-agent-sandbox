@@ -16,13 +16,16 @@ flowchart LR
   DW --> Continue[Continue in Che Code]
   Continue --> LiteLLMRoute[LiteLLM Route]
   LiteLLMRoute --> LiteLLM
+  OcUser --> OC[OpenClaw provisioned]
+  OC --> UserLLM[External LLM provider]
+  OC -.->|optional chat-only| LiteLLMRoute
 ```
 
 ## Components
 
 | Component | How it is delivered | Network |
 |---|---|---|
-| Red Hat Developer Hub 1.10 | Helm subchart `redhat-developer-hub` | Route `*-developer-hub` |
+| Red Hat Developer Hub 1.10.3 | Helm subchart `redhat-developer-hub` | Route `*-developer-hub` |
 | lightspeed-core | Sidecar on Hub pod (RHDH Lightspeed flavour) | localhost from Hub plugin |
 | LiteLLM | Chart Deployment | ClusterIP + **Route** (for DevSpaces) |
 | Shared models | Cluster `sandbox-shared-models` InferenceServices | Called by LiteLLM with `model-api-key` |
@@ -30,6 +33,7 @@ flowchart LR
 | Kubernetes MCP | Chart Deployment | ClusterIP `:8085` |
 | AI catalog | ConfigMap `rhdh-agent-sandbox-catalog` | Mounted at `/opt/app-root/src/catalog` |
 | DevSpaces | Operator on Sandbox + Devfiles / templates | User-created DevWorkspace |
+| OpenClaw (optional) | Provisioned from sandbox.redhat.com (not this chart) | Managed OpenClaw + your LLM keys |
 
 ## Identity and tokens
 

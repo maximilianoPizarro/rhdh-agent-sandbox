@@ -116,6 +116,10 @@ If empty, check ConfigMap `rhdh-agent-sandbox-catalog` and Hub volume mount `rhd
 
 Namespace Role only. Cluster-scoped tools fail by design. Stay inside the user project.
 
+## OpenClaw cannot use tools with shared models
+
+OpenClaw provisioned from sandbox.redhat.com needs **external** Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw](openclaw.md).
+
 ## Stale secret keys after upgrade
 
 If old `ENABLE_OPENAI` keys linger, replace the secret data (chart uses `data:` so Helm merge can drop keys) or:

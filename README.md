@@ -1,13 +1,13 @@
 # rhdh-agent-sandbox
 
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://maximilianoPizarro.github.io/rhdh-agent-sandbox/)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://maximilianopizarro.github.io/rhdh-agent-sandbox/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 Agent-friendly **Red Hat Developer Hub** umbrella Helm chart for **OpenShift Developer Sandbox**.
 
 It wires:
 
-- Developer Hub 1.10 (Lightspeed, TechDocs, Kubernetes/Topology)
+- Developer Hub 1.10.3 (Lightspeed, TechDocs, Kubernetes/Topology)
 - **LiteLLM** → Granite / Qwen in `sandbox-shared-models`
 - **MCP** servers (OpenShift + Kubernetes) with namespace RBAC
 - AI **Skills / Prompts / MCP catalog** (ConfigMap mount)
@@ -18,20 +18,23 @@ It wires:
 
 ```bash
 helm dependency update
+export NAMESPACE=$(oc project -q)
 export MODEL_API_KEY=$(oc whoami -t)
 export APPS_DOMAIN=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
 
 helm upgrade --install rhdh-agent . \
-  -n "$(oc project -q)" \
-  --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase="$APPS_DOMAIN"
+  --namespace "${NAMESPACE}" \
+  --set secrets.modelApiKey="${MODEL_API_KEY}" \
+  --set rhdh.global.clusterRouterBase="${APPS_DOMAIN}" \
+  --timeout 20m \
+  --wait=false
 ```
 
 Single `values.yaml` — this chart is Sandbox-only (no overlay file).
 
 ## Documentation
 
-**https://maximilianoPizarro.github.io/rhdh-agent-sandbox/**
+**https://maximilianopizarro.github.io/rhdh-agent-sandbox/**
 
 | Page | Content |
 |---|---|
@@ -39,6 +42,7 @@ Single `values.yaml` — this chart is Sandbox-only (no overlay file).
 | [Verify](docs/verify.md) | Post-install checks (LiteLLM, Lightspeed, catalog) |
 | [Demo script](docs/demo-script.md) | ~10 minute Hub + DevSpaces walkthrough |
 | [Architecture](docs/architecture.md) | Components, tokens, MCP |
+| [OpenClaw](docs/openclaw.md) | Optional Sandbox-provisioned assistant wiring |
 | [Troubleshooting](docs/troubleshooting.md) | Common failures |
 
 ## Repository layout
