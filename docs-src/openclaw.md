@@ -8,61 +8,96 @@ OpenClaw is a **personal AI assistant** you provision from [sandbox.redhat.com](
 
 This page explains how OpenClaw relates to the RHDH agent stack and how to wire it safely.
 
+> **New: OpenClaw + Qwen Tool Calling journey**
+>
+> See the [OpenClaw journey]({{ '/openclaw-journey/' | relative_url }}) for a step-by-step visual guide to provisioning OpenClaw with a private Qwen3.6-35B-A3B model (with tool calling) via LiteMaaS.
+
 ## Role in the architecture
 
-OpenClaw is a **third AI client**, alongside Hub Lightspeed and DevSpaces Continue. It does **not** replace the chart’s MCP servers.
+OpenClaw is a **third AI client**, alongside Hub Lightspeed and DevSpaces Continue. It does **not** replace the chart's MCP servers.
 
 | Client | How you get it | Typical model path |
 |---|---|---|
 | Lightspeed | Chart (Hub sidecar) | LiteLLM → shared Granite/Qwen |
 | Continue (DevSpaces AI) | Chart Devfiles + Sandbox DevSpaces | LiteLLM Route + `litellm-master-key` |
-| **OpenClaw** | Provision on sandbox.redhat.com | **Your own** Anthropic / OpenAI / Google key |
+| **OpenClaw** | Provision on sandbox.redhat.com | **LiteMaaS Qwen** (tool calling) or external vendor key |
 
-```mermaid
-flowchart LR
-  Guest[Hub Guest] --> Hub[Developer Hub]
-  Hub --> LS[Lightspeed]
-  LS --> LiteLLM[LiteLLM Service]
-  LiteLLM --> Models[sandbox-shared-models]
-  LS --> MCP[OpenShift MCP + K8s MCP]
-  OcUser[OpenShift Sandbox user] --> OC[OpenClaw provisioned]
-  OC --> UserLLM[External LLM provider]
-  OC -.->|optional chat-only| LiteLLMRoute[LiteLLM Route]
-  LiteLLMRoute --> LiteLLM
-```
+![OpenClaw in the agent stack]({{ '/assets/diagrams/openclaw-architecture.png' | relative_url }})
 
 ## Prerequisites
 
 | Requirement | Notes |
 |---|---|
 | OpenClaw provisioned | Card on sandbox.redhat.com → **Provision** |
-| External LLM API key | Anthropic, OpenAI, Google, etc. (required for agentic tools) |
+| LiteMaaS API key | Bearer token for `litemaas.rhoai.rh-aiservices-bu.com` (recommended for tool calling) |
 | This chart installed | Optional for OpenClaw itself; needed only if you also want LiteLLM chat fallback |
 | Quota headroom | OpenClaw adds its own Deployment + PVC; stop unused DevSpaces workspaces first |
 
-## Recommended path: external API key (full agentic)
+## Recommended path: LiteMaaS Qwen with tool calling
 
-Shared Sandbox models (Granite / Qwen) **do not** support function calling (`tool_choice=auto`). This chart drops those params in LiteLLM so Lightspeed does not crash. OpenClaw’s agent loop needs tool calls (`exec`, `read`, `write`, …), so **bring your own provider key**.
+The **LiteMaaS** gateway (`litemaas.rhoai.rh-aiservices-bu.com`) serves **Qwen3.6-35B-A3B** — a model that **supports function/tool calling** (`tool_choice=auto`). This is the recommended path for OpenClaw on Developer Sandbox because:
 
-Configure OpenClaw (Control UI or `~/.openclaw/openclaw.json`) with your provider, for example:
+- Full agentic capabilities (exec, read, write, kubectl)
+- OpenAI Completions API compatible
+- No need for external vendor keys (Anthropic, OpenAI, etc.)
+
+### Provision via sandbox.redhat.com
+
+1. Go to [sandbox.redhat.com](https://sandbox.redhat.com) and click **Provision** on the OpenClaw card
+2. Select **Custom / Self-Hosted** as the AI provider
+3. Fill the form:
+
+| Field | Value |
+|---|---|
+| **Endpoint URL** | `https://litemaas.rhoai.rh-aiservices-bu.com/v1` |
+| **API Format** | OpenAI Completions |
+| **API Key** | Your LiteMaaS bearer token (`sk-...`) |
+| **Model Name** | `Qwen3.6-35B-A3B` |
+| **Display Name** | `Qwen 3.6 35B-A3B (Tool Calling)` |
+
+4. Click **Provision** — OpenClaw deploys as a pod in your namespace
+
+> **Warning: Never commit API keys**
+>
+> The LiteMaaS API key is stored securely as a Kubernetes Secret by the provisioner. Never add it to git, values.yaml, or ConfigMaps.
+
+### Verify with curl
+
+```bash
+curl -X POST https://litemaas.rhoai.rh-aiservices-bu.com/v1/chat/completions \
+  -H "Authorization: Bearer $LITEMAAS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen3.6-35B-A3B",
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'
+```
+
+See the [OpenClaw journey carousel]({{ '/openclaw-journey/' | relative_url }}) for the full visual walkthrough.
+
+## Alternative: external vendor API key
+
+If you prefer a commercial provider, shared Sandbox models (Granite / Qwen) **do not** support function calling (`tool_choice=auto`). OpenClaw's agent loop needs tool calls, so **bring your own provider key**.
+
+Configure OpenClaw (Control UI or `~/.openclaw/openclaw.json`) with your provider:
 
 ```json5
 {
   agents: {
     defaults: {
       model: { primary: "anthropic/claude-sonnet-4-5" },
-      // Developer Sandbox has no Docker daemon for tool sandboxes
       sandbox: { mode: "off" },
     },
   },
-  // Prefer env / SecretRef for the real key — do not commit keys to git
   env: {
     ANTHROPIC_API_KEY: "sk-ant-...",
   },
 }
 ```
 
-Use OpenClaw’s onboard / Control UI **Config** tab if you prefer a form over raw JSON5. Follow [OpenClaw configuration](https://docs.openclaw.ai/) for the exact provider fields for your vendor.
+Use OpenClaw's onboard / Control UI **Config** tab if you prefer a form over raw JSON5. Follow [OpenClaw configuration](https://docs.openclaw.ai/) for the exact provider fields for your vendor.
 
 > **Tip: Sandbox tool sandboxing**
 >
@@ -70,7 +105,7 @@ Use OpenClaw’s onboard / Control UI **Config** tab if you prefer a form over r
 
 ## Optional: LiteLLM as chat-only custom provider
 
-You can point OpenClaw at this chart’s LiteLLM Route for **chat without tools** (same Granite/Qwen aliases as Continue).
+You can point OpenClaw at this chart's LiteLLM Route for **chat without tools** (same Granite/Qwen aliases as Continue).
 
 1. Get the Route and master key:
 
@@ -110,7 +145,7 @@ export LITELLM_KEY=$(oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}" 
 
 > **Warning: Chat-only with shared models**
 >
-> With Granite/Qwen via LiteLLM, OpenClaw will **not** get reliable tool calls. Use this path only for plain Q&A. For agentic work (code, shell, multi-step tools), use an external API key.
+> With Granite/Qwen via LiteLLM, OpenClaw will **not** get reliable tool calls. Use this path only for plain Q&A. For agentic work (code, shell, multi-step tools), use LiteMaaS Qwen or an external API key.
 
 ## What this chart does *not* do
 
@@ -127,6 +162,7 @@ export LITELLM_KEY=$(oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}" 
 
 ## See also
 
+- [OpenClaw journey]({{ '/openclaw-journey/' | relative_url }}) — visual carousel walkthrough
 - [Architecture]({{ '/architecture/' | relative_url }}) — full stack diagram  
 - [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}) — why shared models drop `tool_choice`  
 - [Troubleshooting]({{ '/troubleshooting/' | relative_url }}) — OpenClaw + shared models  

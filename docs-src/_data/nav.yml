@@ -2,6 +2,8 @@
   url: /
 - title: Journey
   url: /journey/
+- title: OpenClaw journey
+  url: /openclaw-journey/
 - title: Get started
   children:
     - title: Quickstart
@@ -30,6 +32,8 @@
       url: /devspaces-cursor/
     - title: OpenClaw (optional)
       url: /openclaw/
+    - title: OpenClaw journey
+      url: /openclaw-journey/
 - title: Operations
   children:
     - title: Troubleshooting

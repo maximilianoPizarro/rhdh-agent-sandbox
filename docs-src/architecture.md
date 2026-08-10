@@ -8,29 +8,6 @@ title: Architecture
 
 ![Architecture overview]({{ '/assets/diagrams/architecture-overview.png' | relative_url }})
 
-```mermaid
-flowchart LR
-  Guest[Hub Guest] --> Hub[Developer Hub]
-  Hub --> LS[Lightspeed UI + plugin]
-  LS --> LCore[lightspeed-core sidecar]
-  LCore --> LiteLLM[LiteLLM Service]
-  LiteLLM --> Models[sandbox-shared-models<br/>Granite / Qwen]
-  LCore --> MCP[OpenShift MCP + K8s MCP]
-  MCP --> Ns[User namespace]
-  Hub --> Catalog[AI catalog ConfigMap]
-  Hub --> GP[Golden Path Deploy Agent]
-  GP --> Applier[agent-applier]
-  Applier --> AgentPods[Agent Deployments]
-  AgentPods --> LiteLLM
-  OcUser[OpenShift Sandbox user] --> DW[DevSpaces workspace]
-  DW --> Continue[Continue in Che Code]
-  Continue --> LiteLLMRoute[LiteLLM Route]
-  LiteLLMRoute --> LiteLLM
-  OcUser --> OC[OpenClaw provisioned]
-  OC --> UserLLM[External LLM provider]
-  OC -.->|optional chat-only| LiteLLMRoute
-```
-
 ## Components
 
 | Component | How it is delivered | Network |
@@ -45,7 +22,7 @@ flowchart LR
 | Scaffolder assets | ConfigMap + projected volume | `/opt/app-root/src/scaffolder-assets` |
 | Agent samples + applier | Chart Deployments / SA Role | ClusterIP agents → LiteLLM |
 | DevSpaces | Operator on Sandbox + Devfiles / templates | User-created DevWorkspace |
-| OpenClaw (optional) | Provisioned from sandbox.redhat.com (not this chart) | Managed OpenClaw + your LLM keys |
+| OpenClaw (optional) | Provisioned from sandbox.redhat.com (not this chart) | Managed OpenClaw + LiteMaaS Qwen (tool calling) or vendor keys |
 
 ## Identity and tokens
 

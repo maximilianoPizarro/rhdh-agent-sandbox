@@ -37,6 +37,10 @@ Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift
 <h3>AI Catalog</h3>
 <p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
 </div>
+<div class="card">
+<h3>OpenClaw + Qwen</h3>
+<p>Personal AI assistant with <strong>tool calling</strong> via LiteMaaS Qwen3.6-35B-A3B. <a href="{{ '/openclaw-journey/' | relative_url }}">See the journey</a>.</p>
+</div>
 </div>
 
 ## Two identities (important)
