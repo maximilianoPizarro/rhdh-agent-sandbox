@@ -122,12 +122,6 @@ spec:
             lifecycle: experimental
             owner: ${{ parameters.owner }}
             system: agent-sandbox
-    - id: register
-      name: Register Component in Hub catalog
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps.write.output.repoContentsUrl }}
-        catalogInfoPath: /catalog-info.yaml
     - id: apply-hint
       name: Namespace apply via agent-applier
       action: debug:log
