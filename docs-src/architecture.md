@@ -30,15 +30,15 @@ title: Architecture
 Hub Guest ──(no token)──► Lightspeed UI
                               │
 OpenShift user ──model-api-key──► LiteLLM ──► shared models (oauth-proxy)
-OpenShift user ──litellm-master-key──► Continue / LiteLLM Route
-Hub backend ──mcp-token──► /api/mcp-actions/v1 (Lightspeed MCP integration)
+OpenShift user ──litellm-master-key──► Continue / LiteLLM Route (chat)
+Continue / Lightspeed ──mcp-token──► Hub Route /api/mcp-actions/v1 (catalog MCP)
 ```
 
 | Secret key | Consumer | Lifetime |
 |---|---|---|
 | `model-api-key` | LiteLLM → shared models | ~24h (refresh with `oc whoami -t`) |
-| `litellm-master-key` | Lightspeed (`VLLM_API_KEY`) + Continue | Stable (chart-generated) |
-| `mcp-token` | Lightspeed → RHDH MCP actions | Stable (chart-generated) |
+| `litellm-master-key` | Lightspeed (`VLLM_API_KEY`) + Continue chat | Stable (chart-generated) |
+| `mcp-token` | Lightspeed + Continue Hub MCP Actions | Stable (chart-generated) |
 | `backend-secret` | Hub backend auth | Stable |
 
 ## Catalog loading
@@ -64,7 +64,8 @@ The ConfigMap is filled from `files/catalog/*` (skills, prompts, MCP entities, D
 
 - **Hub Lightspeed** uses ClusterIP MCP services and RHDH mcp-actions (`mcp-integration-tools` + `MCP_TOKEN`).  
 - MCP ServiceAccount has **namespace** Role only (Sandbox-safe).  
-- **No public MCP Routes** — DevSpaces talks to LiteLLM Route only, not MCP.
+- **No public Routes for OpenShift/Kubernetes MCP** (ClusterIP only).  
+- **DevSpaces Continue** uses two hops: LiteLLM Route for **chat**, and the **Hub Route** `/api/mcp-actions/v1` (with `mcp-token`) for **catalog/TechDocs** tools only — see [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
 
 ## Quota sketch (NotTerminating)
 

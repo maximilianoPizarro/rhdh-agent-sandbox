@@ -96,11 +96,16 @@ Continue is **preinstalled** on workspace start (`DEFAULT_EXTENSIONS` + OpenVSX 
 | Devfile `DEFAULT_EXTENSIONS` + `download-continue-extension` | Preinstalls Continue from OpenVSX (linux-x64 `.vsix`) |
 | `docs/prompts/*` | Prompts aligned with Hub catalog |
 
-## MCP from the IDE?
+## AI and MCP from the IDE (two paths)
 
-**Hub mcp-actions** are reachable from DevSpaces over the Hub Route with `mcp-token` (catalog / TechDocs tools). OpenShift/Kubernetes MCP remain **ClusterIP** and are consumed from **Hub Lightspeed / MCP Chat**, not from the IDE.
+Continue is one sidebar, two network paths:
 
-Continue chat path: Continue → LiteLLM Route → Granite/Qwen. Step-by-step screenshots: [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
+| Path | Flow | Secret |
+|---|---|---|
+| **AI chat** | Continue → LiteLLM Route `/v1` → Granite/Qwen | `rhdh-agent-sandbox-continue` |
+| **Hub MCP** | Continue → Hub Route `/api/mcp-actions/v1` → catalog/TechDocs tools | `mcp-token` (written by `wire-continue` into `mcpServers`) |
+
+OpenShift/Kubernetes MCP remain **ClusterIP** and are consumed from **Hub Lightspeed / MCP Chat**, not from the IDE. Screenshots and prompts: [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
 
 > **Info: Continue v2**
 >
