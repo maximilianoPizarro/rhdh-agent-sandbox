@@ -5,6 +5,7 @@ type: application
 version: 0.1.0
 appVersion: "1.10.3"
 kubeVersion: ">=1.25.0-0"
+icon: https://raw.githubusercontent.com/maximilianoPizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
 home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
 keywords:
   - openshift
