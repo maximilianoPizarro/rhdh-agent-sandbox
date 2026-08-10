@@ -1154,14 +1154,20 @@
 <h2 id="recommended-path">Recommended path<a class="headerlink" href="#recommended-path" title="Permanent link">&para;</a></h2>
 <ol>
 <li><a href="quickstart/">Quickstart</a> — single <code>helm upgrade --install</code>  </li>
-<li><a href="golden-paths/">Golden Paths</a> — deploy an agent Pod  </li>
-<li><a href="verify/">Verify the install</a> — confirm Hub, LiteLLM, agents  </li>
-<li><a href="demo-script/">Demo script</a> — ~10 minute walkthrough  </li>
-<li><a href="agents/">Agents</a> / <a href="devspaces-ai/">DevSpaces AI</a>  </li>
+<li><a href="verify/">Verify the install</a> — confirm Hub, LiteLLM, routes  </li>
+<li><a href="golden-paths/">Golden Paths</a> — deploy an agent Pod from the catalog  </li>
+<li><a href="agents/">Agents</a> — Hub Guest, agent Pods, DevSpaces loops  </li>
+<li><a href="devspaces-ai/">DevSpaces AI</a> — browser IDE with Continue → LiteLLM  </li>
+<li><a href="demo-script/">Demo script</a> — guided ~10 minute walkthrough  </li>
 </ol>
-<p>Deeper reading: <a href="architecture/">Architecture</a>, <a href="lightspeed-models/">Lightspeed &amp; models</a>, <a href="troubleshooting/">Troubleshooting</a>.</p>
+<p>Deeper reading: <a href="architecture/">Architecture</a>, <a href="lightspeed-models/">Lightspeed &amp; models</a>, <a href="ai-capabilities/">AI capabilities</a>, <a href="openclaw/">OpenClaw</a>, <a href="troubleshooting/">Troubleshooting</a>, <a href="community-plugins-quay/">Community packs</a>.</p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <p>Chart source is at the <strong>repo root</strong>. Red Hat Developer Hub is a Helm dependency (<code>redhat-developer-hub</code> from <code>https://charts.openshift.io/</code>). Pages serves <code>/docs</code>, which includes <code>index.yaml</code>, <code>artifacthub-repo.yml</code>, and the packaged <code>.tgz</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Replace <code>&lt;your-sandbox&gt;</code> before running</p>
+<p>Both commands use the placeholder <code>apps.&lt;your-sandbox&gt;.openshiftapps.com</code>. Replace it with your cluster's apps domain.
+See <a href="quickstart/">Quickstart</a> for how to discover it.</p>
+</div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>rhdh-agent-sandbox
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
@@ -1182,7 +1188,10 @@
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--timeout<span class="w"> </span>20m<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>--wait<span class="o">=</span><span class="nb">false</span>
 </code></pre></div>
-<p>If <code>ingresses.config.openshift.io</code> is Forbidden, infer the apps domain from any Route host (<code>oc get route</code> → drop the first DNS label).</p>
+<div class="admonition warning">
+<p class="admonition-title">Model token TTL ~24 h</p>
+<p><code>secrets.modelApiKey</code> uses your Sandbox token, which expires in <strong>~24 hours</strong>. When chat returns <strong>401</strong>, refresh the secret and restart LiteLLM. Details in <a href="quickstart/">Quickstart — Notes</a>.</p>
+</div>
 <h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">&para;</a></h2>
 <p><a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox">github.com/maximilianoPizarro/rhdh-agent-sandbox</a></p>
 
