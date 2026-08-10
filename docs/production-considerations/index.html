@@ -260,28 +260,7 @@
 
 <p>Use this page as a short map from “what works in Sandbox” to “what to add for production identity, secrets, gateway control, AI safety, and CI/CD”.</p>
 
-<pre><code class="language-mermaid">flowchart LR
-  subgraph sandbox [Sandbox_today]
-    Guest[Hub_Guest]
-    ChartSecrets[Chart_Secrets]
-    LiteLLM[LiteLLM_Route]
-    Agents[Sample_agents]
-  end
-  subgraph prod [Production_next]
-    RHBK[RHBK_OIDC]
-    VaultESO[Vault_plus_ESO]
-    RHCL[Connectivity_Link]
-    TRL[TokenRateLimitPolicy]
-    Guard[OpenShift_AI_Guardrails]
-    TSSC[Trusted_Software_Supply_Chain]
-  end
-  Guest -.-&gt; RHBK
-  ChartSecrets -.-&gt; VaultESO
-  LiteLLM -.-&gt; RHCL
-  RHCL --&gt; TRL
-  Agents -.-&gt; Guard
-  Agents -.-&gt; TSSC
-</code></pre>
+<p><img src="/rhdh-agent-sandbox/assets/diagrams/production-sandbox-to-next.png" alt="Sandbox today mapped to production recommendations" /></p>
 
 <h2 id="at-a-glance">At a glance</h2>
 
