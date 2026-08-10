@@ -1,8 +1,12 @@
+---
+title: Golden Paths
+---
+
 # Golden Paths
 
 Deploy namespace-scoped agents from Developer Hub **without git push**. The primary path is **Deploy Agent**.
 
-![Deploy Agent Golden Path](assets/diagrams/golden-path-deploy-agent.png)
+![Deploy Agent Golden Path]({{ '/assets/diagrams/golden-path-deploy-agent.png' | relative_url }})
 
 ## Deploy Agent
 
@@ -45,6 +49,6 @@ The chart also ships three sample Components + Deployments: `sample-python-agent
 
 ## Related
 
-- [Agents](agents.md) — Hub / Pod / DevSpaces loops  
-- [Quickstart](quickstart.md) — install  
-- [Architecture](architecture.md) — end-to-end picture  
+- [Agents]({{ '/agents/' | relative_url }}) — Hub / Pod / DevSpaces loops  
+- [Quickstart]({{ '/quickstart/' | relative_url }}) — install  
+- [Architecture]({{ '/architecture/' | relative_url }}) — end-to-end picture  

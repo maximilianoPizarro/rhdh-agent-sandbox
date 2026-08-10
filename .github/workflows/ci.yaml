@@ -59,7 +59,7 @@ jobs:
           ./community-plugins/build-and-push.sh "${{ github.ref_name == 'main' && '0.1.0' || github.sha }}"
 
   # GitHub Pages: Settings → Pages → Source: Deploy from branch, Branch: main, Folder: /docs
-  # CI builds MkDocs into docs/, adds Helm repo artifacts, and commits.
+  # CI builds Jekyll into docs/, adds Helm repo artifacts, and commits.
   pages:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -71,16 +71,18 @@ jobs:
       - uses: azure/setup-helm@v4
         with:
           version: v3.16.2
-      - uses: actions/setup-python@v5
+      - uses: ruby/setup-ruby@v1
         with:
-          python-version: "3.12"
-      - name: Build MkDocs into docs/
+          ruby-version: "3.3"
+      - name: Build Jekyll into docs/
         run: |
-          pip install 'mkdocs-material==9.7.7'
-          # Save helm artifacts before MkDocs cleans docs/
+          gem install jekyll jekyll-seo-tag webrick
+          # Save helm artifacts before Jekyll cleans docs/
           mkdir -p /tmp/helm-keep
           cp -f docs/index.yaml docs/artifacthub-repo.yml docs/rhdh-agent-sandbox-*.tgz /tmp/helm-keep/ 2>/dev/null || true
-          mkdocs build --strict
+          cd docs-src
+          JEKYLL_ENV=production jekyll build --destination ../docs
+          cd ..
           # Restore helm artifacts + add .nojekyll
           cp /tmp/helm-keep/* docs/ 2>/dev/null || true
           touch docs/.nojekyll

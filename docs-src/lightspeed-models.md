@@ -1,3 +1,7 @@
+---
+title: Lightspeed and models
+---
+
 # Lightspeed and models
 
 ## Model aliases
@@ -31,8 +35,9 @@ In the Lightspeed UI / llama-stack, models appear as **`vllm/granite`** and **`v
 
 4. **lightspeed-stack** ConfigMap (chart) points MCP integration tools at `http://localhost:7007/api/mcp-actions/v1`.
 
-!!! note "Guest users never paste tokens"
-    Operators refresh `model-api-key`. Guests only use the Hub UI.
+> **Note: Guest users never paste tokens**
+>
+> Operators refresh `model-api-key`. Guests only use the Hub UI.
 
 ## LiteLLM behaviour on Sandbox
 
@@ -45,7 +50,7 @@ Without that, Lightspeed returns HTTP 200 with an empty stream and `Error while 
 
 ## DevSpaces Continue
 
-Continue uses the **LiteLLM Route** (public) + `litellm-master-key`, models `granite` / `qwen3`. See [DevSpaces AI](devspaces-ai.md).
+Continue uses the **LiteLLM Route** (public) + `litellm-master-key`, models `granite` / `qwen3`. See [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
 
 ## Refresh model token (~24h)
 
@@ -69,4 +74,4 @@ curl -sk "https://${ROUTE}/v1/chat/completions" \
   -d '{"model":"granite","messages":[{"role":"user","content":"Say hi"}],"max_tokens":16}'
 ```
 
-Full checklist: [Verify the install](verify.md).
+Full checklist: [Verify the install]({{ '/verify/' | relative_url }}).

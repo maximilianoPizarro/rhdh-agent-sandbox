@@ -1,3 +1,7 @@
+---
+title: Demo script
+---
+
 # Demo script (~10 minutes)
 
 Audience: show an **agent loop** on Developer Sandbox — Guest Hub + Lightspeed, then DevSpaces AI.
@@ -16,10 +20,11 @@ oc get pods,route | grep rhdh-agent
 curl -skI "https://$(oc get route -l app.kubernetes.io/name=developer-hub -o jsonpath='{.items[0].spec.host}' 2>/dev/null || oc get route | awk '/developer-hub/{print $2; exit}')/" | head -1
 ```
 
-Optional deep check: [Verify the install](verify.md).
+Optional deep check: [Verify the install]({{ '/verify/' | relative_url }}).
 
-!!! tip "Quota"
-    Keep at most **one** modest DevSpaces workspace while Hub + LiteLLM + MCP are running.
+> **Tip: Quota**
+>
+> Keep at most **one** modest DevSpaces workspace while Hub + LiteLLM + MCP are running.
 
 ## Part A — Hub agent loop (Guest) — ~5 min
 
@@ -57,7 +62,7 @@ Optional deep check: [Verify the install](verify.md).
 5. Chat: *“Explain the Devfile and how granite is reached via LiteLLM.”*  
 6. Show `.continue/skills/` and `docs/prompts/` — same names as Hub catalog.
 
-Full IDE steps: [DevSpaces AI](devspaces-ai.md).
+Full IDE steps: [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
 
 ## Tokens (who needs what)
 

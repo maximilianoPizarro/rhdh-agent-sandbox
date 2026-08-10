@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include head.html %}
+</head>
+<body class="pf-v6-c-page">
+  <header class="pf-v6-c-page__header">
+    {% include masthead.html %}
+  </header>
+  <div class="pf-v6-c-page__sidebar">
+    {% include sidebar.html %}
+  </div>
+  <main class="pf-v6-c-page__main" id="main-content">
+    <section class="hero-section">
+      <div class="hero-inner">
+        <h1 class="hero-title">Agent-friendly Developer Hub</h1>
+        <p class="hero-subtitle">Umbrella Helm chart that deploys Red Hat Developer Hub 1.10.3 on OpenShift Developer Sandbox with a working agent loop</p>
+        <div class="hero-cta">
+          <a href="{{ '/quickstart/' | relative_url }}" class="pf-v6-c-button pf-m-primary hero-btn">Quickstart</a>
+          <a href="https://github.com/{{ site.repository }}" class="pf-v6-c-button pf-m-secondary hero-btn hero-btn--secondary" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </section>
+    <section class="pf-v6-c-page__main-section">
+      <div class="pf-v6-c-content">
+        {{ content }}
+      </div>
+    </section>
+  </main>
+  {% include footer.html %}
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
+  {% if page.carousel %}
+  <script src="{{ '/assets/js/carousel.js' | relative_url }}"></script>
+  {% endif %}
+</body>
+</html>

@@ -10,8 +10,11 @@
 .DS_Store
 tmp/
 dist/
-# MkDocs local dev build (CI builds into docs/)
+# Jekyll local dev build (CI builds into docs/)
+_site/
 site/
+.jekyll-cache/
+.sass-cache/
 node_modules/
 .helm/
 secrets.env

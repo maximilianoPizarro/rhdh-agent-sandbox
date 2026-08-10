@@ -1,20 +1,43 @@
+---
+layout: home
+title: Home
+permalink: /
+---
+
 # Agent-friendly Developer Hub on Developer Sandbox
 
 Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen, plus MCP tools, Golden Paths, and DevSpaces AI workspaces.
 
-![One-command install](assets/diagrams/install-one-command.png)
+![One-command install]({{ '/assets/diagrams/install-one-command.png' | relative_url }})
 
 ## What you get
 
-| Piece | Role |
-|---|---|
-| **Developer Hub** | Guest login, catalog, scaffolder, TechDocs, Lightspeed UI |
-| **LiteLLM** | OpenAI-compatible gateway to `sandbox-shared-models` (Granite / Qwen) |
-| **MCP servers** | OpenShift + Kubernetes tools (namespace-scoped) for Lightspeed |
-| **Golden Paths** | Deploy Agent → Pod + Component + Open in DevSpaces (no git push) |
-| **AI catalog** | Skills, prompts, MCP entities, software templates (ConfigMap mount) |
-| **DevSpaces AI** | Browser IDE (Che Code + Continue) talking to the LiteLLM Route |
-| **OpenClaw** (optional) | Personal assistant from sandbox.redhat.com; bring your own LLM keys |
+<div class="card-grid" markdown="0">
+<div class="card">
+<h3>Developer Hub</h3>
+<p>Guest login, catalog, scaffolder, TechDocs, and Lightspeed UI — all in one portal.</p>
+</div>
+<div class="card">
+<h3>LiteLLM Gateway</h3>
+<p>OpenAI-compatible proxy to shared Granite &amp; Qwen models via sandbox-shared-models.</p>
+</div>
+<div class="card">
+<h3>MCP Servers</h3>
+<p>OpenShift + Kubernetes tools (namespace-scoped) for Lightspeed AI interactions.</p>
+</div>
+<div class="card">
+<h3>Golden Paths</h3>
+<p>Deploy Agent → Pod + Component + Open in DevSpaces — no git push required.</p>
+</div>
+<div class="card">
+<h3>DevSpaces AI</h3>
+<p>Browser IDE (Che Code + Continue) connected to the LiteLLM Route for AI-assisted coding.</p>
+</div>
+<div class="card">
+<h3>AI Catalog</h3>
+<p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
+</div>
+</div>
 
 ## Two identities (important)
 
@@ -27,18 +50,18 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 
 ## Recommended path
 
-1. [Quickstart](quickstart.md) — single `helm upgrade --install`  
-2. [Verify the install](verify.md) — confirm Hub, LiteLLM, routes  
-3. [Golden Paths](golden-paths.md) — deploy an agent Pod from the catalog  
-4. [Agents](agents.md) — Hub Guest, agent Pods, DevSpaces loops  
-5. [DevSpaces AI](devspaces-ai.md) — browser IDE with Continue → LiteLLM  
-6. [Demo script](demo-script.md) — guided ~10 minute walkthrough  
+1. [Quickstart]({{ '/quickstart/' | relative_url }}) — single `helm upgrade --install`  
+2. [Verify the install]({{ '/verify/' | relative_url }}) — confirm Hub, LiteLLM, routes  
+3. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — deploy an agent Pod from the catalog  
+4. [Agents]({{ '/agents/' | relative_url }}) — Hub Guest, agent Pods, DevSpaces loops  
+5. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — browser IDE with Continue → LiteLLM  
+6. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
 
-Deeper reading: [Architecture](architecture.md), [Lightspeed & models](lightspeed-models.md), [AI capabilities](ai-capabilities.md), [OpenClaw](openclaw.md), [Troubleshooting](troubleshooting.md), [Community packs](community-plugins-quay.md).
+Deeper reading: [Architecture]({{ '/architecture/' | relative_url }}), [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}), [AI capabilities]({{ '/ai-capabilities/' | relative_url }}), [OpenClaw]({{ '/openclaw/' | relative_url }}), [Troubleshooting]({{ '/troubleshooting/' | relative_url }}), [Community packs]({{ '/community-plugins-quay/' | relative_url }}).
 
 ## Install
 
-One `helm upgrade --install` deploys everything. Two options: clone the repo or add the Pages Helm repo. See **[Quickstart](quickstart.md)** for full commands, prerequisites, and post-install checks.
+One `helm upgrade --install` deploys everything. Two options: clone the repo or add the Pages Helm repo. See **[Quickstart]({{ '/quickstart/' | relative_url }})** for full commands, prerequisites, and post-install checks.
 
 ## Source
 

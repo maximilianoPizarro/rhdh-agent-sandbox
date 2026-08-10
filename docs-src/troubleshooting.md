@@ -1,3 +1,7 @@
+---
+title: Troubleshooting
+---
+
 # Troubleshooting
 
 ## LiteLLM 401 to shared models
@@ -118,11 +122,11 @@ Namespace Role only. Cluster-scoped tools fail by design. Stay inside the user p
 
 ## OpenClaw cannot use tools with shared models
 
-OpenClaw provisioned from sandbox.redhat.com needs **external** Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw](openclaw.md).
+OpenClaw provisioned from sandbox.redhat.com needs **external** Anthropic/OpenAI (or similar) keys for agentic tool use. Shared Granite/Qwen via this chart’s LiteLLM reject `tool_choice` / function calling — the chart intentionally drops those params so Lightspeed stays stable. Pointing OpenClaw only at LiteLLM is chat-only. Keep `agents.defaults.sandbox.mode: "off"` on Developer Sandbox (no Docker daemon). See [OpenClaw]({{ '/openclaw/' | relative_url }}).
 
 ## MCP Chat loads but tools never fire
 
-Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set `mcpChat.providers` to openai/claude/gemini with your own API key (Secret + env). See [AI capabilities](ai-capabilities.md).
+Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set `mcpChat.providers` to openai/claude/gemini with your own API key (Secret + env). See [AI capabilities]({{ '/ai-capabilities/' | relative_url }}).
 
 If **Backstage MCP Actions** shows disconnected at startup, that is an init race (mcp-chat connects before `/api/mcp-actions/v1` is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with `mcp-token`.
 

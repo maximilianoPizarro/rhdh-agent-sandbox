@@ -1,13 +1,18 @@
+---
+title: DevSpaces AI
+---
+
 # DevSpaces AI (browser IDE)
 
 Run **OpenShift DevSpaces** with in-browser AI (**Che Code** + **Continue**) against this chart’s **LiteLLM Route** (Granite / Qwen).
 
-!!! info "Identity"
-    Hub **Guest** is only for Developer Hub. DevSpaces is started by your **OpenShift Sandbox user**. The chart prepares Devfiles and `.continue/` config; it does not open DevSpaces as Guest.
+> **Info: Identity**
+>
+> Hub **Guest** is only for Developer Hub. DevSpaces is started by your **OpenShift Sandbox user**. The chart prepares Devfiles and `.continue/` config; it does not open DevSpaces as Guest.
 
 ## Prerequisites
 
-- Chart installed and [verified](verify.md) (LiteLLM Route returns models).  
+- Chart installed and [verified]({{ '/verify/' | relative_url }}) (LiteLLM Route returns models).  
 - DevSpaces available on the cluster (true on Developer Sandbox).  
 - Quota for ~200m CPU / 1Gi memory request (limits up to ~2 CPU / 3Gi). Stop other heavy workspaces first.
 
@@ -72,8 +77,9 @@ Then either:
 
 Open the **Continue** sidebar in Che Code and send a short chat.
 
-!!! tip
-    Use **`litellm-master-key`**, not your OpenShift user token. The user token is only for LiteLLM → shared models (`model-api-key`).
+> **Tip**
+>
+> Use **`litellm-master-key`**, not your OpenShift user token. The user token is only for LiteLLM → shared models (`model-api-key`).
 
 ## What ships in skeletons
 

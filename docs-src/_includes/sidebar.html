@@ -1,0 +1,25 @@
+<nav class="pf-v6-c-nav" aria-label="Side navigation" id="sidebar-nav">
+  <ul class="pf-v6-c-nav__list">
+    {% for item in site.data.nav %}
+    {% if item.children %}
+    <li class="pf-v6-c-nav__item pf-v6-c-nav__section">
+      <button class="pf-v6-c-nav__link nav-section-toggle" aria-expanded="false">
+        {{ item.title }}
+        <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
+      </button>
+      <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        {% for child in item.children %}
+        <li class="pf-v6-c-nav__item">
+          <a href="{{ child.url | relative_url }}" class="pf-v6-c-nav__link{% if page.url == child.url %} pf-m-current{% endif %}"{% if page.url == child.url %} aria-current="page"{% endif %}>{{ child.title }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% else %}
+    <li class="pf-v6-c-nav__item">
+      <a href="{{ item.url | relative_url }}" class="pf-v6-c-nav__link{% if page.url == item.url %} pf-m-current{% endif %}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

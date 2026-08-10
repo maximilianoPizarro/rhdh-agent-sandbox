@@ -1,6 +1,10 @@
+---
+title: Agents
+---
+
 # Agents
 
-Three related loops on Developer Sandbox. Prefer [Golden Paths](golden-paths.md) to create a new agent Pod + catalog Component.
+Three related loops on Developer Sandbox. Prefer [Golden Paths]({{ '/golden-paths/' | relative_url }}) to create a new agent Pod + catalog Component.
 
 ## 1. Hub Guest (in-cluster)
 
@@ -30,7 +34,7 @@ Factory links on sample / golden-path Components open:
 
 `https://workspaces.openshift.com/#https://github.com/maximilianopizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/<language>`
 
-Agent-oriented Devfiles also live under `files/devfiles/agents/`. Wire Continue to the LiteLLM **Route** with `litellm-master-key` (see [DevSpaces AI](devspaces-ai.md)).
+Agent-oriented Devfiles also live under `files/devfiles/agents/`. Wire Continue to the LiteLLM **Route** with `litellm-master-key` (see [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }})).
 
 Parallel path: use a DevSpaces catalog sample workspace if you do not have admin on `openshift-devspaces`.
 

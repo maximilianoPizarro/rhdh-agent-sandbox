@@ -1,6 +1,10 @@
+---
+title: Verify the install
+---
+
 # Verify the install
 
-Run these checks after [Quickstart](quickstart.md). Adjust the namespace if needed.
+Run these checks after [Quickstart]({{ '/quickstart/' | relative_url }}). Adjust the namespace if needed.
 
 ```bash
 export NAMESPACE=$(oc project -q)
@@ -39,8 +43,9 @@ Required keys:
 | `mcp-token` | Static token for RHDH MCP actions |
 | `backend-secret` | Hub backend auth |
 
-!!! danger "Do not set ENABLE_OPENAI"
-    That provider talks to api.openai.com. This chart only enables `ENABLE_VLLM` pointed at LiteLLM.
+> **Danger: Do not set ENABLE_OPENAI**
+>
+> That provider talks to api.openai.com. This chart only enables `ENABLE_VLLM` pointed at LiteLLM.
 
 Confirm Lightspeed sidecar env:
 
@@ -71,7 +76,7 @@ curl -sk "https://${ROUTE}/v1/chat/completions" \
   -d '{"model":"granite","messages":[{"role":"user","content":"Say hi in one word"}],"max_tokens":8}'
 ```
 
-If you get **401** from upstream models, refresh `model-api-key` (see [Quickstart](quickstart.md) notes).
+If you get **401** from upstream models, refresh `model-api-key` (see [Quickstart]({{ '/quickstart/' | relative_url }}) notes).
 
 ## 4. Hub HTTP + catalog mount
 
@@ -146,4 +151,4 @@ Lightspeed reaches MCP over ClusterIP (no public MCP Routes). Namespace-scoped R
 - [ ] Lightspeed streaming_query returns tokens (no error event)  
 - [ ] Guest login works without IdP  
 - [ ] Catalog shows Deploy Agent template + sample agents 
-If any step fails, see [Troubleshooting](troubleshooting.md).
+If any step fails, see [Troubleshooting]({{ '/troubleshooting/' | relative_url }}).

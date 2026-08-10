@@ -1,3 +1,7 @@
+---
+title: AI capabilities
+---
+
 # AI capabilities
 
 What this Sandbox chart demonstrates **today** (Guest Hub + DevSpaces AI).
@@ -89,6 +93,6 @@ Catalog annotations point at these stable paths so Hub and the IDE tell the same
 | Topic | Reality |
 |---|---|
 | Quay community packs | Optional OCI asset bundles for Continue/skills (not in the Hub image). **Not** loaded as RHDH dynamic plugins. |
-| Cursor Remote SSH / proxy | Out of the primary demo path (see [optional note](devspaces-cursor.md)). |
+| Cursor Remote SSH / proxy | Out of the primary demo path (see [optional note]({{ '/devspaces-cursor/' | relative_url }})). |
 | Public MCP Routes | OpenShift/K8s MCP stay ClusterIP; Hub MCP Actions is on the Hub Route (token-gated). |
 | RBAC / `permission.enabled: true` | Off for Guest demo. |

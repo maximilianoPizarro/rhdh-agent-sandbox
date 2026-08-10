@@ -1,3 +1,7 @@
+---
+title: OpenClaw (optional)
+---
+
 # OpenClaw (optional)
 
 OpenClaw is a **personal AI assistant** you provision from [sandbox.redhat.com](https://sandbox.redhat.com) — not from this Helm chart. It runs in your Developer Sandbox namespace with a managed lifecycle.
@@ -60,8 +64,9 @@ Configure OpenClaw (Control UI or `~/.openclaw/openclaw.json`) with your provide
 
 Use OpenClaw’s onboard / Control UI **Config** tab if you prefer a form over raw JSON5. Follow [OpenClaw configuration](https://docs.openclaw.ai/) for the exact provider fields for your vendor.
 
-!!! tip "Sandbox tool sandboxing"
-    OpenClaw can sandbox tools with Docker (`agents.defaults.sandbox.mode: non-main|all`). Developer Sandbox does **not** expose a Docker socket or privileged DinD. Keep `sandbox.mode: "off"` so tools run inside the OpenClaw pod under the provisioned ServiceAccount.
+> **Tip: Sandbox tool sandboxing**
+>
+> OpenClaw can sandbox tools with Docker (`agents.defaults.sandbox.mode: non-main|all`). Developer Sandbox does **not** expose a Docker socket or privileged DinD. Keep `sandbox.mode: "off"` so tools run inside the OpenClaw pod under the provisioned ServiceAccount.
 
 ## Optional: LiteLLM as chat-only custom provider
 
@@ -103,8 +108,9 @@ export LITELLM_KEY=$(oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}" 
 }
 ```
 
-!!! warning "Chat-only with shared models"
-    With Granite/Qwen via LiteLLM, OpenClaw will **not** get reliable tool calls. Use this path only for plain Q&A. For agentic work (code, shell, multi-step tools), use an external API key.
+> **Warning: Chat-only with shared models**
+>
+> With Granite/Qwen via LiteLLM, OpenClaw will **not** get reliable tool calls. Use this path only for plain Q&A. For agentic work (code, shell, multi-step tools), use an external API key.
 
 ## What this chart does *not* do
 
@@ -121,7 +127,7 @@ export LITELLM_KEY=$(oc get secret rhdh-agent-sandbox-secrets -n "${NAMESPACE}" 
 
 ## See also
 
-- [Architecture](architecture.md) — full stack diagram  
-- [Lightspeed & models](lightspeed-models.md) — why shared models drop `tool_choice`  
-- [Troubleshooting](troubleshooting.md) — OpenClaw + shared models  
+- [Architecture]({{ '/architecture/' | relative_url }}) — full stack diagram  
+- [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}) — why shared models drop `tool_choice`  
+- [Troubleshooting]({{ '/troubleshooting/' | relative_url }}) — OpenClaw + shared models  
 - [OpenClaw docs](https://docs.openclaw.ai/) — upstream gateway / config reference  

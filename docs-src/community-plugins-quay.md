@@ -1,3 +1,7 @@
+---
+title: Community packs / Quay
+---
+
 # Community packs on Quay
 
 CI publishes **optional asset packs** (skills / prompts / catalog index) for related community content that is **not** baked into the Developer Hub image. Images go to:
@@ -37,7 +41,8 @@ Set the repo visibility in Quay to **public** for anonymous Developer Sandbox pu
 
 ## What actually loads in RHDH
 
-!!! important
-    These Quay packs are **not** installed as RHDH dynamic plugins. Hub AI entities come from the Helm ConfigMap `rhdh-agent-sandbox-catalog` (`files/catalog/*` mounted at `/opt/app-root/src/catalog`).
+> **Important**
+>
+> These Quay packs are **not** installed as RHDH dynamic plugins. Hub AI entities come from the Helm ConfigMap `rhdh-agent-sandbox-catalog` (`files/catalog/*` mounted at `/opt/app-root/src/catalog`).
 
 Use Quay packs to distribute the same skills/prompts as OCI artifacts for Continue or other tooling. Keep `catalogIndex.extraImages` empty unless the image is a real RHDH catalog index — a wrong image fails `install-dynamic-plugins` and blocks the Hub pod.

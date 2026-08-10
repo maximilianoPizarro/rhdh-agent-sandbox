@@ -1,0 +1,38 @@
+- title: Home
+  url: /
+- title: Journey
+  url: /journey/
+- title: Get started
+  children:
+    - title: Quickstart
+      url: /quickstart/
+    - title: Golden Paths
+      url: /golden-paths/
+    - title: Agents
+      url: /agents/
+    - title: Verify the install
+      url: /verify/
+    - title: Demo script
+      url: /demo-script/
+- title: How it works
+  children:
+    - title: Architecture
+      url: /architecture/
+    - title: Lightspeed & models
+      url: /lightspeed-models/
+    - title: AI capabilities
+      url: /ai-capabilities/
+- title: Workspaces
+  children:
+    - title: DevSpaces AI
+      url: /devspaces-ai/
+    - title: Cursor (optional)
+      url: /devspaces-cursor/
+    - title: OpenClaw (optional)
+      url: /openclaw/
+- title: Operations
+  children:
+    - title: Troubleshooting
+      url: /troubleshooting/
+    - title: Community packs / Quay
+      url: /community-plugins-quay/

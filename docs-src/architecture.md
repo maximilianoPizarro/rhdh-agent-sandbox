@@ -1,8 +1,12 @@
+---
+title: Architecture
+---
+
 # Architecture
 
 ## End-to-end picture
 
-![Architecture overview](assets/diagrams/architecture-overview.png)
+![Architecture overview]({{ '/assets/diagrams/architecture-overview.png' | relative_url }})
 
 ```mermaid
 flowchart LR

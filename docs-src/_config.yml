@@ -1,0 +1,21 @@
+title: rhdh-agent-sandbox
+description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
+url: https://maximilianopizarro.github.io
+baseurl: /rhdh-agent-sandbox
+repository: maximilianoPizarro/rhdh-agent-sandbox
+
+permalink: /:title/
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
+plugins:
+  - jekyll-seo-tag

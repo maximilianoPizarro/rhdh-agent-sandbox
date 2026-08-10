@@ -1,3 +1,7 @@
+---
+title: Quickstart
+---
+
 # Quickstart
 
 Install on **OpenShift Developer Sandbox** with a single Helm release. Chart source lives at the **repository root**. GitHub Pages serves the **`/docs`** folder, which holds the Helm repo (`index.yaml`, `artifacthub-repo.yml`, packaged `.tgz`).
@@ -10,9 +14,10 @@ Install on **OpenShift Developer Sandbox** with a single Helm release. Chart sou
 | `helm` | 3.14 or newer |
 | Sandbox quota | At least **1.5 CPU / 3 Gi** free (Hub + LiteLLM + MCP) |
 
-!!! warning "Replace `<your-sandbox>` before running"
-    Both install methods use the placeholder `apps.<your-sandbox>.openshiftapps.com`. Replace it with your cluster's apps domain **before** you copy-paste.
-    If `oc get ingresses.config.openshift.io cluster` is Forbidden, take any Route host and drop the first DNS label (example: `my-app-ns.apps.rm2.thpm.p1.openshiftapps.com` → `apps.rm2.thpm.p1.openshiftapps.com`).
+> **Warning: Replace `<your-sandbox>` before running**
+>
+> Both install methods use the placeholder `apps.<your-sandbox>.openshiftapps.com`. Replace it with your cluster's apps domain **before** you copy-paste.
+> If `oc get ingresses.config.openshift.io cluster` is Forbidden, take any Route host and drop the first DNS label (example: `my-app-ns.apps.rm2.thpm.p1.openshiftapps.com` → `apps.rm2.thpm.p1.openshiftapps.com`).
 
 ## Install from clone
 
@@ -56,9 +61,10 @@ First install pulls large images (RHDH ~1.5 GB, LiteLLM ~500 MB). **Expect 5–1
 | Hub ready (2 containers) | 2–4 min after pull | `rhdh-agent-developer-hub-*` shows `2/2 Running` |
 | MCP servers ready | ~30 s after pull | `rhdh-agent-*-mcp-*` pods show `1/1 Running` |
 
-!!! tip "Normal vs. not normal"
-    **Normal:** pods in `ContainerCreating` for several minutes, `0/1` or `1/2` while init containers run, occasional `CrashLoopBackOff` on Hub if PostgreSQL isn't ready yet (self-heals).
-    **Not normal:** pods stuck in `Pending` for >5 min (quota issue — run `oc describe resourcequota`), or `ImagePullBackOff` (network/registry issue).
+> **Tip: Normal vs. not normal**
+>
+> **Normal:** pods in `ContainerCreating` for several minutes, `0/1` or `1/2` while init containers run, occasional `CrashLoopBackOff` on Hub if PostgreSQL isn't ready yet (self-heals).
+> **Not normal:** pods stuck in `Pending` for >5 min (quota issue — run `oc describe resourcequota`), or `ImagePullBackOff` (network/registry issue).
 
 ## Confirm
 
@@ -78,7 +84,7 @@ rhdh-agent-sandbox-openshift-mcp-<hash>       1/1     Running   0          5m
 ...
 ```
 
-Sign in as **Guest**. Next: [Golden Paths](golden-paths.md) (deploy an agent) and [Verify](verify.md).
+Sign in as **Guest**. Next: [Golden Paths]({{ '/golden-paths/' | relative_url }}) (deploy an agent) and [Verify]({{ '/verify/' | relative_url }}).
 
 ## Token refresh (when chat returns 401)
 
@@ -90,7 +96,7 @@ oc set data secret/rhdh-agent-sandbox-secrets \
 oc rollout restart deploy/rhdh-agent-litellm
 ```
 
-If the problem persists, see [Troubleshooting — LiteLLM 401](troubleshooting.md#litellm-401-to-shared-models).
+If the problem persists, see [Troubleshooting — LiteLLM 401]({{ '/troubleshooting/' | relative_url }}#litellm-401-to-shared-models).
 
 ## Notes
 
