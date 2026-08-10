@@ -15,13 +15,15 @@ data:
         litellm_params:
           model: openai/{{ .modelId }}
           api_base: {{ .apiBase }}
-          api_key: os.environ/MODEL_API_KEY
+          api_key: os.environ/{{ .apiKeyEnv | default "MODEL_API_KEY" }}
           ssl_verify: false
           drop_params: true
-          # Sandbox shared Granite/Qwen reject tool_choice=auto (no --enable-auto-tool-choice).
+{{- if .dropTools | default (not (.supportsFunctionCalling | default false)) }}
+          # Shared Sandbox Granite/Qwen reject tool_choice=auto.
           additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
+{{- end }}
         model_info:
-          supports_function_calling: false
+          supports_function_calling: {{ .supportsFunctionCalling | default false }}
 {{- end }}
 
     mcp_servers:

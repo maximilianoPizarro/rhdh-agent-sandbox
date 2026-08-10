@@ -34,15 +34,17 @@ These are real [Backstage community plugins](https://backstage.io/plugins) loade
 | MCP Chat (frontend) | `backstage-community-plugin-mcp-chat:bs_1.49.4__0.6.0` | Hub UI tab at `/mcp-chat` |
 | MCP Chat (backend) | `backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0` | Chat API → LiteLLM + MCP servers |
 
-After install, open **MCP Chat** in the Hub sidebar. Provider defaults to LiteLLM (`granite`). MCP Chat connects to OpenShift MCP, Kubernetes MCP, and Hub mcp-actions (catalog / TechDocs extras). External MCP clients (Cursor, Continue) can call `https://<hub-route>/api/mcp-actions/v1` with the `mcp-token` from the chart secret.
+After install, open **MCP Chat** in the Hub sidebar. Provider defaults to LiteLLM (`litemaas-qwen` for tool demos). MCP Chat connects to OpenShift MCP, Kubernetes MCP, and Hub mcp-actions (catalog / TechDocs extras). External MCP clients (Cursor, Continue) can call `https://<hub-route>/api/mcp-actions/v1` with the `mcp-token` from the chart secret.
 
-### Tool calling limitation
+### Tool calling
 
-Shared Granite / Qwen behind Sandbox oauth-proxy do **not** support `tool_choice` / function calling:
+| Model | Tools | Where |
+|---|---|---|
+| `granite` / `qwen3` | Dropped by LiteLLM (chat-only) | Everyday Hub chat |
+| `litemaas-qwen` (LiteMaaS Qwen3.6-35B-A3B) | ON | Lightspeed + MCP Chat demos — see [Hub tool calling journey]({{ '/tool-calling-journey/' | relative_url }}) |
+| OpenClaw + LiteMaaS | ON | [OpenClaw journey]({{ '/openclaw-journey/' | relative_url }}) |
 
-- MCP Chat + LiteLLM: chat works; the model will not autonomously call MCP tools (you can still browse tools in the UI).
-- MCP Chat + your own OpenAI / Claude / Gemini key: full agentic tool use.
-- MCP Actions Backend: always usable from clients that bring their own model.
+Store the LiteMaaS key only in Secret `litemaas-credentials` (never in git).
 
 ### Evaluated and not included
 

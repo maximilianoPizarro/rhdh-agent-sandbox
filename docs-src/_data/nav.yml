@@ -2,6 +2,8 @@
   url: /
 - title: Journey
   url: /journey/
+- title: Hub tool calling
+  url: /tool-calling-journey/
 - title: OpenClaw journey
   url: /openclaw-journey/
 - title: Get started

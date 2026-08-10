@@ -10,7 +10,7 @@ carousel: true
 <div class="journey-carousel" id="journey-carousel" role="region" aria-roledescription="carousel" aria-label="OpenClaw configuration journey" tabindex="0">
 <div class="journey-viewport" id="journey-viewport">
 
-<figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 7">
+<figure class="journey-slide is-active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 of 8">
 <img src="{{ '/assets/screenshots/sandbox-catalog.png' | relative_url }}" alt="Developer Sandbox catalog showing OpenShift, OpenShift AI, Dev Spaces, Ansible, OpenShift Virtualization, and OpenClaw cards" />
 <figcaption>
 <span class="slide-num">Step 01</span>
@@ -19,7 +19,7 @@ carousel: true
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 7" hidden>
+<figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 8" hidden>
 <img src="{{ '/assets/screenshots/sandbox-openclaw-card.png' | relative_url }}" alt="OpenClaw card with features: personal AI assistant, bring your own LLM keys, full workspace access, Kubernetes-native" />
 <figcaption>
 <span class="slide-num">Step 02</span>
@@ -28,7 +28,7 @@ carousel: true
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 7" hidden>
+<figure class="journey-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 of 8" hidden>
 <img src="{{ '/assets/screenshots/openclaw-provision-modal.png' | relative_url }}" alt="Provision OpenClaw instance modal with New credential section and AI provider dropdown" />
 <figcaption>
 <span class="slide-num">Step 03</span>
@@ -37,7 +37,7 @@ carousel: true
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 7" hidden>
+<figure class="journey-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 of 8" hidden>
 <img src="{{ '/assets/screenshots/openclaw-providers.png' | relative_url }}" alt="Dropdown showing Primary providers (Google Gemini, Anthropic Claude, OpenAI, xAI), Advanced (OpenRouter, Vertex AI), and Custom / Self-Hosted" />
 <figcaption>
 <span class="slide-num">Step 04</span>
@@ -46,7 +46,7 @@ carousel: true
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 7" hidden>
+<figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 8" hidden>
 <img src="{{ '/assets/screenshots/openclaw-provision-filled.png' | relative_url }}" alt="Completed provision form showing LiteMaaS endpoint URL, OpenAI Completions format, masked API key, Qwen3.6-35B-A3B model name, and display name" />
 <figcaption>
 <span class="slide-num">Step 05</span>
@@ -55,19 +55,28 @@ carousel: true
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 of 7" hidden>
-<img src="{{ '/assets/screenshots/openclaw-chat-qwen.png' | relative_url }}" alt="OpenClaw chat interface showing tool calling with kubectl, powered by Qwen3.6-35B-A3B" />
+<figure class="journey-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 of 8" hidden>
+<img src="{{ '/assets/screenshots/openclaw-ready.png' | relative_url }}" alt="OpenClaw instance provisioned modal with Launch button" />
 <figcaption>
 <span class="slide-num">Step 06</span>
-<strong>OpenClaw chat with tool calling</strong>
-<span class="desc">OpenClaw is live! Ask it to inspect your namespace — it uses Qwen's tool calling to execute kubectl, read logs, and analyze deployments. The model indicator shows &ldquo;Qwen 3.6 35B-A3B (Tool Calling)&rdquo;.</span>
+<strong>Instance ready</strong>
+<span class="desc">When provisioning finishes, Launch opens the OpenClaw Control UI (use the gateway token from Secret <code>claw-gateway-token</code> if pairing is required).</span>
 </figcaption>
 </figure>
 
-<figure class="journey-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 of 7" hidden>
-<img src="{{ '/assets/screenshots/openclaw-devhub-integration.png' | relative_url }}" alt="Split view of Developer Hub catalog and OpenClaw deploying an agent via Golden Path template" />
+<figure class="journey-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 of 8" hidden>
+<img src="{{ '/assets/screenshots/openclaw-chat-qwen.png' | relative_url }}" alt="OpenClaw chat showing kubectl tool activity and sample agent Ready status with Qwen3.6-35B-A3B" />
 <figcaption>
 <span class="slide-num">Step 07</span>
+<strong>OpenClaw chat with tool calling</strong>
+<span class="desc">Ask OpenClaw to inspect namespaces with kubectl. Qwen runs real tool rounds and reports sample-*-agent Deployments/Pods as Ready in your Hub namespace.</span>
+</figcaption>
+</figure>
+
+<figure class="journey-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 of 8" hidden>
+<img src="{{ '/assets/screenshots/openclaw-devhub-integration.png' | relative_url }}" alt="Split view of Developer Hub catalog and OpenClaw deploying an agent via Golden Path template" />
+<figcaption>
+<span class="slide-num">Step 08</span>
 <strong>OpenClaw + Developer Hub</strong>
 <span class="desc">OpenClaw works alongside Developer Hub: invoke the scaffolder API to deploy agents via Golden Path templates, check catalog entries, and manage the full agent lifecycle — all from one AI-powered interface.</span>
 </figcaption>
@@ -81,7 +90,7 @@ carousel: true
 <button type="button" class="journey-btn" id="journey-fs" aria-label="Toggle fullscreen" aria-pressed="false">Fullscreen</button>
 </div>
 <div class="journey-dots" id="journey-dots" role="tablist" aria-label="Slide picker"></div>
-<span class="journey-status" id="journey-status" aria-live="polite">1 / 7</span>
+<span class="journey-status" id="journey-status" aria-live="polite">1 / 8</span>
 </div>
 </div>
 

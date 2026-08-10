@@ -46,6 +46,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.name }}
                   key: model-api-key
+{{- if .Values.litellm.litemaasSecret }}
+            - name: LITEMAAS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.litellm.litemaasSecret.name }}
+                  key: {{ .Values.litellm.litemaasSecret.key }}
+{{- end }}
             - name: SSL_VERIFY
               value: "False"
             - name: LITELLM_SSL_VERIFY

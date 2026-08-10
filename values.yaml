@@ -44,10 +44,28 @@ litellm:
     - name: granite
       modelId: isvc-granite-31-8b-fp8
       apiBase: https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
+      apiKeyEnv: MODEL_API_KEY
+      supportsFunctionCalling: false
+      dropTools: true
     - name: qwen3
       modelId: isvc-qwen3-8b-fp8
       apiBase: https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
+      apiKeyEnv: MODEL_API_KEY
+      supportsFunctionCalling: false
+      dropTools: true
+    # LiteMaaS private Qwen — tool calling ON (key from Secret litemaas-credentials, not git)
+    - name: litemaas-qwen
+      modelId: Qwen3.6-35B-A3B
+      apiBase: https://litemaas.rhoai.rh-aiservices-bu.com/v1
+      apiKeyEnv: LITEMAAS_API_KEY
+      supportsFunctionCalling: true
+      dropTools: false
+  # Prefer shared granite for default chat; tool demos use litemaas-qwen
   defaultModel: granite
+  # Optional: Secret holding LiteMaaS bearer key (key name: api-key)
+  litemaasSecret:
+    name: litemaas-credentials
+    key: api-key
   postgres:
     enabled: false
 
@@ -272,14 +290,14 @@ rhdh:
               - host: github.com
               - host: raw.githubusercontent.com
               - host: "*.github.io"
-        # MCP Chat → LiteLLM (chat works; shared Granite/Qwen lack tool_choice).
-        # For full agentic tool calling, swap provider to openai/claude with your own key.
+        # MCP Chat → LiteLLM. Default demo model is LiteMaaS Qwen (tool calling).
+        # Shared granite/qwen3 remain available via Lightspeed for chat-only.
         mcpChat:
           providers:
             - id: litellm
               baseUrl: http://rhdh-agent-sandbox-litellm:4000
               token: ${LITELLM_API_KEY}
-              model: granite
+              model: litemaas-qwen
           mcpServers:
             # Cluster MCP services are up before Hub; prefer these for reliable connect.
             - id: openshift-mcp
@@ -338,6 +356,9 @@ rhdh:
             - id: vllm/qwen3
               url: http://rhdh-agent-sandbox-litellm:4000/v1
               model: qwen3
+            - id: vllm/litemaas-qwen
+              url: http://rhdh-agent-sandbox-litellm:4000/v1
+              model: litemaas-qwen
           # Must match mcp_servers[].name in files/lightspeed-stack.yaml
           mcpServers:
             - name: mcp-integration-tools

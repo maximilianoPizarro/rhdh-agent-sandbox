@@ -6,7 +6,7 @@ permalink: /
 
 # Agent-friendly Developer Hub on Developer Sandbox
 
-Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen, plus MCP tools, Golden Paths, and DevSpaces AI workspaces.
+Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen (chat) or LiteMaaS Qwen (tool calling), plus MCP tools, Golden Paths, and DevSpaces AI workspaces.
 
 ![One-command install]({{ '/assets/diagrams/install-one-command.png' | relative_url }})
 
@@ -36,6 +36,10 @@ Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift
 <div class="card">
 <h3>AI Catalog</h3>
 <p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
+</div>
+<div class="card">
+<h3>Hub tool calling</h3>
+<p>Lightspeed + MCP Chat with <code>litemaas-qwen</code> call real Kubernetes tools. <a href="{{ '/tool-calling-journey/' | relative_url }}">See the journey</a>.</p>
 </div>
 <div class="card">
 <h3>OpenClaw + Qwen</h3>

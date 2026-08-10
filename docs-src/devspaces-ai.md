@@ -63,23 +63,27 @@ oc get dw rhdh-agent-ai-demo -w
 
 ## Wire Continue → LiteLLM
 
-Inside the workspace terminal (or before start via env):
+The Helm chart creates Secret **`rhdh-agent-sandbox-continue`** with:
+
+| Key | Source |
+|---|---|
+| `LITELLM_API_BASE` | LiteLLM Route URL (`…/v1`) |
+| `LITELLM_API_KEY` | `litellm-master-key` from `rhdh-agent-sandbox-secrets` |
+
+Inside the workspace terminal, run Devfile command **`wire-continue`**. It prefers env vars if set; otherwise it loads that Secret via `oc` and writes `.continue/config.json` (models `granite` / `qwen3`).
+
+Manual fallback:
 
 ```bash
-export LITELLM_API_BASE="https://$(oc get route -l app.kubernetes.io/component=litellm -o jsonpath='{.items[0].spec.host}')/v1"
-export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.litellm-master-key}' | base64 -d)"
+export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)"
+export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)"
 ```
-
-Then either:
-
-- Run the Devfile command **`wire-continue`**, or  
-- Edit `.continue/config.json` with `apiBase` = `$LITELLM_API_BASE`, `apiKey` = `$LITELLM_API_KEY`, models `granite` / `qwen3`.
 
 Open the **Continue** sidebar in Che Code and send a short chat.
 
 > **Tip**
 >
-> Use **`litellm-master-key`**, not your OpenShift user token. The user token is only for LiteLLM → shared models (`model-api-key`).
+> Use **`litellm-master-key`** (via the Continue Secret), not your OpenShift user token. The user token is only for LiteLLM → shared models (`model-api-key`). Hub tool demos use LiteMaaS via Lightspeed/MCP Chat — not Continue.
 
 ## What ships in skeletons
 

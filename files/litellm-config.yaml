@@ -21,6 +21,15 @@ model_list:
       additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
     model_info:
       supports_function_calling: false
+  - model_name: litemaas-qwen
+    litellm_params:
+      model: openai/Qwen3.6-35B-A3B
+      api_base: https://litemaas.rhoai.rh-aiservices-bu.com/v1
+      api_key: os.environ/LITEMAAS_API_KEY
+      ssl_verify: false
+      drop_params: true
+    model_info:
+      supports_function_calling: true
 
 mcp_servers:
   openshift_mcp_server:

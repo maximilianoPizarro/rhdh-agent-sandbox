@@ -8,12 +8,13 @@ title: Lightspeed and models
 
 LiteLLM exposes OpenAI-compatible endpoints:
 
-| LiteLLM alias | Upstream InferenceService |
-|---|---|
-| `granite` | `isvc-granite-31-8b-fp8` in `sandbox-shared-models` |
-| `qwen3` | `isvc-qwen3-8b-fp8` in `sandbox-shared-models` |
+| LiteLLM alias | Upstream | Tools |
+|---|---|---|
+| `granite` | `isvc-granite-31-8b-fp8` in `sandbox-shared-models` | Dropped (chat-only) |
+| `qwen3` | `isvc-qwen3-8b-fp8` in `sandbox-shared-models` | Dropped (chat-only) |
+| `litemaas-qwen` | LiteMaaS `Qwen3.6-35B-A3B` | **ON** (function calling) |
 
-In the Lightspeed UI / llama-stack, models appear as **`vllm/granite`** and **`vllm/qwen3`**. Hub `lightspeed.servers` in `values.yaml` uses those ids.
+In the Lightspeed UI / llama-stack, models appear as **`vllm/granite`**, **`vllm/qwen3`**, and **`vllm/litemaas-qwen`**. MCP Chat defaults to `litemaas-qwen` for tool demos. See the [Hub tool calling journey]({{ '/tool-calling-journey/' | relative_url }}).
 
 ## How Hub Lightspeed is wired
 
@@ -41,16 +42,18 @@ In the Lightspeed UI / llama-stack, models appear as **`vllm/granite`** and **`v
 
 ## LiteLLM behaviour on Sandbox
 
-Shared Granite/Qwen reject `tool_choice=auto` (they are not started with `--enable-auto-tool-choice`). The chart sets:
+Shared Granite/Qwen reject `tool_choice=auto` (they are not started with `--enable-auto-tool-choice`). For those aliases the chart sets:
 
 - `supports_function_calling: false`
 - `additional_drop_params` for `tool_choice` / `tools` / …
 
 Without that, Lightspeed returns HTTP 200 with an empty stream and `Error while obtaining answer` in `lightspeed-core` logs.
 
+For **tool calling** in Hub Lightspeed / MCP Chat, use **`litemaas-qwen`**. Create Secret `litemaas-credentials` with key `api-key` (LiteMaaS bearer). The chart mounts it as `LITEMAAS_API_KEY` into LiteLLM — never commit the key to git.
+
 ## DevSpaces Continue
 
-Continue uses the **LiteLLM Route** (public) + `litellm-master-key`, models `granite` / `qwen3`. See [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
+The chart creates Secret **`rhdh-agent-sandbox-continue`** with `LITELLM_API_BASE` (LiteLLM Route) and `LITELLM_API_KEY` (`litellm-master-key`). Devfile `wire-continue` reads that Secret (or env) and writes `.continue/config.json` for models `granite` / `qwen3`. See [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
 
 ## Refresh model token (~24h)
 
