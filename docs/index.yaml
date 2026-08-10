@@ -13,14 +13,14 @@ entries:
         - name: Documentation
           url: https://maximilianopizarro.github.io/rhdh-agent-sandbox
         - name: Source
-          url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+          url: https://github.com/maximilianopizarro/rhdh-agent-sandbox
       artifacthub.io/maintainers: |
         - name: maximilianoPizarro
           email: maximiliano.pizarro.5@gmail.com
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-10T16:15:41.131587524Z"
+    created: "2026-08-10T16:31:48.266749546Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -29,9 +29,9 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: 647d4db9c036f81de22558052bcb486c99f00c838df2db7d3cde79d43dcbf8b1
+    digest: b0b16940014ef3d0dd2af9ca8ef168c7c581ea5f8fe3335afe34e8322c398c99
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
-    icon: https://raw.githubusercontent.com/maximilianoPizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
+    icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
     - openshift
     - developer-hub
@@ -45,12 +45,12 @@ entries:
     maintainers:
     - email: maximiliano.pizarro.5@gmail.com
       name: maximilianoPizarro
-      url: https://github.com/maximilianoPizarro
+      url: https://github.com/maximilianopizarro
     name: rhdh-agent-sandbox
     sources:
-    - https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+    - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
     - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.0.tgz
     version: 0.1.0
-generated: "2026-08-10T16:15:41.113712091Z"
+generated: "2026-08-10T16:31:48.252587912Z"
