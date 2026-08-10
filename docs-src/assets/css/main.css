@@ -626,7 +626,7 @@ body.journey-fs-open { overflow: hidden }
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.9fr);
     align-items: stretch;
-    min-height: min(58vh, 520px);
+    min-height: min(68vh, 620px);
   }
   .journey-viewport {
     min-height: 0;
