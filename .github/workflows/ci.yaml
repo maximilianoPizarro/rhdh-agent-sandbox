@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -58,42 +58,47 @@ jobs:
           chmod +x community-plugins/build-and-push.sh
           ./community-plugins/build-and-push.sh "${{ github.ref_name == 'main' && '0.1.0' || github.sha }}"
 
-  # GitHub Pages via Actions deployment (Settings → Pages → Source: GitHub Actions).
-  # MkDocs builds HTML from docs/; Helm repo artifacts (index.yaml, .tgz) are
-  # copied into the built site so the same URL serves docs + chart repo.
+  # GitHub Pages: Settings → Pages → Source: Deploy from branch, Branch: main, Folder: /docs
+  # CI builds MkDocs into docs/, adds Helm repo artifacts, and commits.
   pages:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: [helm]
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: azure/setup-helm@v4
         with:
           version: v3.16.2
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build MkDocs site
+      - name: Build MkDocs into docs/
         run: |
           pip install 'mkdocs-material==9.7.7'
+          # Save helm artifacts before MkDocs cleans docs/
+          mkdir -p /tmp/helm-keep
+          cp -f docs/index.yaml docs/artifacthub-repo.yml docs/rhdh-agent-sandbox-*.tgz /tmp/helm-keep/ 2>/dev/null || true
           mkdocs build --strict
-      - name: Package Helm chart into site for Pages
+          # Restore helm artifacts + add .nojekyll
+          cp /tmp/helm-keep/* docs/ 2>/dev/null || true
+          touch docs/.nojekyll
+      - name: Package Helm chart into docs/
         run: |
           helm dependency update
-          helm package . -d site
-          helm repo index site --url https://maximilianopizarro.github.io/rhdh-agent-sandbox
-          # Copy Artifact Hub metadata
-          cp docs/artifacthub-repo.yml site/artifacthub-repo.yml
-          ls -lh site/rhdh-agent-sandbox-*.tgz site/index.yaml site/artifacthub-repo.yml
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          rm -f docs/rhdh-agent-sandbox-*.tgz
+          helm package . -d docs
+          helm repo index docs --url https://maximilianopizarro.github.io/rhdh-agent-sandbox
+          ls -lh docs/index.yaml docs/artifacthub-repo.yml docs/rhdh-agent-sandbox-*.tgz
+      - name: Commit built site to docs/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No docs changes"
+          else
+            git commit -m "chore(pages): rebuild site and refresh Helm chart package"
+            git push
+          fi

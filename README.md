@@ -6,8 +6,9 @@
 Agent-friendly **Red Hat Developer Hub** on **OpenShift Developer Sandbox**.
 
 - Chart source: **repository root** (`Chart.yaml`, `values.yaml`, `templates/`, `files/`)
-- GitHub Pages: folder **`/docs`** (configured in repo Settings)
-- In `docs/`: MkDocs pages + Helm repo (`index.yaml`, `artifacthub-repo.yml`, packaged `.tgz`)
+- Markdown source: **`docs-src/`** (MkDocs builds into `docs/`)
+- GitHub Pages: **`/docs`** on `main` (Settings → Deploy from branch)
+- In `docs/`: built HTML site + Helm repo (`index.yaml`, `artifacthub-repo.yml`, `.tgz`)
 - Developer Hub: Helm **dependency** `redhat-developer-hub` from `https://charts.openshift.io/` (`helm dependency update`; not vendored under `/charts` in git)
 
 ## Install
@@ -44,11 +45,11 @@ helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
 
 | Page | Content |
 |---|---|
-| [Quickstart](docs/quickstart.md) | Clone or install from Pages Helm repo |
-| [Golden Paths](docs/golden-paths.md) | Deploy agents without git push |
-| [Agents](docs/agents.md) | Hub / Pod / DevSpaces agent loops |
-| [Architecture](docs/architecture.md) | Components and tokens |
-| [Verify](docs/verify.md) | Post-install checks |
+| [Quickstart](docs-src/quickstart.md) | Clone or install from Pages Helm repo |
+| [Golden Paths](docs-src/golden-paths.md) | Deploy agents without git push |
+| [Agents](docs-src/agents.md) | Hub / Pod / DevSpaces agent loops |
+| [Architecture](docs-src/architecture.md) | Components and tokens |
+| [Verify](docs-src/verify.md) | Post-install checks |
 
 ## Layout
 
@@ -57,8 +58,8 @@ Chart.yaml            # umbrella + dependency: redhat-developer-hub
 values.yaml
 templates/
 files/                # catalog, scaffolder skeletons, agent-runtimes
-docs/                 # GitHub Pages root
-  index.md            # site home (MkDocs)
+docs-src/             # Markdown source (MkDocs input)
+docs/                 # Built site (MkDocs output) + Helm repo — served by Pages
   index.yaml          # Helm repository index
   artifacthub-repo.yml
   rhdh-agent-sandbox-*.tgz
