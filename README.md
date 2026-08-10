@@ -127,6 +127,7 @@ curl -sk "https://$(oc get route rhdh-agent-sandbox-litellm -o jsonpath='{.spec.
 | [OpenClaw](https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/) | LiteMaaS + **Hub MCP via Claw CR** |
 | [OpenClaw journey](https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw-journey/) | Provision carousel |
 | [Architecture](https://maximilianopizarro.github.io/rhdh-agent-sandbox/architecture/) | Components & tokens |
+| [Production considerations](https://maximilianopizarro.github.io/rhdh-agent-sandbox/production-considerations/) | Connectivity Link, RHBK, Vault/ESO, Guardrails, TSSC, TokenRateLimit |
 | [Troubleshooting](https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/) | Common failures |
 
 Source for Pages is **`docs-src/`** (Jekyll + PatternFly). CI builds into `docs/` on `main`.

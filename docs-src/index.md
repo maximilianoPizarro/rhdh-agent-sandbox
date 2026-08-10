@@ -68,6 +68,12 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 
 Deeper reading: [Architecture]({{ '/architecture/' | relative_url }}), [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}), [AI capabilities]({{ '/ai-capabilities/' | relative_url }}), [OpenClaw]({{ '/openclaw/' | relative_url }}), [Troubleshooting]({{ '/troubleshooting/' | relative_url }}), [Community packs]({{ '/community-plugins-quay/' | relative_url }}).
 
+## Beyond Sandbox (production)
+
+This chart proves an agent loop on Developer Sandbox. For a managed OpenShift cluster, harden identity, secrets, gateway control, token budgets, AI safety, and CI/CD with Connectivity Link, RHBK, Vault + External Secrets, OpenShift AI Guardrails, Trusted Software Supply Chain, and `TokenRateLimitPolicy`.
+
+See **[Production considerations]({{ '/production-considerations/' | relative_url }})** under Operations (recommendations + official docs links — not installed by this chart).
+
 ## Install
 
 One `helm upgrade --install` deploys everything. Two options: clone the repo or add the Pages Helm repo. See **[Quickstart]({{ '/quickstart/' | relative_url }})** for full commands, prerequisites, and post-install checks.

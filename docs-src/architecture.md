@@ -69,3 +69,7 @@ The ConfigMap is filled from `files/catalog/*` (skills, prompts, MCP entities, D
 ## Quota sketch (NotTerminating)
 
 Typical stack requests leave headroom for one modest DevSpaces workspace. Stop extra workspaces when finished so Hub + LiteLLM stay schedulable.
+
+## Going to production
+
+This chart is a Sandbox demo. For enterprise identity, secrets, gateway policies, token budgets, Guardrails, and supply-chain CI/CD around the same agent pattern, see [Production considerations]({{ '/production-considerations/' | relative_url }}).

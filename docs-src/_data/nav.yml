@@ -42,6 +42,8 @@
       url: /openclaw-journey/
 - title: Operations
   children:
+    - title: Production considerations
+      url: /production-considerations/
     - title: Troubleshooting
       url: /troubleshooting/
     - title: Community packs / Quay
