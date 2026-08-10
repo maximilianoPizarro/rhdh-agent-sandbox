@@ -5,7 +5,7 @@ type: application
 version: 0.1.0
 appVersion: "1.10.3"
 kubeVersion: ">=1.25.0-0"
-icon: https://raw.githubusercontent.com/maximilianoPizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
+icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
 home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
 keywords:
   - openshift
@@ -19,9 +19,9 @@ keywords:
 maintainers:
   - name: maximilianoPizarro
     email: maximiliano.pizarro.5@gmail.com
-    url: https://github.com/maximilianoPizarro
+    url: https://github.com/maximilianopizarro
 sources:
-  - https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+  - https://github.com/maximilianopizarro/rhdh-agent-sandbox
 annotations:
   artifacthub.io/category: ai-machine-learning
   artifacthub.io/license: Apache-2.0
@@ -30,7 +30,7 @@ annotations:
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     - name: Source
-      url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
+      url: https://github.com/maximilianopizarro/rhdh-agent-sandbox
   artifacthub.io/maintainers: |
     - name: maximilianoPizarro
       email: maximiliano.pizarro.5@gmail.com

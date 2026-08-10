@@ -19,8 +19,8 @@ Run **OpenShift DevSpaces** with in-browser AI (**Che Code** + **Continue**) aga
 
 ## Option B — From this repository
 
-1. Use [`files/devfiles/devfile.yaml`](https://github.com/maximilianoPizarro/rhdh-agent-sandbox/blob/main/files/devfiles/devfile.yaml) or a skeleton under `files/templates/skeletons/*/devfile.yaml`.  
-2. Create a DevWorkspace that clones `https://github.com/maximilianoPizarro/rhdh-agent-sandbox` (or your fork) and uses that Devfile.  
+1. Use [`files/devfiles/devfile.yaml`](https://github.com/maximilianopizarro/rhdh-agent-sandbox/blob/main/files/devfiles/devfile.yaml) or a skeleton under `files/templates/skeletons/*/devfile.yaml`.  
+2. Create a DevWorkspace that clones `https://github.com/maximilianopizarro/rhdh-agent-sandbox` (or your fork) and uses that Devfile.  
 3. Start the workspace; wait until phase **Running**.
 
 Example (adjust resources if needed):
@@ -39,7 +39,7 @@ spec:
       - name: rhdh-agent-sandbox
         git:
           remotes:
-            origin: https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
+            origin: https://github.com/maximilianopizarro/rhdh-agent-sandbox.git
           checkoutFrom:
             revision: main
     components:

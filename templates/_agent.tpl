@@ -12,9 +12,12 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: agent
-    app.kubernetes.io/part-of: rhdh-agent-sandbox
+    app.kubernetes.io/part-of: {{ .fullname }}
     rhdh-agent-sandbox.io/language: {{ .language }}
     rhdh-agent-sandbox.io/framework: {{ .framework }}
+  annotations:
+    app.openshift.io/runtime: {{ .language }}
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ .fullname }}-litellm"}]'
 spec:
   replicas: 1
   selector:
@@ -25,7 +28,10 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .name }}
         app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: {{ .fullname }}
         rhdh-agent-sandbox.io/language: {{ .language }}
+      annotations:
+        app.openshift.io/runtime: {{ .language }}
     spec:
       containers:
         - name: agent
@@ -80,6 +86,7 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .name }}
     app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: {{ .fullname }}
 spec:
   selector:
     app.kubernetes.io/name: {{ .name }}

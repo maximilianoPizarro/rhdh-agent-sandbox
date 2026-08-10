@@ -1,8 +1,8 @@
 site_name: rhdh-agent-sandbox
 site_description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
 site_url: https://maximilianopizarro.github.io/rhdh-agent-sandbox/
-repo_url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox
-repo_name: maximilianoPizarro/rhdh-agent-sandbox
+repo_url: https://github.com/maximilianopizarro/rhdh-agent-sandbox
+repo_name: maximilianopizarro/rhdh-agent-sandbox
 edit_uri: edit/main/docs/
 docs_dir: docs-src
 site_dir: docs

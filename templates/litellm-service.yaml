@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: litellm
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
 spec:
   type: ClusterIP
   ports:

@@ -124,15 +124,23 @@ data:
                 "labels": {
                     "app.kubernetes.io/name": name,
                     "app.kubernetes.io/component": "agent",
+                    "app.kubernetes.io/part-of": FULLNAME,
                     "rhdh-agent-sandbox.io/language": language,
                     "rhdh-agent-sandbox.io/framework": framework,
+                },
+                "annotations": {
+                    "app.openshift.io/runtime": language,
+                    "app.openshift.io/connects-to": json.dumps([{"apiVersion": "apps/v1", "kind": "Deployment", "name": f"{FULLNAME}-litellm"}]),
                 },
             },
             "spec": {
                 "replicas": 1,
                 "selector": {"matchLabels": {"app.kubernetes.io/name": name}},
                 "template": {
-                    "metadata": {"labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "agent"}},
+                    "metadata": {
+                        "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "agent", "app.kubernetes.io/part-of": FULLNAME},
+                        "annotations": {"app.openshift.io/runtime": language},
+                    },
                     "spec": {
                         "containers": [{
                             "name": "agent",
@@ -163,7 +171,7 @@ data:
         svc = {
             "apiVersion": "v1",
             "kind": "Service",
-            "metadata": {"name": name, "namespace": NS, "labels": {"app.kubernetes.io/name": name}},
+            "metadata": {"name": name, "namespace": NS, "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/part-of": FULLNAME}},
             "spec": {
                 "selector": {"app.kubernetes.io/name": name},
                 "ports": [{"name": "http", "port": 8080, "targetPort": "http"}],
@@ -198,6 +206,10 @@ metadata:
   labels:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: agent-applier
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+  annotations:
+    app.openshift.io/runtime: python
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ .Release.Name }}-developer-hub"}]'
 spec:
   replicas: 1
   selector:
@@ -208,6 +220,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
         app.kubernetes.io/component: agent-applier
+        app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+      annotations:
+        app.openshift.io/runtime: python
     spec:
       serviceAccountName: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
       containers:

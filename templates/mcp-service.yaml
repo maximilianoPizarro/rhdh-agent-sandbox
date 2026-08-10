@@ -6,7 +6,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
-    app.kubernetes.io/component: mcp
+    app.kubernetes.io/component: mcp-server
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
 spec:
   type: ClusterIP
   ports:

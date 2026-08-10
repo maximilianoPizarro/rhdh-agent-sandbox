@@ -38,40 +38,8 @@ Deeper reading: [Architecture](architecture.md), [Lightspeed & models](lightspee
 
 ## Install
 
-Chart source is at the **repo root**. Red Hat Developer Hub is a Helm dependency (`redhat-developer-hub` from `https://charts.openshift.io/`). Pages serves `/docs`, which includes `index.yaml`, `artifacthub-repo.yml`, and the packaged `.tgz`.
-
-!!! warning "Replace `<your-sandbox>` before running"
-    Both commands use the placeholder `apps.<your-sandbox>.openshiftapps.com`. Replace it with your cluster's apps domain.
-    See [Quickstart](quickstart.md) for how to discover it.
-
-```bash
-git clone https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
-cd rhdh-agent-sandbox
-
-helm dependency update
-helm upgrade --install rhdh-agent . \
-  --namespace "$(oc project -q)" \
-  --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
-  --timeout 20m \
-  --wait=false
-```
-
-Or from the Pages Helm repo:
-
-```bash
-helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
-helm upgrade --install rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox \
-  --namespace "$(oc project -q)" \
-  --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
-  --timeout 20m \
-  --wait=false
-```
-
-!!! warning "Model token TTL ~24 h"
-    `secrets.modelApiKey` uses your Sandbox token, which expires in **~24 hours**. When chat returns **401**, refresh the secret and restart LiteLLM. Details in [Quickstart — Notes](quickstart.md).
+One `helm upgrade --install` deploys everything. Two options: clone the repo or add the Pages Helm repo. See **[Quickstart](quickstart.md)** for full commands, prerequisites, and post-install checks.
 
 ## Source
 
-[github.com/maximilianoPizarro/rhdh-agent-sandbox](https://github.com/maximilianoPizarro/rhdh-agent-sandbox)
+[github.com/maximilianopizarro/rhdh-agent-sandbox](https://github.com/maximilianopizarro/rhdh-agent-sandbox)

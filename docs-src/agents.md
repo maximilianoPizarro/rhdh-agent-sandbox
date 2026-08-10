@@ -28,7 +28,7 @@ oc logs deploy/sample-python-agent
 
 Factory links on sample / golden-path Components open:
 
-`https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/<language>`
+`https://workspaces.openshift.com/#https://github.com/maximilianopizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/<language>`
 
 Agent-oriented Devfiles also live under `files/devfiles/agents/`. Wire Continue to the LiteLLM **Route** with `litellm-master-key` (see [DevSpaces AI](devspaces-ai.md)).
 
