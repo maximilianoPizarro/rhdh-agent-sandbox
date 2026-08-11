@@ -264,214 +264,29 @@
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="golden-paths">Golden Paths</h1>
-
-<p>Deploy namespace-scoped agents from Developer Hub <strong>without git push</strong>. The primary path is <strong>Deploy Agent</strong>: it generates <strong>real</strong> framework source, starts a <strong>BuildConfig</strong>, and deploys the resulting image.</p>
-
-<p><img src="/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png" alt="Deploy Agent Golden Path" /></p>
+        <p>Three self-service templates ship with this chart:</p>
 
 <h2 id="deploy-agent">Deploy Agent</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Field</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">name</code></td>
-      <td>Deployment / Service / BuildConfig / ImageStream name</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">owner</code></td>
-      <td>Catalog owner (Group)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">language</code></td>
-      <td>Selects framework skeleton + build</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">agentType</code></td>
-      <td><code class="language-plaintext highlighter-rouge">tool-agent</code> / <code class="language-plaintext highlighter-rouge">chat-agent</code> / <code class="language-plaintext highlighter-rouge">rag-agent</code> (selects tools in generated code)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">agentSpec</code></td>
-      <td>Injected as agent behaviour / system prompt</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">model</code></td>
-      <td>LiteLLM alias (<code class="language-plaintext highlighter-rouge">granite</code>, <code class="language-plaintext highlighter-rouge">qwen3</code>, or <code class="language-plaintext highlighter-rouge">litemaas-qwen</code>)</td>
-    </tr>
-  </tbody>
-</table>
+<p>Generate a real LangGraph / LangChain.js / LangChain4j agent, BuildConfig-compile, and deploy without git push.</p>
 
-<h3 id="framework-map-fixed">Framework map (fixed)</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>language</th>
-      <th>default agentType</th>
-      <th>framework (real code)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>python</td>
-      <td>tool-agent</td>
-      <td><strong>LangGraph</strong> <code class="language-plaintext highlighter-rouge">StateGraph</code> + FastAPI</td>
-    </tr>
-    <tr>
-      <td>nodejs</td>
-      <td>tool-agent</td>
-      <td><strong>LangChain.js</strong> <code class="language-plaintext highlighter-rouge">createReactAgent</code></td>
-    </tr>
-    <tr>
-      <td>quarkus</td>
-      <td>tool-agent</td>
-      <td><strong>LangChain4j</strong> <code class="language-plaintext highlighter-rouge">@RegisterAiService</code></td>
-    </tr>
-  </tbody>
-</table>
-
-<p>No LLM chooses the framework — the scaffolder logs the map and stamps annotations. The <strong>agent-applier</strong> builds from chart source assets and deploys the ImageStream tag.</p>
-
-<h3 id="what-you-get">What you get</h3>
-
-<ol>
-  <li><strong>Generated source</strong> for the selected framework (under <code class="language-plaintext highlighter-rouge">files/templates/skeletons/deploy-agent/&lt;language&gt;/</code>).</li>
-  <li><strong>Catalog Component</strong> with <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox.io/managed-agent=true</code> and <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox.io/build=true</code>.</li>
-  <li><strong>BuildConfig + ImageStream</strong> created/updated by the agent-applier; binary Docker build of the skeleton.</li>
-  <li><strong>Deployment + Service (ClusterIP)</strong> using <code class="language-plaintext highlighter-rouge">image-registry.../&lt;name&gt;:latest</code>. Runtime talks to LiteLLM over Service DNS.</li>
-</ol>
-
-<h3 id="tools-by-agenttype">Tools by agentType</h3>
-
-<table>
-  <thead>
-    <tr>
-      <th>agentType</th>
-      <th>Tools in generated code</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>tool-agent</td>
-      <td>list pods, get deployment, Red Hat CVE lookup, product lifecycle</td>
-    </tr>
-    <tr>
-      <td>chat-agent</td>
-      <td>none (conversation only)</td>
-    </tr>
-    <tr>
-      <td>rag-agent</td>
-      <td>docs search hints + product lifecycle</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Red Hat security/lifecycle tools use public APIs; see also <a href="https://www.redhat.com/en/agentic-skills">Red Hat agentic skills</a>.</p>
-
-<h3 id="run-it-guest">Run it (Guest)</h3>
-
-<ol>
-  <li>Hub → <strong>Create</strong> → <strong>Deploy Agent (Golden Path)</strong>.</li>
-  <li>Fill name, language, agentSpec, model → Create.</li>
-  <li>As OpenShift user:
-    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get bc/&lt;name&gt;
-oc logs <span class="nt">-f</span> bc/&lt;name&gt;
-oc get deploy/&lt;name&gt;
-oc logs deploy/&lt;name&gt;
-</code></pre></div>    </div>
-  </li>
-  <li>Open the Component → <strong>Open skeleton in DevSpaces</strong>.</li>
-</ol>
-
-<h3 id="sample-agents">Sample agents</h3>
-
-<p>Sample Deployments were removed from the chart. Use <strong>Deploy Agent</strong> to generate and build a real LangGraph / LangChain.js / LangChain4j agent.</p>
+<ul>
+  <li>Registers a catalog Component with <code class="language-plaintext highlighter-rouge">managed-agent=true</code> and <code class="language-plaintext highlighter-rouge">build=true</code></li>
+  <li>agent-applier builds from chart skeleton sources</li>
+  <li>Component page: <strong>Topology</strong> + per-agent <strong>Documentation</strong></li>
+</ul>
 
 <h2 id="devspaces-ai-workspace">DevSpaces AI Workspace</h2>
 
-<p>Creates a <strong>started</strong> DevWorkspace (Continue → LiteLLM) for the language you select. No git push.</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Field</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">name</code></td>
-      <td>DevWorkspace + catalog Component name</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">owner</code></td>
-      <td>Catalog owner (Group)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">language</code></td>
-      <td>Skeleton / framework: python → LangGraph, nodejs → LangChain.js, quarkus → LangChain4j</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">model</code></td>
-      <td>Default Continue autocomplete/chat alias</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3 id="what-you-get-1">What you get</h3>
-
-<ol>
-  <li>Catalog Component with <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox.io/managed-devworkspace=true</code>.</li>
-  <li><strong>agent-applier</strong> creates <code class="language-plaintext highlighter-rouge">DevWorkspace</code> (<code class="language-plaintext highlighter-rouge">started: true</code>, Che Code, Continue postStart).</li>
-  <li>Workspace clones this repo and materializes <code class="language-plaintext highlighter-rouge">files/templates/skeletons/&lt;language&gt;/</code> with Continue wired to the chart Continue Secret.</li>
-</ol>
-
-<h3 id="run-it-guest-1">Run it (Guest)</h3>
-
-<ol>
-  <li>Hub → <strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong>.</li>
-  <li>Pick language + model → Create.</li>
-  <li>Open <a href="https://workspaces.openshift.com/dashboard/#/workspaces">DevSpaces dashboard</a> → open your workspace.</li>
-</ol>
+<p>Creates a started DevWorkspace with Continue → LiteLLM for the selected language.</p>
 
 <h2 id="ai-service-with-mcp-wiring">AI Service with MCP wiring</h2>
 
-<p>Registers a Component and deploys a small HTTP service that <strong>calls MCP for real</strong>:</p>
+<p>Deploys a small HTTP service with <code class="language-plaintext highlighter-rouge">/mcp/smoke</code> calling Kubernetes + OpenShift MCP.</p>
 
-<table>
-  <thead>
-    <tr>
-      <th>Endpoint</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">GET /</code></td>
-      <td>Service info + MCP URLs + LiteLLM model</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">GET /mcp/smoke</code></td>
-      <td><code class="language-plaintext highlighter-rouge">pods_list_in_namespace</code> (k8s-mcp) + <code class="language-plaintext highlighter-rouge">monitorDeployments</code> (openshift-mcp)</td>
-    </tr>
-  </tbody>
-</table>
+<p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png" alt="Deploy Agent" /></p>
 
-<p>Catalog <code class="language-plaintext highlighter-rouge">dependsOn</code>: OpenShift MCP, Kubernetes MCP, Hub MCP Actions, <strong>Red Hat Security MCP</strong> (SSO via Cursor — Hub cannot complete browser OAuth).</p>
-
-<h2 id="related">Related</h2>
-
-<ul>
-  <li><a href="/rhdh-agent-sandbox/agents/">Agents</a> — Hub / Pod / DevSpaces loops</li>
-  <li><a href="/rhdh-agent-sandbox/quickstart/">Quickstart</a> — install</li>
-  <li><a href="/rhdh-agent-sandbox/architecture/">Architecture</a> — end-to-end picture</li>
-</ul>
+<p>Run from Hub → <strong>Create</strong> → pick a template → follow the task log.</p>
 
       </div>
     </section>

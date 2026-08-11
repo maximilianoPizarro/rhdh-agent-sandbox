@@ -264,101 +264,30 @@
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="demo-script-10-minutes">Demo script (~10 minutes)</h1>
-
-<p>Audience: show an <strong>agent loop</strong> on Developer Sandbox — <a href="/rhdh-agent-sandbox/install-journey/">Helm install</a>, Guest Hub + Golden Paths, then DevSpaces AI.</p>
-
-<h2 id="prep-openshift-user--oc">Prep (OpenShift user / <code class="language-plaintext highlighter-rouge">oc</code>)</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc project   <span class="c"># *-dev namespace</span>
-
-<span class="c"># Refresh shared-model token (~24h TTL)</span>
-oc patch secret/rhdh-agent-sandbox-secrets <span class="nt">--type</span><span class="o">=</span>merge <span class="se">\</span>
-  <span class="nt">-p</span> <span class="s2">"{</span><span class="se">\"</span><span class="s2">stringData</span><span class="se">\"</span><span class="s2">:{</span><span class="se">\"</span><span class="s2">model-api-key</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="se">\"</span><span class="s2">}}"</span>
-oc rollout restart deploy/rhdh-agent-sandbox-litellm
-
-oc get pods,route | <span class="nb">grep </span>rhdh-agent
-curl <span class="nt">-skI</span> <span class="s2">"https://</span><span class="si">$(</span>oc get route <span class="nt">-l</span> app.kubernetes.io/name<span class="o">=</span>developer-hub <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.items[0].spec.host}'</span> 2&gt;/dev/null <span class="o">||</span> oc get route | <span class="nb">awk</span> <span class="s1">'/developer-hub/{print $2; exit}'</span><span class="si">)</span><span class="s2">/"</span> | <span class="nb">head</span> <span class="nt">-1</span>
-</code></pre></div></div>
-
-<p>Optional deep check: <a href="/rhdh-agent-sandbox/verify/">Verify the install</a>.</p>
-
-<blockquote>
-  <p><strong>Tip: Quota</strong></p>
-
-  <p>Keep at most <strong>one</strong> modest DevSpaces workspace while Hub + LiteLLM + MCP are running.</p>
-</blockquote>
-
-<h2 id="part-a--hub-agent-loop-guest--5-min">Part A — Hub agent loop (Guest) — ~5 min</h2>
+        <h2 id="part-a--hub-agent-loop-5-min">Part A — Hub agent loop (~5 min)</h2>
 
 <ol>
-  <li>Open the Developer Hub Route → <strong>Enter as Guest</strong>.</li>
-  <li><strong>Catalog</strong> → filter tag <code class="language-plaintext highlighter-rouge">mcp</code> → open OpenShift / Kubernetes MCP entities. Mention namespace-scoped RBAC.</li>
-  <li><strong>Create</strong> → run each Golden Path once (Deploy Agent, DevSpaces workspace, AI Service MCP) — see <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>.</li>
-  <li>Filter <code class="language-plaintext highlighter-rouge">skill</code> / <code class="language-plaintext highlighter-rouge">prompt</code> → open Red Hat agentic skills and a triage prompt.</li>
-  <li>Open <strong>Lightspeed</strong> or <strong>MCP Chat</strong> → select <strong>litemaas-qwen</strong> for tool demos (<a href="/rhdh-agent-sandbox/tool-calling-journey/">tool calling journey</a>).</li>
-  <li>
-    <p>Ask:</p>
-
-    <blockquote>
-      <p>Use pods_list_in_namespace for this namespace and summarize pod status. Prefer read-only tools.</p>
-    </blockquote>
-
-    <ul>
-      <li>Guest has <strong>no</strong> OpenShift token; models are wired by the operator.</li>
-      <li>Inference path: Lightspeed → LiteLLM Service → shared Granite.</li>
-      <li>MCP tools are ClusterIP-only from Hub.</li>
-      <li>Golden Path agents are ClusterIP Pods applied from catalog annotations (no git push).</li>
-      <li><code class="language-plaintext highlighter-rouge">permission.enabled: false</code> is deliberate for this demo.</li>
-    </ul>
-  </li>
+  <li>Open Developer Hub → <strong>Enter as Guest</strong></li>
+  <li><strong>Catalog</strong> → filter <code class="language-plaintext highlighter-rouge">mcp</code> → browse MCP API entities and their <strong>Documentation</strong> (skills as markdown)</li>
+  <li><strong>Create</strong> → run <strong>Deploy Agent</strong> Golden Path</li>
+  <li>Open the new Component → <strong>Topology</strong> tab</li>
+  <li><strong>Lightspeed</strong> or <strong>MCP Chat</strong> → select <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> → ask to list pods in namespace</li>
 </ol>
 
-<h2 id="part-b--devspaces-ai-openshift-user--5-min">Part B — DevSpaces AI (OpenShift user) — ~5 min</h2>
+<h2 id="part-b--devspaces-ai-5-min">Part B — DevSpaces AI (~5 min)</h2>
 
 <ol>
-  <li>Hub → <strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong> (pick language + model).</li>
-  <li>Wait ~1 minute for agent-applier to create a <strong>started</strong> DevWorkspace.</li>
-  <li>Open <strong>DevSpaces dashboard</strong> → Open your workspace (no git push).</li>
-  <li>In Che Code, open <strong>Continue</strong> — LiteLLM is wired on postStart via chart Secret.</li>
-  <li>Chat: <em>“Explain the language skeleton and how granite is reached via LiteLLM.”</em></li>
-  <li>Show <code class="language-plaintext highlighter-rouge">.continue/skills/</code> and <code class="language-plaintext highlighter-rouge">docs/prompts/</code> — same names as Hub catalog.</li>
+  <li><strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong></li>
+  <li>Open DevSpaces dashboard → open workspace</li>
+  <li>Continue chat → LiteLLM wired via chart Secret</li>
 </ol>
-
-<p>Full IDE steps: <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>.</p>
-
-<h2 id="tokens-who-needs-what">Tokens (who needs what)</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Actor</th>
-      <th>Token</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Hub Guest</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td>Lightspeed → shared models</td>
-      <td>Operator refreshes <code class="language-plaintext highlighter-rouge">model-api-key</code> (<code class="language-plaintext highlighter-rouge">oc whoami -t</code>)</td>
-    </tr>
-    <tr>
-      <td>Continue in DevSpaces</td>
-      <td><code class="language-plaintext highlighter-rouge">litellm-master-key</code> from <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code></td>
-    </tr>
-  </tbody>
-</table>
 
 <h2 id="wrap-up">Wrap-up</h2>
 
-<ol>
-  <li>Stop the DevSpaces workspace (<code class="language-plaintext highlighter-rouge">spec.started: false</code> or UI Stop) to free quota.</li>
-  <li>Leave Hub + LiteLLM running if you will demo again the same day.</li>
-  <li>Tomorrow: refresh <code class="language-plaintext highlighter-rouge">model-api-key</code> before the first Lightspeed question.</li>
-</ol>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get bc,deploy <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
+</code></pre></div></div>
+
+<p>Stop DevWorkspace when done to free quota.</p>
 
       </div>
     </section>

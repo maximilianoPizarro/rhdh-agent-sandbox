@@ -264,11 +264,7 @@
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="architecture">Architecture</h1>
-
-<h2 id="end-to-end-picture">End-to-end picture</h2>
-
-<p><img src="/rhdh-agent-sandbox/assets/diagrams/architecture-overview.png" alt="Architecture overview" /></p>
+        <p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/architecture-overview.png" alt="Architecture overview" /></p>
 
 <h2 id="components">Components</h2>
 
@@ -276,33 +272,23 @@
   <thead>
     <tr>
       <th>Component</th>
-      <th>How it is delivered</th>
+      <th>Delivery</th>
       <th>Network</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>Red Hat Developer Hub 1.10.3</td>
-      <td>Helm subchart <code class="language-plaintext highlighter-rouge">redhat-developer-hub</code></td>
+      <td>Helm subchart</td>
       <td>Route <code class="language-plaintext highlighter-rouge">*-developer-hub</code></td>
-    </tr>
-    <tr>
-      <td>lightspeed-core</td>
-      <td>Sidecar on Hub pod (RHDH Lightspeed flavour)</td>
-      <td>localhost from Hub plugin</td>
     </tr>
     <tr>
       <td>LiteLLM</td>
       <td>Chart Deployment</td>
-      <td>ClusterIP + <strong>Route</strong> (for DevSpaces)</td>
+      <td>ClusterIP + Route</td>
     </tr>
     <tr>
-      <td>Shared models</td>
-      <td>Cluster <code class="language-plaintext highlighter-rouge">sandbox-shared-models</code> InferenceServices</td>
-      <td>Called by LiteLLM with <code class="language-plaintext highlighter-rouge">model-api-key</code></td>
-    </tr>
-    <tr>
-      <td>OpenShift MCP (Quarkus)</td>
+      <td>OpenShift MCP</td>
       <td>Chart Deployment</td>
       <td>ClusterIP <code class="language-plaintext highlighter-rouge">:8080</code></td>
     </tr>
@@ -312,110 +298,72 @@
       <td>ClusterIP <code class="language-plaintext highlighter-rouge">:8085</code></td>
     </tr>
     <tr>
+      <td>agent-applier</td>
+      <td>Chart Deployment</td>
+      <td>Polls catalog → builds agents</td>
+    </tr>
+    <tr>
       <td>AI catalog</td>
-      <td>ConfigMap <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-catalog</code></td>
-      <td>Mounted at <code class="language-plaintext highlighter-rouge">/opt/app-root/src/catalog</code></td>
-    </tr>
-    <tr>
-      <td>Scaffolder assets</td>
-      <td>ConfigMap + projected volume</td>
-      <td><code class="language-plaintext highlighter-rouge">/opt/app-root/src/scaffolder-assets</code></td>
-    </tr>
-    <tr>
-      <td>Agent samples + applier</td>
-      <td>Chart Deployments / SA Role</td>
-      <td>ClusterIP agents → LiteLLM</td>
-    </tr>
-    <tr>
-      <td>DevSpaces</td>
-      <td>Operator on Sandbox + Devfiles / templates</td>
-      <td>User-created DevWorkspace</td>
-    </tr>
-    <tr>
-      <td>OpenClaw (optional)</td>
-      <td>Provisioned from sandbox.redhat.com (not this chart)</td>
-      <td>Managed OpenClaw + LiteMaaS Qwen (tool calling) or vendor keys</td>
+      <td>ConfigMap</td>
+      <td><code class="language-plaintext highlighter-rouge">/opt/app-root/src/catalog</code></td>
     </tr>
   </tbody>
 </table>
 
-<h2 id="identity-and-tokens">Identity and tokens</h2>
+<h2 id="inference-path">Inference path</h2>
 
-<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hub Guest ──(no token)──► Lightspeed UI
-                              │
-OpenShift user ──model-api-key──► LiteLLM ──► shared models (oauth-proxy)
-OpenShift user ──litellm-master-key──► Continue / LiteLLM Route (chat)
-Continue / Lightspeed ──mcp-token──► Hub Route /api/mcp-actions/v1 (catalog MCP)
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Guest → Lightspeed UI → lightspeed-core → LiteLLM → shared Granite/Qwen
+Guest → MCP Chat → LiteLLM (litemaas-qwen) → MCP tools
 </code></pre></div></div>
+
+<h2 id="tokens">Tokens</h2>
 
 <table>
   <thead>
     <tr>
       <th>Secret key</th>
       <th>Consumer</th>
-      <th>Lifetime</th>
+      <th>Refresh</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">model-api-key</code></td>
       <td>LiteLLM → shared models</td>
-      <td>~24h (refresh with <code class="language-plaintext highlighter-rouge">oc whoami -t</code>)</td>
+      <td><code class="language-plaintext highlighter-rouge">oc whoami -t</code> (~24h)</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">litellm-master-key</code></td>
-      <td>Lightspeed (<code class="language-plaintext highlighter-rouge">VLLM_API_KEY</code>) + Continue chat</td>
-      <td>Stable (chart-generated)</td>
+      <td>Lightspeed, Continue</td>
+      <td>Chart-generated</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">mcp-token</code></td>
-      <td>Lightspeed + Continue Hub MCP Actions</td>
-      <td>Stable (chart-generated)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">backend-secret</code></td>
-      <td>Hub backend auth</td>
-      <td>Stable</td>
+      <td>MCP Actions, applier</td>
+      <td>Chart-generated</td>
     </tr>
   </tbody>
 </table>
 
-<h2 id="catalog-loading">Catalog loading</h2>
+<h2 id="golden-path-flow">Golden Path flow</h2>
 
-<p>Hub <code class="language-plaintext highlighter-rouge">catalog.locations</code> uses a <strong>file</strong> location:</p>
-
-<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">type</span><span class="pi">:</span> <span class="s">file</span>
-<span class="na">target</span><span class="pi">:</span> <span class="s">/opt/app-root/src/catalog/all.yaml</span>
-</code></pre></div></div>
-
-<p>The ConfigMap is filled from <code class="language-plaintext highlighter-rouge">files/catalog/*</code> (skills, prompts, MCP entities, Deploy Agent template, sample agents, users/groups). No GitHub URL location is required for the demo.</p>
-
-<h2 id="lightspeed-inference-path">Lightspeed inference path</h2>
+<p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png" alt="Golden Path" /></p>
 
 <ol>
-  <li>UI / plugin posts to Hub <code class="language-plaintext highlighter-rouge">/api/lightspeed/v1/query</code>.</li>
-  <li>Hub proxies to <strong>lightspeed-core</strong> (<code class="language-plaintext highlighter-rouge">streaming_query</code>).</li>
-  <li>lightspeed-core uses provider <strong><code class="language-plaintext highlighter-rouge">vllm</code></strong> (<code class="language-plaintext highlighter-rouge">ENABLE_VLLM=true</code>) with <code class="language-plaintext highlighter-rouge">VLLM_URL</code> → LiteLLM Service.</li>
-  <li>Model ids in the UI look like <code class="language-plaintext highlighter-rouge">vllm/granite</code> / <code class="language-plaintext highlighter-rouge">vllm/qwen3</code> (llama-stack provider prefix).</li>
-  <li>LiteLLM forwards to Granite/Qwen. Shared Sandbox models do <strong>not</strong> accept <code class="language-plaintext highlighter-rouge">tool_choice=auto</code>; the chart disables function-calling params for those aliases.</li>
+  <li>Scaffolder registers Component (<code class="language-plaintext highlighter-rouge">catalog:register-entity</code> via pending ConfigMap)</li>
+  <li>agent-applier creates BuildConfig + Deployment</li>
+  <li>Hub shows <strong>Topology</strong> (Kubernetes plugin) and <strong>TechDocs</strong> for the agent</li>
 </ol>
 
-<h2 id="mcp-path">MCP path</h2>
+<p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/agent-topology-preview.png" alt="Agent Topology tab" /></p>
 
-<ul>
-  <li><strong>Hub Lightspeed</strong> uses ClusterIP MCP services and RHDH mcp-actions (<code class="language-plaintext highlighter-rouge">mcp-integration-tools</code> + <code class="language-plaintext highlighter-rouge">MCP_TOKEN</code>).</li>
-  <li>MCP ServiceAccount has <strong>namespace</strong> Role only (Sandbox-safe).</li>
-  <li><strong>No public Routes for OpenShift/Kubernetes MCP</strong> (ClusterIP only).</li>
-  <li><strong>DevSpaces Continue</strong> uses two hops: LiteLLM Route for <strong>chat</strong>, and the <strong>Hub Route</strong> <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> (with <code class="language-plaintext highlighter-rouge">mcp-token</code>) for <strong>catalog/TechDocs</strong> tools only — see <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</li>
-</ul>
+<h2 id="mcp-tools-flow">MCP tools flow</h2>
 
-<h2 id="quota-sketch-notterminating">Quota sketch (NotTerminating)</h2>
+<p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/mcp-tools-flow.png" alt="MCP tools flow" /></p>
 
-<p>Typical stack requests leave headroom for one modest DevSpaces workspace. Stop extra workspaces when finished so Hub + LiteLLM stay schedulable.</p>
+<h2 id="skills--mcp-apis">Skills ↔ MCP APIs</h2>
 
-<h2 id="going-to-production">Going to production</h2>
-
-<p>This chart is a Sandbox demo. For enterprise identity, secrets, gateway policies, token budgets, Guardrails, and supply-chain CI/CD around the same agent pattern, see <a href="/rhdh-agent-sandbox/production-considerations/">Production considerations</a>.</p>
+<p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/skills-catalog-map.png" alt="Skills catalog map" /></p>
 
       </div>
     </section>

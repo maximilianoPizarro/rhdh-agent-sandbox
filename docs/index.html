@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Developer Hub Agent Sandbox | rhdh-agent-sandbox</title>
+<title>Agent-friendly Developer Hub | rhdh-agent-sandbox</title>
 <!-- Begin Jekyll SEO tag v2.9.0 -->
-<title>Developer Hub Agent Sandbox | rhdh-agent-sandbox</title>
+<title>Agent-friendly Developer Hub | rhdh-agent-sandbox</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Developer Hub Agent Sandbox" />
+<meta property="og:title" content="Agent-friendly Developer Hub" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Umbrella Helm chart for Red Hat Developer Hub on OpenShift Developer Sandbox — Lightspeed, LiteLLM, MCP, Golden Paths, DevSpaces Continue, and OpenClaw." />
-<meta name="twitter:description" property="og:description" content="Umbrella Helm chart for Red Hat Developer Hub on OpenShift Developer Sandbox — Lightspeed, LiteLLM, MCP, Golden Paths, DevSpaces Continue, and OpenClaw." />
+<meta name="description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
+<meta name="twitter:description" property="og:description" content="Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring." />
 <link rel="canonical" href="https://maximilianopizarro.github.io/rhdh-agent-sandbox/" />
 <meta property="og:url" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/" />
 <meta property="og:site_name" content="rhdh-agent-sandbox" />
@@ -22,10 +22,10 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png" />
 <meta name="twitter:image:alt" content="Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw" />
-<meta name="twitter:title" content="Developer Hub Agent Sandbox" />
+<meta name="twitter:title" content="Agent-friendly Developer Hub" />
 <meta name="twitter:site" content="@" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","description":"Umbrella Helm chart for Red Hat Developer Hub on OpenShift Developer Sandbox — Lightspeed, LiteLLM, MCP, Golden Paths, DevSpaces Continue, and OpenClaw.","headline":"Developer Hub Agent Sandbox","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"name":"rhdh-agent-sandbox","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","description":"Umbrella Helm chart that deploys Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, Golden Paths, DevSpaces Continue, and optional OpenClaw → Hub MCP wiring.","headline":"Agent-friendly Developer Hub","image":{"width":1200,"height":630,"alt":"Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png","@type":"imageObject"},"name":"rhdh-agent-sandbox","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/brand/og-preview.png"}},"url":"https://maximilianopizarro.github.io/rhdh-agent-sandbox/"}</script>
 <!-- End Jekyll SEO tag -->
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -262,113 +262,51 @@
 
   </div>
   <main class="pf-v6-c-page__main" id="main-content">
-    <section class="hero-section">
-      <div class="hero-inner">
-        <h1 class="hero-title">Agent-friendly Developer Hub</h1>
-        <p class="hero-subtitle">Umbrella Helm chart that deploys Red Hat Developer Hub 1.10.3 on OpenShift Developer Sandbox with a working agent loop</p>
-        <div class="hero-cta">
-          <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-button pf-m-primary hero-btn">Quickstart</a>
-          <a href="https://github.com/maximilianoPizarro/rhdh-agent-sandbox" class="pf-v6-c-button pf-m-secondary hero-btn hero-btn--secondary" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-    </section>
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="agent-friendly-developer-hub-on-developer-sandbox">Agent-friendly Developer Hub on Developer Sandbox</h1>
+        <p><img src="https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/install-one-command.png" alt="Install overview" /></p>
 
-<p>Umbrella Helm chart that deploys <strong>Red Hat Developer Hub 1.10.3</strong> on <strong>OpenShift Developer Sandbox</strong> with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen (chat) or LiteMaaS Qwen (tool calling), plus MCP tools, Golden Paths, and DevSpaces AI workspaces.</p>
+<p>This demo deploys <strong>Red Hat Developer Hub 1.10</strong> with Lightspeed, LiteLLM, MCP tools, Golden Paths, and DevSpaces AI on <strong>OpenShift Developer Sandbox</strong>.</p>
 
-<p><img src="/rhdh-agent-sandbox/assets/diagrams/install-one-command.png" alt="One-command install" /></p>
-
-<h2 id="what-you-get">What you get</h2>
-
-<div class="card-grid">
-<div class="card">
-<h3>Developer Hub</h3>
-<p>Guest login, catalog, scaffolder, TechDocs, and Lightspeed UI — all in one portal.</p>
-</div>
-<div class="card">
-<h3>LiteLLM Gateway</h3>
-<p>OpenAI-compatible proxy to shared Granite &amp; Qwen models via sandbox-shared-models.</p>
-</div>
-<div class="card">
-<h3>MCP Servers</h3>
-<p>OpenShift + Kubernetes tools (namespace-scoped) for Lightspeed AI interactions.</p>
-</div>
-<div class="card">
-<h3>Golden Paths</h3>
-<p>Deploy Agent → Pod + Component + Open in DevSpaces — no git push required.</p>
-</div>
-<div class="card">
-<h3>DevSpaces AI</h3>
-<p>Browser IDE (Che Code + Continue) connected to the LiteLLM Route, with Hub MCP Actions over the Hub Route. <a href="/rhdh-agent-sandbox/devspaces-journey/">See the journey</a>.</p>
-</div>
-<div class="card">
-<h3>AI Catalog</h3>
-<p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
-</div>
-<div class="card">
-<h3>Hub tool calling</h3>
-<p>Lightspeed + MCP Chat with <code>litemaas-qwen</code> call real Kubernetes tools. <a href="/rhdh-agent-sandbox/tool-calling-journey/">See the journey</a>.</p>
-</div>
-<div class="card">
-<h3>OpenClaw + Qwen</h3>
-<p>Personal AI assistant with <strong>tool calling</strong> via LiteMaaS Qwen3.6-35B-A3B. <a href="/rhdh-agent-sandbox/openclaw-journey/">See the journey</a>.</p>
-</div>
-</div>
-
-<h2 id="two-identities-important">Two identities (important)</h2>
+<h2 id="who-is-this-for">Who is this for?</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Who</th>
-      <th>What they do</th>
+      <th>Identity</th>
+      <th>What you do</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>Hub Guest</strong></td>
-      <td>Signs into Developer Hub only. Uses Lightspeed + catalog. No OpenShift token.</td>
+      <td>Browse catalog, run Golden Paths, use Lightspeed and MCP Chat — no OpenShift token</td>
     </tr>
     <tr>
-      <td><strong>OpenShift Sandbox user</strong> (<code class="language-plaintext highlighter-rouge">oc</code> / console)</td>
-      <td>Refreshes <code class="language-plaintext highlighter-rouge">model-api-key</code>, starts DevSpaces workspaces, reads <code class="language-plaintext highlighter-rouge">litellm-master-key</code>.</td>
+      <td><strong>Sandbox user (<code class="language-plaintext highlighter-rouge">oc</code>)</strong></td>
+      <td>Install the chart, refresh tokens, open DevSpaces workspaces</td>
     </tr>
   </tbody>
 </table>
 
-<p>Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the Sandbox user opens the workspace.</p>
+<h2 id="what-you-get">What you get</h2>
+
+<ul>
+  <li><strong>Developer Hub</strong> — catalog, scaffolder, TechDocs, Topology, Lightspeed</li>
+  <li><strong>LiteLLM</strong> — Granite, Qwen, LiteMaaS Qwen (tool calling)</li>
+  <li><strong>MCP servers</strong> — OpenShift + Kubernetes (namespace-scoped)</li>
+  <li><strong>Golden Paths</strong> — Deploy Agent, DevSpaces AI, AI Service with MCP wiring</li>
+</ul>
 
 <h2 id="recommended-path">Recommended path</h2>
 
 <ol>
-  <li><a href="/rhdh-agent-sandbox/install-journey/">Install journey</a> — visual Helm walkthrough (Topology when ready)</li>
-  <li><a href="/rhdh-agent-sandbox/quickstart/">Quickstart</a> — single <code class="language-plaintext highlighter-rouge">helm upgrade --install</code></li>
-  <li><a href="/rhdh-agent-sandbox/verify/">Verify the install</a> — confirm Hub, LiteLLM, routes</li>
-  <li><a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a> — Deploy Agent, DevSpaces, AI Service MCP</li>
-  <li><a href="/rhdh-agent-sandbox/golden-paths/">Golden Paths</a> — reference for each template</li>
-  <li><a href="/rhdh-agent-sandbox/agents/">Agents</a> — Hub Guest, agent Pods, DevSpaces loops</li>
-  <li><a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a> — Continue → LiteLLM + Hub MCP from the IDE</li>
-  <li><a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a> — reference for Devfile / Secret wiring</li>
-  <li><a href="/rhdh-agent-sandbox/demo-script/">Demo script</a> — guided ~10 minute walkthrough</li>
+  <li><a href="quickstart.md">Quickstart</a> — Helm install</li>
+  <li><a href="golden-paths.md">Golden Paths</a> — create an agent</li>
+  <li><a href="demo-script.md">Demo script</a> — 10-minute walkthrough</li>
 </ol>
 
-<p>Deeper reading: <a href="/rhdh-agent-sandbox/architecture/">Architecture</a>, <a href="/rhdh-agent-sandbox/lightspeed-models/">Lightspeed &amp; models</a>, <a href="/rhdh-agent-sandbox/ai-capabilities/">AI capabilities</a>, <a href="/rhdh-agent-sandbox/openclaw/">OpenClaw</a>, <a href="/rhdh-agent-sandbox/troubleshooting/">Troubleshooting</a>, <a href="/rhdh-agent-sandbox/community-plugins-quay/">Community packs</a>.</p>
-
-<h2 id="beyond-sandbox-production">Beyond Sandbox (production)</h2>
-
-<p>This chart proves an agent loop on Developer Sandbox. For a managed OpenShift cluster, harden identity, secrets, gateway control, token budgets, AI safety, and CI/CD with Connectivity Link, RHBK, Vault + External Secrets, OpenShift AI Guardrails, Trusted Software Supply Chain, and <code class="language-plaintext highlighter-rouge">TokenRateLimitPolicy</code>.</p>
-
-<p>See <strong><a href="/rhdh-agent-sandbox/production-considerations/">Production considerations</a></strong> under Operations (recommendations + official docs links — not installed by this chart).</p>
-
-<h2 id="install">Install</h2>
-
-<p>One <code class="language-plaintext highlighter-rouge">helm upgrade --install</code> deploys everything. Two options: clone the repo or add the Pages Helm repo. See <strong><a href="/rhdh-agent-sandbox/quickstart/">Quickstart</a></strong> for full commands, prerequisites, and post-install checks.</p>
-
-<h2 id="source">Source</h2>
-
-<p><a href="https://github.com/maximilianopizarro/rhdh-agent-sandbox">github.com/maximilianopizarro/rhdh-agent-sandbox</a></p>
+<p>See <a href="architecture.md">Architecture</a> for tokens, networking, and component map.</p>
 
       </div>
     </section>

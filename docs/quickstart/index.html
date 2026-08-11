@@ -264,167 +264,36 @@
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
       <div class="pf-v6-c-content">
-        <h1 id="quickstart">Quickstart</h1>
+        <h2 id="prerequisites">Prerequisites</h2>
 
-<p>Install on <strong>OpenShift Developer Sandbox</strong> with a single Helm release. Chart source lives at the <strong>repository root</strong>. GitHub Pages serves the <strong><code class="language-plaintext highlighter-rouge">/docs</code></strong> folder, which holds the Helm repo (<code class="language-plaintext highlighter-rouge">index.yaml</code>, <code class="language-plaintext highlighter-rouge">artifacthub-repo.yml</code>, packaged <code class="language-plaintext highlighter-rouge">.tgz</code>).</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">oc login</code> to Developer Sandbox</li>
+  <li>Helm 3.14+</li>
+  <li>~1.5 CPU / 3 Gi quota free</li>
+</ul>
 
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="install">Install</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Requirement</th>
-      <th>Detail</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">oc</code> CLI</td>
-      <td>Logged in to Developer Sandbox (<code class="language-plaintext highlighter-rouge">oc login</code>)</td>
-    </tr>
-    <tr>
-      <td><code class="language-plaintext highlighter-rouge">helm</code></td>
-      <td>3.14 or newer</td>
-    </tr>
-    <tr>
-      <td>Sandbox quota</td>
-      <td>At least <strong>1.5 CPU / 3 Gi</strong> free (Hub + LiteLLM + MCP)</td>
-    </tr>
-  </tbody>
-</table>
-
-<blockquote>
-  <p><strong>Warning: Replace <code class="language-plaintext highlighter-rouge">&lt;your-sandbox&gt;</code> before running</strong></p>
-
-  <p>Both install methods use the placeholder <code class="language-plaintext highlighter-rouge">apps.&lt;your-sandbox&gt;.openshiftapps.com</code>. Replace it with your cluster’s apps domain <strong>before</strong> you copy-paste.
-If <code class="language-plaintext highlighter-rouge">oc get ingresses.config.openshift.io cluster</code> is Forbidden, take any Route host and drop the first DNS label (example: <code class="language-plaintext highlighter-rouge">my-app-ns.apps.rm2.thpm.p1.openshiftapps.com</code> → <code class="language-plaintext highlighter-rouge">apps.rm2.thpm.p1.openshiftapps.com</code>).</p>
-</blockquote>
-
-<h2 id="install-from-clone">Install from clone</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/maximilianopizarro/rhdh-agent-sandbox.git
-<span class="nb">cd </span>rhdh-agent-sandbox
-
-helm dependency update
-helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="se">\</span>
-  <span class="nt">--namespace</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
-  <span class="nt">--timeout</span> 20m <span class="se">\</span>
-  <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.rm2.thpm.p1.openshiftapps.com
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">helm dependency update</code> downloads <strong>Red Hat Developer Hub</strong> (<code class="language-plaintext highlighter-rouge">redhat-developer-hub</code> 1.10.3 from <code class="language-plaintext highlighter-rouge">charts.openshift.io</code>) into local <code class="language-plaintext highlighter-rouge">charts/</code> only. That subchart is <strong>not</strong> committed to git.</p>
+<h2 id="verify">Verify</h2>
 
-<h2 id="install-from-pages-helm-repo">Install from Pages Helm repo</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add rhdh-agent-sandbox https://maximilianopizarro.github.io/rhdh-agent-sandbox
-helm repo update
-helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent-sandbox/rhdh-agent-sandbox <span class="se">\</span>
-  <span class="nt">--namespace</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
-  <span class="nt">--timeout</span> 20m <span class="se">\</span>
-  <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get pods <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
+oc get route <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
 </code></pre></div></div>
 
-<h2 id="what-to-expect">What to expect</h2>
+<p>Open the Developer Hub route and sign in as <strong>Guest</strong>.</p>
 
-<p>First install pulls large images (RHDH ~1.5 GB, LiteLLM ~500 MB). <strong>Expect 5–10 minutes</strong> on Developer Sandbox before everything is Ready.</p>
+<h2 id="next-steps">Next steps</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Phase</th>
-      <th>Typical time</th>
-      <th>What you’ll see</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Helm release created</td>
-      <td>Instant</td>
-      <td><code class="language-plaintext highlighter-rouge">release "rhdh-agent" … installed</code></td>
-    </tr>
-    <tr>
-      <td>Image pulls</td>
-      <td>3–7 min</td>
-      <td>Pods in <code class="language-plaintext highlighter-rouge">ContainerCreating</code> / <code class="language-plaintext highlighter-rouge">Init:0/1</code> — <strong>this is normal</strong></td>
-    </tr>
-    <tr>
-      <td>LiteLLM ready</td>
-      <td>~1 min after pull</td>
-      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-litellm-*</code> shows <code class="language-plaintext highlighter-rouge">1/1 Running</code></td>
-    </tr>
-    <tr>
-      <td>Hub ready (2 containers)</td>
-      <td>2–4 min after pull</td>
-      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-developer-hub-*</code> shows <code class="language-plaintext highlighter-rouge">2/2 Running</code></td>
-    </tr>
-    <tr>
-      <td>MCP servers ready</td>
-      <td>~30 s after pull</td>
-      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-*-mcp-*</code> pods show <code class="language-plaintext highlighter-rouge">1/1 Running</code></td>
-    </tr>
-  </tbody>
-</table>
-
-<blockquote>
-  <p><strong>Tip: Normal vs. not normal</strong></p>
-
-  <p><strong>Normal:</strong> pods in <code class="language-plaintext highlighter-rouge">ContainerCreating</code> for several minutes, <code class="language-plaintext highlighter-rouge">0/1</code> or <code class="language-plaintext highlighter-rouge">1/2</code> while init containers run, occasional <code class="language-plaintext highlighter-rouge">CrashLoopBackOff</code> on Hub if PostgreSQL isn’t ready yet (self-heals).
-<strong>Not normal:</strong> pods stuck in <code class="language-plaintext highlighter-rouge">Pending</code> for &gt;5 min (quota issue — run <code class="language-plaintext highlighter-rouge">oc describe resourcequota</code>), or <code class="language-plaintext highlighter-rouge">ImagePullBackOff</code> (network/registry issue).</p>
-</blockquote>
-
-<h2 id="confirm">Confirm</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get pods
-oc get route | <span class="nb">grep</span> <span class="nt">-E</span> <span class="s1">'developer-hub|litellm'</span>
-</code></pre></div></div>
-
-<p>Expected output (names will vary):</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NAME                                          READY   STATUS    RESTARTS   AGE
-rhdh-agent-developer-hub-&lt;hash&gt;               2/2     Running   0          6m
-rhdh-agent-litellm-&lt;hash&gt;                     1/1     Running   0          5m
-rhdh-agent-sandbox-kubernetes-mcp-&lt;hash&gt;      1/1     Running   0          5m
-rhdh-agent-sandbox-openshift-mcp-&lt;hash&gt;       1/1     Running   0          5m
-...
-</code></pre></div></div>
-
-<p>Sign in as <strong>Guest</strong>. Next: <a href="/rhdh-agent-sandbox/install-journey/">Install journey</a> (visual walkthrough), <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>, and <a href="/rhdh-agent-sandbox/verify/">Verify</a>.</p>
-
-<h2 id="token-refresh-when-chat-returns-401">Token refresh (when chat returns 401)</h2>
-
-<p><code class="language-plaintext highlighter-rouge">secrets.modelApiKey</code> uses your Sandbox oauth-proxy token, which expires in <strong>~24 hours</strong>. When Lightspeed or LiteLLM returns <strong>401</strong>, refresh the secret and restart LiteLLM:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">set </span>data secret/rhdh-agent-sandbox-secrets <span class="se">\</span>
-  <span class="nt">--from-literal</span><span class="o">=</span>model-api-key<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span>
-oc rollout restart deploy/rhdh-agent-litellm
-</code></pre></div></div>
-
-<p>If the problem persists, see <a href="/rhdh-agent-sandbox/troubleshooting/#litellm-401-to-shared-models">Troubleshooting — LiteLLM 401</a>.</p>
-
-<h2 id="notes">Notes</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Topic</th>
-      <th>Detail</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>RHDH dependency</td>
-      <td>Declared in <code class="language-plaintext highlighter-rouge">Chart.yaml</code>; bump version there when upgrading Developer Hub</td>
-    </tr>
-    <tr>
-      <td>Single values file</td>
-      <td>All Sandbox defaults live in root <code class="language-plaintext highlighter-rouge">values.yaml</code></td>
-    </tr>
-  </tbody>
-</table>
+<ul>
+  <li>Hub → <strong>Create</strong> → <strong>Deploy Agent (Golden Path)</strong></li>
+  <li>Open the new Component → <strong>Topology</strong> and <strong>Documentation</strong> tabs</li>
+</ul>
 
       </div>
     </section>
