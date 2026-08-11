@@ -21,3 +21,5 @@ Deploys a small HTTP service with `/mcp/smoke` calling Kubernetes + OpenShift MC
 ![Deploy Agent](assets/golden-path-deploy-agent.png)
 
 Run from Hub → **Create** → pick a template → follow the task log.
+
+See the [Arcade demo](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI) for an end-to-end click-through of Deploy Agent, DevSpaces, and AI Service.

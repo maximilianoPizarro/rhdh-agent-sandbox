@@ -2,11 +2,14 @@
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/rhdh-agent-sandbox)](https://artifacthub.io/packages/helm/rhdh-agent-sandbox/rhdh-agent-sandbox)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://maximilianopizarro.github.io/rhdh-agent-sandbox/)
+[![Arcade Demo](https://img.shields.io/badge/demo-Arcade-purple)](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 **Agent-friendly Red Hat Developer Hub** on **OpenShift Developer Sandbox** — an umbrella Helm chart that deploys a fully wired AI developer platform in a single command.
 
 Docs site: **https://maximilianopizarro.github.io/rhdh-agent-sandbox/** (Jekyll → GitHub Pages; share preview `1200×630` OG image).
+
+Interactive walkthrough: **[Demo Agentic IA Developer Sandbox](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI)** (Arcade).
 
 ## What you get
 

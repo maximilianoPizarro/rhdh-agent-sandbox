@@ -5,7 +5,7 @@ permalink: /
 ---
 
 
-![Install overview](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/install-one-command.png)
+![Install overview]({{ '/assets/diagrams/install-one-command.png' | relative_url }})
 
 This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP tools, Golden Paths, and DevSpaces AI on **OpenShift Developer Sandbox**.
 
@@ -28,5 +28,6 @@ This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP t
 1. [Quickstart](quickstart.md) — Helm install
 2. [Golden Paths](golden-paths.md) — create an agent
 3. [Demo script](demo-script.md) — 10-minute walkthrough
+4. [Arcade demo](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI) — click-through recording of the full Sandbox journey
 
 See [Architecture](architecture.md) for tokens, networking, and component map.

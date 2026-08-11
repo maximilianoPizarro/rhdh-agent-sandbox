@@ -5,6 +5,8 @@ permalink: /demo-script/
 ---
 
 
+Interactive recording: **[Demo Agentic IA Developer Sandbox](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI)** (Arcade).
+
 ## Part A — Hub agent loop (~5 min)
 
 1. Open Developer Hub → **Enter as Guest**
