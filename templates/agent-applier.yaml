@@ -250,15 +250,38 @@ data:
                     continue
                 ent_name = name_m.group(1)
                 ent_kind = kind_m.group(1).lower()
+                doc = doc.replace("__RELEASE_NAMESPACE__", NS)
+                if "backstage.io/kubernetes-namespace:" not in doc:
+                    if "      annotations:\n" in doc:
+                        doc = doc.replace(
+                            "      annotations:\n",
+                            f"      annotations:\n        backstage.io/kubernetes-namespace: {NS}\n",
+                            1,
+                        )
+                    elif "  annotations:\n" in doc:
+                        doc = doc.replace(
+                            "  annotations:\n",
+                            f"  annotations:\n    backstage.io/kubernetes-namespace: {NS}\n",
+                            1,
+                        )
                 if (
-                    "backstage.io/kubernetes-namespace:" not in doc
-                    and "      annotations:\n" in doc
+                    ent_kind == "component"
+                    and "janus-idp.io/tekton:" not in doc
+                    and "backstage.io/kubernetes-label-selector:" in doc
                 ):
-                    doc = doc.replace(
-                        "      annotations:\n",
-                        f"      annotations:\n        backstage.io/kubernetes-namespace: {NS}\n",
-                        1,
+                    # Mirror label selector for Tekton CI tab when missing.
+                    m = re.search(
+                        r'backstage\.io/kubernetes-label-selector:\s*"([^"]+)"',
+                        doc,
                     )
+                    if m and ("      annotations:\n" in doc or "  annotations:\n" in doc):
+                        needle = "      annotations:\n" if "      annotations:\n" in doc else "  annotations:\n"
+                        indent = "        " if needle.startswith("      ") else "    "
+                        doc = doc.replace(
+                            needle,
+                            f"{needle}{indent}janus-idp.io/tekton: \"{m.group(1)}\"\n",
+                            1,
+                        )
                 key = f"{ent_kind}-{ent_name}.yaml"
                 patch_data[key] = doc
                 log("INFO", "catalog_entity_registered", name=ent_name, kind=ent_kind, key=key)

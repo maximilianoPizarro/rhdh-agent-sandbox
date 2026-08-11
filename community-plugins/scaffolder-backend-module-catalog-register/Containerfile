@@ -14,7 +14,7 @@ RUN ./node_modules/.bin/tsc --outDir dist --module commonjs --target es2022 --es
     src/actions/createWaitForEntityAction.ts \
     src/actions/createRemoveEntityAction.ts
 RUN cd /runtime \
-    && printf '{"name":"@internal/plugin-scaffolder-backend-module-catalog-register","version":"0.1.0","main":"dist/index.js","backstage":{"role":"backend-plugin-module"},"dependencies":{"fs-extra":"^11.2.0","yaml":"^2.4.5"}}\n' > package.json \
+    && printf '{"name":"@internal/plugin-scaffolder-backend-module-catalog-register","version":"0.1.1","main":"dist/index.js","backstage":{"role":"backend-plugin-module"},"dependencies":{"fs-extra":"^11.2.0","yaml":"^2.4.5"}}\n' > package.json \
     && npm install --omit=dev 2>/dev/null \
     && cp -r /build/dist .
 

@@ -137,9 +137,13 @@ async function deleteIfExists(path: string): Promise<void> {
   }
 }
 
-async function deletePipelineRuns(namespace: string, name: string): Promise<void> {
+async function deleteLabeledTekton(
+  namespace: string,
+  name: string,
+  resource: 'pipelineruns' | 'taskruns',
+): Promise<void> {
   const labelSelector = encodeURIComponent(`app.kubernetes.io/name=${name}`);
-  const listPath = `/apis/tekton.dev/v1/namespaces/${namespace}/pipelineruns?labelSelector=${labelSelector}`;
+  const listPath = `/apis/tekton.dev/v1/namespaces/${namespace}/${resource}?labelSelector=${labelSelector}`;
   const listResult = await k8sRequest('GET', listPath);
 
   if (listResult.status === 404) {
@@ -147,7 +151,7 @@ async function deletePipelineRuns(namespace: string, name: string): Promise<void
   }
   if (listResult.status !== 200) {
     throw new Error(
-      `Failed to list PipelineRuns for ${name}: HTTP ${listResult.status} ${listResult.body}`,
+      `Failed to list ${resource} for ${name}: HTTP ${listResult.status} ${listResult.body}`,
     );
   }
 
@@ -161,9 +165,14 @@ async function deletePipelineRuns(namespace: string, name: string): Promise<void
       continue;
     }
     await deleteIfExists(
-      `/apis/tekton.dev/v1/namespaces/${namespace}/pipelineruns/${runName}`,
+      `/apis/tekton.dev/v1/namespaces/${namespace}/${resource}/${runName}`,
     );
   }
+}
+
+async function deletePipelineRuns(namespace: string, name: string): Promise<void> {
+  await deleteLabeledTekton(namespace, name, 'pipelineruns');
+  await deleteLabeledTekton(namespace, name, 'taskruns');
 }
 
 async function deleteCatalogEntity(
@@ -253,8 +262,11 @@ export function createRemoveEntityAction() {
         process.env.REGISTERED_CATALOG_CM ??
         'rhdh-agent-sandbox-registered-catalog';
       const key = `${kind}-${name}.yaml`;
-      // AI Service golden path also registers companion API `${name}-http`.
-      const companionApiKey = `api-${name}-http.yaml`;
+      // Companion APIs: AI Service uses `${name}-http`; Deploy Agent uses `${name}-agent`.
+      const companionApiKeys = [
+        `api-${name}-http.yaml`,
+        `api-${name}-agent.yaml`,
+      ];
 
       await deleteIfExists(`/api/v1/namespaces/${namespace}/configmaps/${pendingName}`);
       ctx.logger.info(`Removed pending ConfigMap if present: ${namespace}/${pendingName}`);
@@ -266,19 +278,19 @@ export function createRemoveEntityAction() {
 
       if (existing.status === 200) {
         const cm = JSON.parse(existing.body) as { data?: Record<string, string> };
-        const data = { ...(cm.data ?? {}) };
-        let changed = false;
-        for (const k of [key, companionApiKey]) {
-          if (data[k]) {
-            delete data[k];
-            changed = true;
+        const current = cm.data ?? {};
+        // JSON merge-patch only deletes map keys when the value is null.
+        const dataPatch: Record<string, null> = {};
+        for (const k of [key, ...companionApiKeys]) {
+          if (Object.prototype.hasOwnProperty.call(current, k)) {
+            dataPatch[k] = null;
           }
         }
-        if (changed) {
+        if (Object.keys(dataPatch).length > 0) {
           const patch = await k8sRequest(
             'PATCH',
             `/api/v1/namespaces/${namespace}/configmaps/${registeredCm}`,
-            { data },
+            { data: dataPatch },
             'application/merge-patch+json',
           );
           if (patch.status < 200 || patch.status >= 300) {
@@ -286,6 +298,9 @@ export function createRemoveEntityAction() {
               `Failed to patch ${registeredCm}: HTTP ${patch.status} ${patch.body}`,
             );
           }
+          ctx.logger.info(
+            `Removed registered catalog keys: ${Object.keys(dataPatch).join(', ')}`,
+          );
         }
       } else if (existing.status !== 404) {
         throw new Error(
@@ -307,19 +322,28 @@ export function createRemoveEntityAction() {
         `/apis/workspace.devfile.io/v1alpha2/namespaces/${namespace}/devworkspaces/${name}`,
       );
 
+      // Per-agent Tekton runs only. Shared Pipeline {{fullname}}-deploy-agent stays.
       await deletePipelineRuns(namespace, name);
       ctx.logger.info(`Removed PipelineRuns labeled app.kubernetes.io/name=${name} if present`);
 
       await deleteCatalogEntity(kind, name, ctx.logger);
       await deleteCatalogEntity('api', `${name}-http`, ctx.logger);
+      await deleteCatalogEntity('api', `${name}-agent`, ctx.logger);
 
-      const refresh = await backstageRequest('POST', '/api/catalog/refresh', {
-        entityRef: 'location:default/rhdh-agent-sandbox-catalog',
-      });
-      if (refresh.status && ![200, 202].includes(refresh.status)) {
-        ctx.logger.warn(
-          `Catalog refresh failed after removal: HTTP ${refresh.status} ${refresh.body}`,
-        );
+      // Registered entities live under this Location (not the static chart catalog).
+      const refreshTargets = [
+        'location:default/registered-catalog-entities',
+        'location:default/rhdh-agent-sandbox-catalog',
+      ];
+      for (const entityRef of refreshTargets) {
+        const refresh = await backstageRequest('POST', '/api/catalog/refresh', {
+          entityRef,
+        });
+        if (refresh.status && ![200, 202].includes(refresh.status)) {
+          ctx.logger.warn(
+            `Catalog refresh failed for ${entityRef}: HTTP ${refresh.status} ${refresh.body}`,
+          );
+        }
       }
 
       ctx.logger.info(`Removed catalog/runtime resources for ${kind}:${namespace}/${name}`);

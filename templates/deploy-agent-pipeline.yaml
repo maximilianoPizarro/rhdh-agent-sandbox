@@ -102,10 +102,14 @@ spec:
 
         framework = framework_by_language[language]
         source_root = pathlib.Path("/build-sources")
+        # Workspace path is a PVC mount — never rmtree the mount root (EBUSY).
         target_root = pathlib.Path(os.environ["WORKSPACE_SOURCE"])
-        if target_root.exists():
-            shutil.rmtree(target_root)
         target_root.mkdir(parents=True, exist_ok=True)
+        for child in target_root.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
 
         replacements = {
             {{ print "${{ values.name }}" | quote }}: os.environ["PARAM_NAME"],

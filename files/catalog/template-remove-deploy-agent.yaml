@@ -38,4 +38,6 @@ spec:
       - title: Agent removed
         content: |
           Agent **${{ parameters.name }}** was removed.
-          Runtime resources and catalog registration were cleaned up.
+          Runtime resources (Deployment/Service/BC/IS/PipelineRuns) and catalog
+          registration were cleaned up.
+          The shared Tekton Pipeline `*-deploy-agent` is kept for other agents.

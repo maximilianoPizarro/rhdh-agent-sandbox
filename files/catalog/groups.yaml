@@ -6,5 +6,19 @@ metadata:
   description: Default owner group for Golden Path entities in the agent sandbox demo
 spec:
   type: team
+  children: []
+  members:
+    - user:default/guest
+---
+# Alias for OwnerPicker typos / legacy default "developer"
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: developer
+  title: Developer
+  description: Alias of developers (OwnerPicker sometimes emits singular)
+spec:
+  type: team
+  children: []
   members:
     - user:default/guest

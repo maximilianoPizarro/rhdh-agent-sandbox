@@ -29,6 +29,7 @@ spec:
         owner:
           title: Owner
           type: string
+          default: group:default/developers
           ui:field: OwnerPicker
           ui:options:
             allowedKinds: [Group]
@@ -128,11 +129,8 @@ spec:
           Model: ${{ parameters.model }}
           Type: ${{ parameters.agentType }}
 
-          Watch the build and rollout:
-            oc get bc/${{ parameters.name }}
-            oc logs -f bc/${{ parameters.name }}
-            oc get is/${{ parameters.name }}
+          Watch Tekton:
+            oc get pipelinerun -l app.kubernetes.io/name=${{ parameters.name }}
             oc get deploy/${{ parameters.name }}
-            oc logs deploy/${{ parameters.name }}
 
-          Open the Component page for Topology and Dependencies tabs.
+          Open the Component page for Topology, Kubernetes, CI, and API tabs.

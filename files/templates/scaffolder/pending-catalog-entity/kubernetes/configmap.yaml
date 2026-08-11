@@ -7,6 +7,50 @@ metadata:
 data:
   entity.yaml: |
     apiVersion: backstage.io/v1alpha1
+    kind: API
+    metadata:
+      name: ${{ values.name }}-agent
+      title: ${{ values.name }} Agent API
+      description: >
+        HTTP surface for the golden-path agent (health + invoke). Wired to
+        namespace MCP tools via the agent runtime.
+      tags:
+        - agent
+        - mcp
+        - golden-path
+        - ${{ values.language }}
+    spec:
+      type: openapi
+      lifecycle: experimental
+      owner: ${{ values.owner }}
+      system: agent-sandbox
+      definition: |
+        openapi: 3.0.0
+        info:
+          title: ${{ values.name }} Agent
+          version: "1.0"
+          description: ${{ values.description }}
+        paths:
+          /health:
+            get:
+              summary: Liveness / readiness
+          /invoke:
+            post:
+              summary: Invoke the agent with a prompt (MCP-backed tools)
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        input:
+                          type: string
+          /mcp/tools:
+            get:
+              summary: List MCP tools available to this agent
+    ---
+    apiVersion: backstage.io/v1alpha1
     kind: Component
     metadata:
       name: ${{ values.name }}
@@ -28,6 +72,8 @@ data:
         rhdh-agent-sandbox.io/image-stream: "${{ values.name }}:latest"
         rhdh-agent-sandbox.io/build-source: ${{ values.language }}
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"
+        backstage.io/kubernetes-namespace: __RELEASE_NAMESPACE__
+        janus-idp.io/tekton: "app.kubernetes.io/name=${{ values.name }}"
       links:
         - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ values.language }}
           title: Open skeleton in DevSpaces
@@ -37,6 +83,8 @@ data:
       lifecycle: experimental
       owner: ${{ values.owner }}
       system: agent-sandbox
+      providesApis:
+        - api:default/${{ values.name }}-agent
       dependsOn:
         - api:default/openshift-mcp-server
         - api:default/kubernetes-mcp-server
