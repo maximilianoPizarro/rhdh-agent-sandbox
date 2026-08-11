@@ -80,7 +80,9 @@ spec:
           framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
     - id: apply-register
       name: Apply catalog registration to cluster
-      action: kubernetes:apply
+      action: catalog:apply-pending-configmap
+      input:
+        manifestPath: kubernetes/configmap.yaml
     - id: done
       name: Workspace queued
       action: debug:log

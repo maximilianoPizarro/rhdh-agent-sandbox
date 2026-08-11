@@ -1,6 +1,7 @@
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node';
+import { createApplyPendingConfigMapAction } from './actions/createApplyPendingConfigMapAction';
 import { createCatalogRegisterEntityAction } from './actions/createCatalogRegisterEntityAction';
 
 export const catalogRegisterEntityModule = createBackendModule({
@@ -14,6 +15,7 @@ export const catalogRegisterEntityModule = createBackendModule({
       },
       async init({ scaffolder, catalog }) {
         scaffolder.addActions(
+          createApplyPendingConfigMapAction(),
           createCatalogRegisterEntityAction({
             catalog,
             registeredRoot:

@@ -60,7 +60,9 @@ spec:
           description: ${{ parameters.description }}
     - id: apply-register
       name: Apply catalog registration to cluster
-      action: kubernetes:apply
+      action: catalog:apply-pending-configmap
+      input:
+        manifestPath: kubernetes/configmap.yaml
     - id: done
       name: Queued
       action: debug:log

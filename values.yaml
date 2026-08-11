@@ -152,6 +152,8 @@ communityPlugins:
       disabled: false
     - name: ai-prompts-pack
       disabled: false
+    - name: scaffolder-backend-module-catalog-register
+      disabled: false
 
 # Subchart: official Red Hat Developer Hub
 rhdh:
@@ -235,6 +237,9 @@ rhdh:
                         icon: MCPChatIcon
                         text: MCP Chat
         - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
+          disabled: false
+        # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
+        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.0!plugin
           disabled: false
     # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:

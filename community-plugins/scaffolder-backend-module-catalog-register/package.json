@@ -14,15 +14,18 @@
     "test": "backstage-cli package test"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.2.0",
-    "@backstage/catalog-model": "^1.10.0",
-    "@backstage/plugin-catalog-node": "^1.14.0",
-    "@backstage/plugin-scaffolder-node": "^1.14.0",
+    "@backstage/backend-plugin-api": "^1.9.3",
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/plugin-catalog-node": "^2.2.3",
+    "@backstage/plugin-scaffolder-node": "^0.13.5",
     "fs-extra": "^11.2.0",
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.0"
+    "@backstage/cli": "^0.29.0",
+    "@types/node": "^20.19.43"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

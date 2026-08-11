@@ -12,7 +12,7 @@ if ! command -v "${ENGINE}" >/dev/null 2>&1; then
 fi
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-PACKS=(ai-skills-pack ai-prompts-pack plugin-catalog-index)
+PACKS=(ai-skills-pack ai-prompts-pack plugin-catalog-index scaffolder-backend-module-catalog-register)
 
 for pack in "${PACKS[@]}"; do
   img="${REGISTRY}/${REPO}:${pack}-${TAG}"

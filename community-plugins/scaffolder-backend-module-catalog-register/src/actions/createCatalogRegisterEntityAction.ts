@@ -129,7 +129,7 @@ export function createCatalogRegisterEntityAction(options: Options) {
             ),
         });
 
-        entity.metadata = entity.metadata ?? {};
+        entity.metadata = entity.metadata ?? { name: name! };
         entity.metadata.annotations = entity.metadata.annotations ?? {};
         entity.metadata.annotations['backstage.io/techdocs-ref'] =
           `dir:${agentDocsDir}`;
