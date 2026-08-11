@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi9/nodejs-22:latest AS builder
 USER 0
-RUN mkdir -p /build && chown 1001:0 /build
+RUN mkdir -p /build /runtime && chown -R 1001:0 /build /runtime
 USER 1001
 WORKDIR /build
 COPY --chown=1001:0 package.json package-lock.json ./
@@ -10,9 +10,11 @@ COPY --chown=1001:0 tsconfig.json ./
 RUN ./node_modules/.bin/tsc --outDir dist --module commonjs --target es2022 --esModuleInterop --skipLibCheck \
     src/index.ts src/module.ts \
     src/actions/createCatalogRegisterEntityAction.ts \
-    src/actions/createApplyPendingConfigMapAction.ts \
-    && echo '{"main":"dist/index.js"}' > package.json
+    src/actions/createApplyPendingConfigMapAction.ts
+RUN cd /runtime \
+    && printf '{"name":"@internal/plugin-scaffolder-backend-module-catalog-register","version":"0.1.0","main":"dist/index.js","backstage":{"role":"backend-plugin-module"},"dependencies":{"fs-extra":"^11.2.0","yaml":"^2.4.5"}}\n' > package.json \
+    && npm install --omit=dev 2>/dev/null \
+    && cp -r /build/dist .
 
 FROM scratch
-COPY --from=builder /build/dist /plugin/dist
-COPY --from=builder /build/package.json /plugin/package.json
+COPY --from=builder /runtime /plugin
