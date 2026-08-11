@@ -3,11 +3,15 @@ kind: Template
 metadata:
   name: ai-service-with-mcp
   title: AI Service with MCP wiring
-  description: Scaffold a small service plus catalog Component/API entities for MCP and Lightspeed
+  description: >
+    Register an AI service Component and deploy a small HTTP service that proves
+    OpenShift/Kubernetes MCP wiring (lists pods + monitors deployments via MCP).
   tags:
+    - golden-path
     - ai
     - mcp
     - lightspeed
+    - recommended
 spec:
   owner: group:default/developers
   type: service
@@ -19,6 +23,8 @@ spec:
           title: Name
           type: string
           pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
+          ui:autofocus: true
         owner:
           title: Owner
           type: string
@@ -29,25 +35,71 @@ spec:
           title: Default model via LiteLLM
           type: string
           default: granite
-          enum: [granite, qwen3]
+          enum: [granite, qwen3, litemaas-qwen]
+        description:
+          title: Description
+          type: string
+          default: AI service wired to namespace OpenShift/Kubernetes MCP
   steps:
-    - id: fetch
-      name: Fetch AI service skeleton
-      action: fetch:template
-      input:
-        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/ai-service
-        values:
-          name: ${{ parameters.name }}
-          owner: ${{ parameters.owner }}
-          model: ${{ parameters.model }}
-    - id: log
-      name: Log next actions
+    - id: resolve
+      name: Plan MCP wiring
       action: debug:log
       input:
-        message: Created AI service skeleton for ${{ parameters.name }} using model ${{ parameters.model }}
+        message: >-
+          AI service ${{ parameters.name }} will depend on openshift-mcp + k8s-mcp
+          and smoke-call pods_list_in_namespace + monitorDeployments (model=${{ parameters.model }}).
+    - id: register
+      name: Register Component (triggers MCP-wired deploy)
+      action: catalog:write
+      input:
+        entity:
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.name }}
+            title: ${{ parameters.name }}
+            description: ${{ parameters.description }}
+            tags:
+              - ai
+              - mcp
+              - golden-path
+              - lightspeed
+            annotations:
+              rhdh-agent-sandbox.io/managed-ai-service: "true"
+              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
+            links:
+              - url: http://${{ parameters.name }}:8080/
+                title: In-cluster service
+                icon: catalog
+          spec:
+            type: service
+            lifecycle: experimental
+            owner: ${{ parameters.owner }}
+            system: agent-sandbox
+            dependsOn:
+              - api:default/openshift-mcp-server
+              - api:default/kubernetes-mcp-server
+              - api:default/rhdh-mcp-actions
+              - api:default/red-hat-security-mcp
+    - id: done
+      name: Queued
+      action: debug:log
+      input:
+        message: >-
+          Component registered. agent-applier deploys ${{ parameters.name }} with /mcp/smoke
+          that calls Kubernetes + OpenShift MCP in-namespace.
   output:
+    links:
+      - title: Open Component
+        icon: catalog
+        entityRef: "component:default/${{ parameters.name }}"
     text:
-      - title: Connect to Lightspeed
+      - title: MCP wiring
         content: |
-          Point clients at the LiteLLM route in your namespace and use model `${{ parameters.model }}`.
-          Register MCP servers from catalog Resources of type `mcp-server`.
+          **${{ parameters.name }}** is registered. Within ~1 minute the agent-applier deploys:
+
+          - Service `${{ parameters.name }}:8080`
+          - `GET /` — service info + LiteLLM model `${{ parameters.model }}`
+          - `GET /mcp/smoke` — live calls to **pods_list_in_namespace** (k8s-mcp) and **monitorDeployments** (openshift-mcp)
+
+          Catalog dependsOn: OpenShift MCP, Kubernetes MCP, Hub MCP Actions, Red Hat Security MCP (SSO via Cursor).

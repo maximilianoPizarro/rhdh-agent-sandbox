@@ -63,6 +63,40 @@ Red Hat security/lifecycle tools use public APIs; see also [Red Hat agentic skil
 
 Sample Deployments were removed from the chart. Use **Deploy Agent** to generate and build a real LangGraph / LangChain.js / LangChain4j agent.
 
+## DevSpaces AI Workspace
+
+Creates a **started** DevWorkspace (Continue → LiteLLM) for the language you select. No git push.
+
+| Field | Role |
+|---|---|
+| `name` | DevWorkspace + catalog Component name |
+| `owner` | Catalog owner (Group) |
+| `language` | Skeleton / framework: python → LangGraph, nodejs → LangChain.js, quarkus → LangChain4j |
+| `model` | Default Continue autocomplete/chat alias |
+
+### What you get
+
+1. Catalog Component with `rhdh-agent-sandbox.io/managed-devworkspace=true`.
+2. **agent-applier** creates `DevWorkspace` (`started: true`, Che Code, Continue postStart).
+3. Workspace clones this repo and materializes `files/templates/skeletons/<language>/` with Continue wired to the chart Continue Secret.
+
+### Run it (Guest)
+
+1. Hub → **Create** → **Agent-friendly DevSpaces AI Workspace**.
+2. Pick language + model → Create.
+3. Open [DevSpaces dashboard](https://workspaces.openshift.com/dashboard/#/workspaces) → open your workspace.
+
+## AI Service with MCP wiring
+
+Registers a Component and deploys a small HTTP service that **calls MCP for real**:
+
+| Endpoint | Action |
+|---|---|
+| `GET /` | Service info + MCP URLs + LiteLLM model |
+| `GET /mcp/smoke` | `pods_list_in_namespace` (k8s-mcp) + `monitorDeployments` (openshift-mcp) |
+
+Catalog `dependsOn`: OpenShift MCP, Kubernetes MCP, Hub MCP Actions, **Red Hat Security MCP** (SSO via Cursor — Hub cannot complete browser OAuth).
+
 ## Related
 
 - [Agents]({{ '/agents/' | relative_url }}) — Hub / Pod / DevSpaces loops  

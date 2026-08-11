@@ -15,16 +15,16 @@ carousel: true
 <figcaption>
 <span class="slide-num">Step 01</span>
 <strong>Lightspeed — tool rounds</strong>
-<span class="desc">Open Lightspeed, select <code>litemaas-qwen</code>, ask to list pods and check sample agents. The UI shows Tool response chips (<code>pods_list</code>, <code>pods_list_in_namespace</code>, <code>pods_log</code>).</span>
+<span class="desc">Open Lightspeed, select <code>litemaas-qwen</code>, ask to list pods in this namespace. The UI shows Tool response chips (<code>pods_list_in_namespace</code>, <code>events_list</code>).</span>
 </figcaption>
 </figure>
 
 <figure class="journey-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 of 5" hidden>
-<img src="{{ '/assets/screenshots/lightspeed-toolcall-summary.png' | relative_url }}" alt="Lightspeed summary confirming sample-python, nodejs, and quarkus agents Running with health 200" />
+<img src="{{ '/assets/screenshots/lightspeed-toolcall-summary.png' | relative_url }}" alt="Lightspeed summary listing chart pods and golden-path workloads in the namespace" />
 <figcaption>
 <span class="slide-num">Step 02</span>
 <strong>Lightspeed — action result</strong>
-<span class="desc">Final answer cites real pod names and <code>/health</code> 200 lines for sample-python-agent, sample-nodejs-agent, and sample-quarkus-agent.</span>
+<span class="desc">Final answer cites real pod names: Hub, LiteLLM, MCP servers, agent-applier, PostgreSQL, plus any Golden Path agents or AI services you deployed.</span>
 </figcaption>
 </figure>
 
@@ -47,11 +47,11 @@ carousel: true
 </figure>
 
 <figure class="journey-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 of 5" hidden>
-<img src="{{ '/assets/screenshots/mcp-chat-toolcall-result.png' | relative_url }}" alt="MCP Chat reply listing three Running sample agent pods with Tools used pods_list_in_namespace" />
+<img src="{{ '/assets/screenshots/mcp-chat-toolcall-result.png' | relative_url }}" alt="MCP Chat reply listing chart and golden-path pods with Tools used pods_list_in_namespace" />
 <figcaption>
 <span class="slide-num">Step 05</span>
 <strong>MCP Chat — tool result</strong>
-<span class="desc">Ask for <code>pods_list_in_namespace</code> in your Sandbox namespace. Reply lists the three sample-*-agent pods and shows <strong>Tools used (1) pods_list_in_namespace</strong>.</span>
+<span class="desc">Ask for <code>pods_list_in_namespace</code> in your Sandbox namespace. Reply lists chart pods (Hub, LiteLLM, MCP, applier, PostgreSQL) plus Golden Path workloads and shows <strong>Tools used (1) pods_list_in_namespace</strong>. Cluster-wide tools like <code>pods_list</code> are disabled for the namespace-scoped MCP ServiceAccount.</span>
 </figcaption>
 </figure>
 

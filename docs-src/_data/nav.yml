@@ -1,5 +1,7 @@
 - title: Home
   url: /
+- title: Install journey
+  url: /install-journey/
 - title: Journey
   url: /journey/
 - title: Hub tool calling
@@ -10,6 +12,8 @@
   url: /openclaw-journey/
 - title: Get started
   children:
+    - title: Install journey
+      url: /install-journey/
     - title: Quickstart
       url: /quickstart/
     - title: Golden Paths

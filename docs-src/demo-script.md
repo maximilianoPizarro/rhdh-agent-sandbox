@@ -4,7 +4,7 @@ title: Demo script
 
 # Demo script (~10 minutes)
 
-Audience: show an **agent loop** on Developer Sandbox — Guest Hub + Lightspeed, then DevSpaces AI.
+Audience: show an **agent loop** on Developer Sandbox — [Helm install]({{ '/install-journey/' | relative_url }}), Guest Hub + Golden Paths, then DevSpaces AI.
 
 ## Prep (OpenShift user / `oc`)
 
@@ -30,15 +30,12 @@ Optional deep check: [Verify the install]({{ '/verify/' | relative_url }}).
 
 1. Open the Developer Hub Route → **Enter as Guest**.  
 2. **Catalog** → filter tag `mcp` → open OpenShift / Kubernetes MCP entities. Mention namespace-scoped RBAC.  
-3. Filter tag `agent` → open a **sample-*-agent** Component → show **Open in DevSpaces**.  
-4. Optional Golden Path: **Create** → **Deploy Agent** (language python, short agentSpec) → wait for Deployment.  
-5. Filter `skill` / `prompt` → open the DevSpaces AI skill and a triage / catalog prompt.  
-6. Open **Lightspeed** → select **vllm/granite** (or granite).  
-7. Ask:
+3. **Create** → run each Golden Path once (Deploy Agent, DevSpaces workspace, AI Service MCP) — see [Golden Path journey]({{ '/journey/' | relative_url }}).  
+4. Filter `skill` / `prompt` → open Red Hat agentic skills and a triage prompt.  
+5. Open **Lightspeed** or **MCP Chat** → select **litemaas-qwen** for tool demos ([tool calling journey]({{ '/tool-calling-journey/' | relative_url }})).  
+6. Ask:
 
-   > List pods in this namespace and summarize anything that looks unhealthy. Prefer read-only tools.
-
-8. Talking points while it runs:
+   > Use pods_list_in_namespace for this namespace and summarize pod status. Prefer read-only tools.
 
    - Guest has **no** OpenShift token; models are wired by the operator.  
    - Inference path: Lightspeed → LiteLLM Service → shared Granite.  
@@ -48,18 +45,11 @@ Optional deep check: [Verify the install]({{ '/verify/' | relative_url }}).
 
 ## Part B — DevSpaces AI (OpenShift user) — ~5 min
 
-1. In Hub, open a sample agent **Open in DevSpaces** link, or Create → **Agent-friendly DevSpaces AI Workspace** (or use `files/devfiles/`).  
-2. Guest scaffolder ends in local/log steps — push or import the generated files yourself if needed.  
-3. In **OpenShift DevSpaces**, start a workspace from `devfile.yaml`.  
-4. In Che Code, open **Continue** and point it at the LiteLLM Route:
-
-   ```bash
-   export LITELLM_API_BASE="https://$(oc get route -l app.kubernetes.io/component=litellm -o jsonpath='{.items[0].spec.host}')/v1"
-   export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.litellm-master-key}' | base64 -d)"
-   # Devfile command wire-continue, or edit .continue/config.json
-   ```
-
-5. Chat: *“Explain the Devfile and how granite is reached via LiteLLM.”*  
+1. Hub → **Create** → **Agent-friendly DevSpaces AI Workspace** (pick language + model).  
+2. Wait ~1 minute for agent-applier to create a **started** DevWorkspace.  
+3. Open **DevSpaces dashboard** → Open your workspace (no git push).  
+4. In Che Code, open **Continue** — LiteLLM is wired on postStart via chart Secret.  
+5. Chat: *“Explain the language skeleton and how granite is reached via LiteLLM.”*  
 6. Show `.continue/skills/` and `docs/prompts/` — same names as Hub catalog.
 
 Full IDE steps: [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).

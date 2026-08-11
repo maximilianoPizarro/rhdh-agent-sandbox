@@ -19,8 +19,9 @@ What this Sandbox chart demonstrates **today** (Guest Hub + DevSpaces AI).
 | OpenShift / K8s MCP | Chart-deployed MCP servers (Lightspeed + DevSpaces) |
 | MCP discovery | Catalog `Resource` (`type: mcp-server`) in ConfigMap |
 | Agent-friendly IDE | Devfile + Continue → LiteLLM Route in DevSpaces |
-| Golden Path agents | Deploy Agent template → catalog Component + Deployment/Service (no git push) |
-| Sample agent Components | `sample-{python,nodejs,quarkus}-agent` with Open in DevSpaces |
+| Golden Path agents | Deploy Agent template → catalog Component + BuildConfig + Deployment (no git push) |
+| DevSpaces workspace | DevSpaces template → agent-applier creates started DevWorkspace + Continue |
+| AI Service + MCP | AI Service template → Deployment with <code>/mcp/smoke</code> wiring |
 
 ## Community AI plugins (Backstage)
 
@@ -65,8 +66,8 @@ Store the LiteMaaS key only in Secret `litemaas-credentials` (never in git).
 | tag `mcp` / type `mcp-server` | OpenShift and Kubernetes MCP entities |
 | tag `skill` / type `skill` | e.g. DevSpaces AI, OpenShift MCP, Lightspeed RAG |
 | tag `prompt` / type `prompt` | Triage namespace, explain catalog, scaffold DevSpaces |
-| Templates | Deploy Agent (Golden Path), DevSpaces AI Workspace, AI service skeleton |
-| tag `agent` | Sample + golden-path agent Components |
+| Templates | Deploy Agent, DevSpaces AI Workspace, AI Service with MCP wiring |
+| tag `agent` | Golden-path agent Components you create via templates |
 | Groups | `developers`, `guests` |
 
 Entities are loaded from the **ConfigMap mount** (`/opt/app-root/src/catalog`), not from a live GitHub poll.

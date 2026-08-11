@@ -84,7 +84,7 @@ rhdh-agent-sandbox-openshift-mcp-<hash>       1/1     Running   0          5m
 ...
 ```
 
-Sign in as **Guest**. Next: [Golden Paths]({{ '/golden-paths/' | relative_url }}) (deploy an agent) and [Verify]({{ '/verify/' | relative_url }}).
+Sign in as **Guest**. Next: [Install journey]({{ '/install-journey/' | relative_url }}) (visual walkthrough), [Golden Path journey]({{ '/journey/' | relative_url }}), and [Verify]({{ '/verify/' | relative_url }}).
 
 ## Token refresh (when chat returns 401)
 

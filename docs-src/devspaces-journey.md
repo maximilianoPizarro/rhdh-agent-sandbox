@@ -50,7 +50,7 @@ Che Code + Continue (DevSpaces workspace)
 <figcaption>
 <span class="slide-num">Step 02</span>
 <strong>Create from chart Devfile</strong>
-<span class="desc">Import from Git using <code>…/rhdh-agent-sandbox/tree/main/files/devfiles</code> (or clone the full repo). Prefer Create &amp; Open so Che Code is injected. Alternative: Hub template <strong>Agent-friendly DevSpaces AI Workspace</strong>.</span>
+<span class="desc">Import from Git using a language skeleton (<code>…/files/templates/skeletons/{python,nodejs,quarkus}</code>), or run Hub template <strong>Agent-friendly DevSpaces AI Workspace</strong> (select language → agent-applier creates a started DevWorkspace with Continue prewired).</span>
 </figcaption>
 </figure>
 

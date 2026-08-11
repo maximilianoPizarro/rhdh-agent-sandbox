@@ -66,13 +66,15 @@ Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the S
 
 ## Recommended path
 
-1. [Quickstart]({{ '/quickstart/' | relative_url }}) — single `helm upgrade --install`  
-2. [Verify the install]({{ '/verify/' | relative_url }}) — confirm Hub, LiteLLM, routes  
-3. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — deploy an agent Pod from the catalog  
-4. [Agents]({{ '/agents/' | relative_url }}) — Hub Guest, agent Pods, DevSpaces loops  
-5. [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}) — Continue → LiteLLM + Hub MCP from the IDE  
-6. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — reference for Devfile / Secret wiring  
-7. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
+1. [Install journey]({{ '/install-journey/' | relative_url }}) — visual Helm walkthrough (Topology when ready)  
+2. [Quickstart]({{ '/quickstart/' | relative_url }}) — single `helm upgrade --install`  
+3. [Verify the install]({{ '/verify/' | relative_url }}) — confirm Hub, LiteLLM, routes  
+4. [Golden Path journey]({{ '/journey/' | relative_url }}) — Deploy Agent, DevSpaces, AI Service MCP  
+5. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — reference for each template  
+6. [Agents]({{ '/agents/' | relative_url }}) — Hub Guest, agent Pods, DevSpaces loops  
+7. [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}) — Continue → LiteLLM + Hub MCP from the IDE  
+8. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — reference for Devfile / Secret wiring  
+9. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
 
 Deeper reading: [Architecture]({{ '/architecture/' | relative_url }}), [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}), [AI capabilities]({{ '/ai-capabilities/' | relative_url }}), [OpenClaw]({{ '/openclaw/' | relative_url }}), [Troubleshooting]({{ '/troubleshooting/' | relative_url }}), [Community packs]({{ '/community-plugins-quay/' | relative_url }}).
 

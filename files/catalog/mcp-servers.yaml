@@ -39,6 +39,39 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
+  name: red-hat-security-mcp
+  title: Red Hat Security MCP
+  description: >
+    Official Red Hat Security MCP (CVEs, advisories, errata). Requires Customer Portal
+    OAuth SSO — use from Cursor via .mcp.json; Hub MCP Chat cannot complete browser login.
+  tags:
+    - mcp
+    - security
+    - red-hat
+    - cve
+  links:
+    - url: https://security-mcp.api.redhat.com/mcp
+      title: MCP endpoint
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat agentic skills
+spec:
+  type: mcp-server
+  lifecycle: experimental
+  owner: group:default/developers
+  definition: |
+    transport: http
+    url: https://security-mcp.api.redhat.com/mcp
+    auth: oauth-sso
+    authorization_server: https://mcp-auth.api.redhat.com
+    scopes: [api.graphql]
+    notes: >
+      Tools (after SSO): get_cve_by_id, list_advisories_by_cve, get_errata_by_id,
+      list_advisory_packages, and related security data APIs.
+      Cursor: ensure .mcp.json has red-hat-security → reload MCP → complete browser login.
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
   name: rhdh-mcp-actions
   title: Developer Hub MCP Actions
   description: Catalog and TechDocs actions exposed as MCP tools

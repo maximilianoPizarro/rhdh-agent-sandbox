@@ -21,8 +21,9 @@ Expect:
 - Hub Deployment available, pod **2/2**
 - LiteLLM **1/1**
 - Both MCP Deployments **1/1**
-- Agent samples (`sample-*-agent`) and `*-agent-applier` **1/1**
+- `rhdh-agent-sandbox-agent-applier` **1/1**
 - Routes for `developer-hub` and `litellm`
+- Topology group **rhdh-agent** (see [Install journey]({{ '/install-journey/' | relative_url }}))
 
 ## 2. Secret shape (Lightspeed credentials)
 
@@ -102,16 +103,21 @@ Scaffolder assets mount:
 oc exec -n "${NAMESPACE}" "${HUB}" -c backstage-backend -- ls -R /opt/app-root/src/scaffolder-assets
 ```
 
-## 5. Sample agents / Golden Path builds
+## 5. Golden Path workloads (after Create templates)
 
 ```bash
-oc get deploy,svc,bc,is -n "${NAMESPACE}" -l app.kubernetes.io/component=agent
-oc get deploy -n "${NAMESPACE}" -l app.kubernetes.io/component=agent-applier
-oc get bc,is -n "${NAMESPACE}" | head
+# Deploy Agent (build=true)
+oc get bc,deploy -l app.kubernetes.io/part-of=rhdh-agent-sandbox | grep -v agent-applier
+
+# DevSpaces workspace
+oc get dw
+
+# AI Service MCP smoke
+oc run curl-smoke --rm -i --restart=Never --image=registry.access.redhat.com/ubi9/ubi-minimal:latest -- \
+  curl -s http://<ai-service-name>:8080/mcp/smoke
 ```
 
-Expect agent-applier Running.
-Golden Path agents use BuildConfigs (`oc logs -f bc/<name>`) then Deployments from ImageStreams.
+Expect agent-applier Running. Golden Path agents use BuildConfigs (`oc logs -f bc/<name>`) then Deployments from ImageStreams. AI Service `/mcp/smoke` should show `k8s_mcp.ok` and `openshift_mcp.ok`.
 
 ## 6. Lightspeed streaming query
 
@@ -149,8 +155,9 @@ Lightspeed reaches MCP over ClusterIP (no public MCP Routes). Namespace-scoped R
 - [ ] Secret has `ENABLE_VLLM=true` and **no** `ENABLE_OPENAI`  
 - [ ] Catalog files visible under `/opt/app-root/src/catalog`  
 - [ ] Scaffolder assets under `/opt/app-root/src/scaffolder-assets`  
-- [ ] Sample agent Deployments Ready  
+- [ ] agent-applier Deployment Ready  
+- [ ] Topology shows `rhdh-agent` group (Hub, LiteLLM, MCP, applier, PostgreSQL)  
 - [ ] Lightspeed streaming_query returns tokens (no error event)  
 - [ ] Guest login works without IdP  
-- [ ] Catalog shows Deploy Agent template + sample agents 
+- [ ] Catalog shows three Golden Path templates (no pre-installed sample agents)
 If any step fails, see [Troubleshooting]({{ '/troubleshooting/' | relative_url }}).

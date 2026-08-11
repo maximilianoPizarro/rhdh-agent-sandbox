@@ -13,11 +13,22 @@ data:
     port = {{ .Values.mcp.kubernetes.service.port | quote }}
     read_only = false
     disable_destructive = false
+    # Sandbox SA is namespace-scoped — hide cluster-wide tools that always 403.
     toolsets = ["core", "config", "openshift", "helm"]
+    disabled_tools = [
+      "pods_list",
+      "namespaces_list",
+      "nodes_log",
+      "nodes_stats_summary",
+      "nodes_top"
+    ]
 
     denied_resources = [
       {group = "rbac.authorization.k8s.io", version = "v1"}
     ]
+
+    [tool_overrides.pods_list_in_namespace]
+    description = "List pods in a namespace (required). On Developer Sandbox use the chart namespace; cluster-wide pods_list is disabled."
   repositories.yaml: |
     apiVersion: ""
     generated: "0001-01-01T00:00:00Z"

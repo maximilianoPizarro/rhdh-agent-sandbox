@@ -31,6 +31,9 @@ rules:
   - apiGroups: ["image.openshift.io"]
     resources: ["imagestreams", "imagestreamtags"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["workspace.devfile.io"]
+    resources: ["devworkspaces", "devworkspacetemplates"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -85,10 +88,17 @@ data:
         "last_error": None,
         "cycles": 0,
         "agents_seen": 0,
+        "devworkspaces_seen": 0,
+        "ai_services_seen": 0,
     }
 
     # Avoid re-triggering builds every poll
     BUILD_STARTED = {}
+    GIT_REPO = os.environ.get(
+        "GIT_REPO",
+        "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git",
+    )
+    GIT_REVISION = os.environ.get("GIT_REVISION", "main")
 
     def log(level, msg, **fields):
         lvl = level.upper()
@@ -135,21 +145,30 @@ data:
             )
         return (msg or json.dumps(body)[:300]).replace("\n", " ")[:400]
 
-    def catalog_agents():
+    def catalog_entities(annotation_key):
         req = urllib.request.Request(
-            f"{CATALOG}/api/catalog/entities?filter=kind=component,metadata.annotations.rhdh-agent-sandbox.io/managed-agent=true",
+            f"{CATALOG}/api/catalog/entities?filter=kind=component,metadata.annotations.{annotation_key}=true",
             headers={"Authorization": f"Bearer {TOKEN}", "Accept": "application/json"},
         )
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode())
                 if not isinstance(data, list):
-                    log("WARN", "catalog_unexpected_payload", type=type(data).__name__)
+                    log("WARN", "catalog_unexpected_payload", type=type(data).__name__, filter=annotation_key)
                     return [], "unexpected payload type"
                 return data, None
         except Exception as exc:
-            log("ERROR", "catalog_poll_error", error=repr(exc), catalog=CATALOG)
+            log("ERROR", "catalog_poll_error", error=repr(exc), catalog=CATALOG, filter=annotation_key)
             return [], str(exc)
+
+    def catalog_agents():
+        return catalog_entities("rhdh-agent-sandbox.io/managed-agent")
+
+    def catalog_devworkspaces():
+        return catalog_entities("rhdh-agent-sandbox.io/managed-devworkspace")
+
+    def catalog_ai_services():
+        return catalog_entities("rhdh-agent-sandbox.io/managed-ai-service")
 
     FRAMEWORK = {
         "python": "langgraph",
@@ -547,6 +566,267 @@ data:
                 action = "error"
         return action
 
+    def ensure_ai_service(entity):
+        meta = entity.get("metadata", {})
+        ann = meta.get("annotations") or {}
+        name = meta.get("name")
+        if not name:
+            return "skip"
+        model = ann.get("rhdh-agent-sandbox.io/model", "granite")
+        desired_hash = hashlib.sha256(f"ai-service|{model}|v3|{FULLNAME}".encode()).hexdigest()[:16]
+        runtime_cm = f"{FULLNAME}-ai-service-runtime"
+
+        deploy = {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "ai-service",
+                    "app.kubernetes.io/part-of": FULLNAME,
+                },
+                "annotations": {
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
+                    "app.openshift.io/connects-to": json.dumps([
+                        {"apiVersion": "apps/v1", "kind": "Deployment", "name": f"{FULLNAME}-mcp"},
+                        {"apiVersion": "apps/v1", "kind": "Deployment", "name": f"{FULLNAME}-k8s-mcp"},
+                    ]),
+                },
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {"matchLabels": {"app.kubernetes.io/name": name}},
+                "template": {
+                    "metadata": {"labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "ai-service"}},
+                    "spec": {
+                        "containers": [{
+                            "name": "ai-service",
+                            "image": "registry.access.redhat.com/ubi9/python-311:latest",
+                            "imagePullPolicy": "IfNotPresent",
+                            "command": ["python3", "-u", "/app/server.py"],
+                            "ports": [{"name": "http", "containerPort": 8080}],
+                            "env": [
+                                {"name": "NAMESPACE", "value": NS},
+                                {"name": "SERVICE_NAME", "value": name},
+                                {"name": "MODEL", "value": model},
+                                {"name": "K8S_MCP_URL", "value": f"http://{FULLNAME}-k8s-mcp:8085/mcp"},
+                                {"name": "OCP_MCP_URL", "value": f"http://{FULLNAME}-mcp:8080/mcp"},
+                                {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
+                            ],
+                            "volumeMounts": [{"name": "app", "mountPath": "/app"}],
+                            "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 3, "periodSeconds": 10},
+                            "resources": {
+                                "requests": {"cpu": "25m", "memory": "64Mi"},
+                                "limits": {"cpu": "200m", "memory": "256Mi"},
+                            },
+                        }],
+                        "volumes": [{"name": "app", "configMap": {"name": runtime_cm}}],
+                    },
+                },
+            },
+        }
+        svc = {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {"name": name, "namespace": NS, "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/part-of": FULLNAME}},
+            "spec": {
+                "selector": {"app.kubernetes.io/name": name},
+                "ports": [{"name": "http", "port": 8080, "targetPort": "http"}],
+            },
+        }
+
+        code, existing = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
+        action = "unchanged"
+        if code == 404:
+            c, body = k8s("POST", f"/apis/apps/v1/namespaces/{NS}/deployments", deploy)
+            if 200 <= c < 300:
+                log("INFO", "ai_service_created", name=name, model=model)
+                action = "created"
+            else:
+                log("ERROR", "ai_service_create_failed", name=name, status=c, error=_k8s_err(body))
+                return "error"
+        elif 200 <= code < 300:
+            cur = (existing.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if cur != desired_hash:
+                deploy["metadata"]["resourceVersion"] = existing.get("metadata", {}).get("resourceVersion", "")
+                c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
+                if 200 <= c < 300:
+                    action = "updated"
+                    log("INFO", "ai_service_updated", name=name)
+                else:
+                    log("ERROR", "ai_service_update_failed", name=name, status=c, error=_k8s_err(body))
+                    return "error"
+        else:
+            log("ERROR", "ai_service_get_failed", name=name, status=code, error=_k8s_err(existing))
+            return "error"
+
+        scode, _ = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
+        if scode == 404:
+            c, body = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
+            if not (200 <= c < 300):
+                log("ERROR", "ai_service_svc_failed", name=name, status=c, error=_k8s_err(body))
+                return "error"
+        return action
+
+    def ensure_devworkspace(entity):
+        meta = entity.get("metadata", {})
+        ann = meta.get("annotations") or {}
+        name = meta.get("name")
+        if not name:
+            log("WARN", "skip_nameless_devworkspace")
+            return "skip"
+        language = ann.get("rhdh-agent-sandbox.io/language", "python")
+        if language not in FRAMEWORK:
+            language = "python"
+        framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
+        model = ann.get("rhdh-agent-sandbox.io/model", "granite")
+        desired_hash = hashlib.sha256(f"{language}|{framework}|{model}|{GIT_REPO}|{GIT_REVISION}".encode()).hexdigest()[:16]
+
+        path = f"/apis/workspace.devfile.io/v1alpha2/namespaces/{NS}/devworkspaces/{name}"
+        code, existing = k8s("GET", path)
+        if code == 200:
+            current_hash = (existing.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if current_hash == desired_hash:
+                return "unchanged"
+            # Do not mutate user-stopped workspaces; leave existing as-is after first create
+            log("INFO", "devworkspace_exists", name=name, language=language, hash=current_hash)
+            return "unchanged"
+        if code not in (404,):
+            log("ERROR", "devworkspace_get_failed", name=name, status=code, error=_k8s_err(existing))
+            return "error"
+
+        download_cmd = (
+            "set -euo pipefail\n"
+            "OUT=/tmp/continue.vsix\n"
+            'if [[ -s "${OUT}" ]]; then echo "Continue vsix present"; exit 0; fi\n'
+            'META_URL="https://open-vsx.org/api/Continue/continue/linux-x64/latest"\n'
+            "URL=\"$(curl -fsSL \"${META_URL}\" | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"files\"][\"download\"])')\"\n"
+            'curl -fsSL --retry 3 --retry-delay 2 -o "${OUT}.partial" "${URL}"\n'
+            'mv "${OUT}.partial" "${OUT}"\n'
+            'echo "Wrote ${OUT}"\n'
+        )
+        ensure_cmd = (
+            "set -euo pipefail\n"
+            "OUT=/tmp/continue.vsix\n"
+            'SOCK=""\n'
+            "for _ in $(seq 1 45); do\n"
+            '  SOCK="$(ls /tmp/vscode-ipc-*.sock 2>/dev/null | head -1 || true)"\n'
+            '  [[ -n "${SOCK}" ]] && break\n'
+            "  sleep 2\n"
+            "done\n"
+            '[[ -z "${SOCK}" || ! -s "${OUT}" ]] && exit 0\n'
+            'export VSCODE_IPC_HOOK_CLI="${SOCK}"\n'
+            'CODE="$(command -v code-oss || true)"\n'
+            '[[ -z "${CODE}" ]] && CODE="/checode/checode-linux-libc/ubi9/bin/remote-cli/code-oss"\n'
+            '[[ ! -x "${CODE}" ]] && exit 0\n'
+            "\"${CODE}\" --list-extensions 2>/dev/null | grep -qi '^continue.continue' && exit 0\n"
+            "\"${CODE}\" --install-extension \"${OUT}\" || true\n"
+        )
+        wire_cmd = (
+            "set -euo pipefail\n"
+            'if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then\n'
+            "  if oc get secret rhdh-agent-sandbox-continue >/dev/null 2>&1; then\n"
+            "    export LITELLM_API_BASE=\"$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)\"\n"
+            "    export LITELLM_API_KEY=\"$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)\"\n"
+            "  fi\n"
+            "fi\n"
+            'MODEL="${CONTINUE_DEFAULT_MODEL:-granite}"\n'
+            'LANG_DIR="${AGENT_LANGUAGE:-python}"\n'
+            "mkdir -p .continue\n"
+            'SRC="files/templates/skeletons/${LANG_DIR}"\n'
+            'if [[ -d "${SRC}" ]]; then cp -a "${SRC}/." .; fi\n'
+            "cat > .continue/config.json <<EOF\n"
+            "{\n"
+            '  "models": [\n'
+            '    {"title": "Granite (LiteLLM)", "provider": "openai", "model": "granite", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"},\n'
+            '    {"title": "Qwen3 (LiteLLM)", "provider": "openai", "model": "qwen3", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"},\n'
+            '    {"title": "LiteMaaS Qwen (LiteLLM)", "provider": "openai", "model": "litemaas-qwen", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"}\n'
+            "  ],\n"
+            '  "tabAutocompleteModel": {"title": "Autocomplete", "provider": "openai", "model": "${MODEL}", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"}\n'
+            "}\n"
+            "EOF\n"
+            'echo "Continue configured model=${MODEL} language=${LANG_DIR} base=${LITELLM_API_BASE:-unset}"\n'
+        )
+
+        dw = {
+            "apiVersion": "workspace.devfile.io/v1alpha2",
+            "kind": "DevWorkspace",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "agent-devspaces",
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "rhdh-agent-sandbox.io/language": language,
+                    "rhdh-agent-sandbox.io/golden-path": "devspaces",
+                },
+                "annotations": {
+                    "che.eclipse.org/che-editor": "che-incubator/che-code/latest",
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
+                    "rhdh-agent-sandbox.io/language": language,
+                    "rhdh-agent-sandbox.io/model": model,
+                },
+            },
+            "spec": {
+                "started": True,
+                "routingClass": "che",
+                "template": {
+                    "attributes": {"controller.devfile.io/storage-type": "per-user"},
+                    "projects": [{
+                        "name": "agent-sandbox",
+                        "git": {
+                            "remotes": {"origin": GIT_REPO},
+                            "checkoutFrom": {"revision": GIT_REVISION},
+                        },
+                    }],
+                    "components": [{
+                        "name": "tools",
+                        "container": {
+                            "image": "quay.io/devfile/universal-developer-image:ubi9-latest",
+                            "memoryLimit": "3Gi",
+                            "memoryRequest": "1Gi",
+                            "cpuLimit": "2",
+                            "cpuRequest": "200m",
+                            "mountSources": True,
+                            "endpoints": [
+                                {"name": "http-8080", "targetPort": 8080, "exposure": "public", "protocol": "http"},
+                            ],
+                            "env": [
+                                {"name": "DEFAULT_EXTENSIONS", "value": "/tmp/continue.vsix"},
+                                {"name": "AGENT_LANGUAGE", "value": language},
+                                {"name": "AGENT_FRAMEWORK", "value": framework},
+                                {"name": "CONTINUE_DEFAULT_MODEL", "value": model},
+                                {"name": "SHELL", "value": "/bin/bash"},
+                            ],
+                            "attributes": {"controller.devfile.io/merge-contribution": True},
+                        },
+                    }],
+                    "commands": [
+                        {"id": "download-continue-extension", "exec": {"component": "tools", "commandLine": download_cmd}},
+                        {"id": "ensure-continue-extension", "exec": {"component": "tools", "commandLine": ensure_cmd}},
+                        {"id": "wire-continue", "exec": {"component": "tools", "workingDir": "${PROJECT_SOURCE}", "commandLine": wire_cmd}},
+                    ],
+                    "events": {
+                        "postStart": [
+                            "download-continue-extension",
+                            "ensure-continue-extension",
+                            "wire-continue",
+                        ],
+                    },
+                },
+            },
+        }
+
+        c, b = k8s("POST", f"/apis/workspace.devfile.io/v1alpha2/namespaces/{NS}/devworkspaces", dw)
+        if 200 <= c < 300:
+            log("INFO", "devworkspace_created", name=name, language=language, model=model, started=True)
+            return "created"
+        log("ERROR", "devworkspace_create_failed", name=name, status=c, error=_k8s_err(b))
+        return "error"
+
     def ensure(agent):
         meta = agent.get("metadata", {})
         ann = meta.get("annotations") or {}
@@ -588,6 +868,8 @@ data:
                     "lastError": STATE["last_error"],
                     "cycles": STATE["cycles"],
                     "agentsSeen": STATE["agents_seen"],
+                    "devworkspacesSeen": STATE["devworkspaces_seen"],
+                    "aiServicesSeen": STATE["ai_services_seen"],
                 }).encode()
                 self.send_response(code)
                 self.send_header("Content-Type", "application/json")
@@ -614,11 +896,15 @@ data:
     while True:
         cycle_started = time.monotonic()
         agents, err = catalog_agents()
+        dws, err_dw = catalog_devworkspaces()
+        ais, err_ai = catalog_ai_services()
         STATE["cycles"] += 1
         STATE["last_poll_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        STATE["last_error"] = err
-        STATE["last_poll_ok"] = err is None
+        STATE["last_error"] = err or err_dw or err_ai
+        STATE["last_poll_ok"] = err is None and err_dw is None and err_ai is None
         STATE["agents_seen"] = len(agents)
+        STATE["devworkspaces_seen"] = len(dws)
+        STATE["ai_services_seen"] = len(ais)
 
         created = updated = unchanged = errors = skipped = building = 0
         for ent in agents:
@@ -641,6 +927,42 @@ data:
                 name = (ent.get("metadata") or {}).get("name", "?")
                 log("ERROR", "ensure_error", name=name, error=repr(exc))
 
+        dw_created = dw_unchanged = dw_errors = dw_skipped = 0
+        for ent in dws:
+            try:
+                result = ensure_devworkspace(ent)
+                if result == "created":
+                    dw_created += 1
+                elif result == "unchanged":
+                    dw_unchanged += 1
+                elif result == "error":
+                    dw_errors += 1
+                else:
+                    dw_skipped += 1
+            except Exception as exc:
+                dw_errors += 1
+                name = (ent.get("metadata") or {}).get("name", "?")
+                log("ERROR", "ensure_devworkspace_error", name=name, error=repr(exc))
+
+        ai_created = ai_updated = ai_unchanged = ai_errors = ai_skipped = 0
+        for ent in ais:
+            try:
+                result = ensure_ai_service(ent)
+                if result == "created":
+                    ai_created += 1
+                elif result == "updated":
+                    ai_updated += 1
+                elif result == "unchanged":
+                    ai_unchanged += 1
+                elif result == "error":
+                    ai_errors += 1
+                else:
+                    ai_skipped += 1
+            except Exception as exc:
+                ai_errors += 1
+                name = (ent.get("metadata") or {}).get("name", "?")
+                log("ERROR", "ensure_ai_service_error", name=name, error=repr(exc))
+
         ms = int((time.monotonic() - cycle_started) * 1000)
         log(
             "INFO",
@@ -653,8 +975,18 @@ data:
             building=building,
             errors=errors,
             skipped=skipped,
+            devworkspaces=len(dws),
+            dw_created=dw_created,
+            dw_unchanged=dw_unchanged,
+            dw_errors=dw_errors,
+            dw_skipped=dw_skipped,
+            ai_services=len(ais),
+            ai_created=ai_created,
+            ai_updated=ai_updated,
+            ai_unchanged=ai_unchanged,
+            ai_errors=ai_errors,
             duration_ms=ms,
-            catalog_ok=(err is None),
+            catalog_ok=(err is None and err_dw is None and err_ai is None),
         )
         time.sleep(POLL_SECONDS)
 ---
@@ -720,6 +1052,10 @@ spec:
               value: "8080"
             - name: SOURCES_CM
               value: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-build-sources
+            - name: GIT_REPO
+              value: {{ .Values.agents.devspaces.gitRepo | default "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git" | quote }}
+            - name: GIT_REVISION
+              value: {{ .Values.agents.devspaces.gitRevision | default "main" | quote }}
           volumeMounts:
             - name: app
               mountPath: /app

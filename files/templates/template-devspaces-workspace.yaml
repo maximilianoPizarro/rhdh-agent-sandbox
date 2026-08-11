@@ -3,8 +3,12 @@ kind: Template
 metadata:
   name: agent-friendly-devspaces-workspace
   title: Agent-friendly DevSpaces AI Workspace
-  description: Scaffold a repository with Devfile, Continue→LiteLLM config, and skills for Developer Sandbox (browser IDE)
+  description: >
+    Create a ready-to-use OpenShift DevSpaces workspace from a language Devfile
+    with Continue preconfigured for LiteLLM. Choose the agent language
+    (Python/LangGraph, Node.js/LangChain.js, or Quarkus/LangChain4j) you will develop against.
   tags:
+    - golden-path
     - devspaces
     - continue
     - ai
@@ -13,60 +17,112 @@ spec:
   owner: group:default/developers
   type: service
   parameters:
-    - title: Service
-      required:
-        - name
-        - owner
+    - title: Workspace
+      required: [name, owner, language]
       properties:
         name:
-          title: Name
+          title: Workspace name
+          description: DNS-1123 name for the DevWorkspace (e.g. my-python-agent-ide)
           type: string
           pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
           ui:autofocus: true
-        description:
-          title: Description
-          type: string
-          default: Agent-friendly DevSpaces AI workspace
         owner:
           title: Owner
           type: string
           ui:field: OwnerPicker
           ui:options:
-            allowedKinds:
-              - Group
-        stack:
-          title: Stack
+            allowedKinds: [Group]
+        language:
+          title: Agent language
+          description: Language/framework skeleton opened in the DevSpaces workspace
           type: string
-          default: nodejs
+          default: python
           enum:
+            - python
             - nodejs
             - quarkus
-            - python
+          enumNames:
+            - "Python → LangGraph"
+            - "Node.js → LangChain.js"
+            - "Quarkus → LangChain4j"
+        model:
+          title: Default Continue model
+          description: Prefill Continue with this LiteLLM alias
+          type: string
+          default: granite
+          enum: [granite, qwen3, litemaas-qwen]
+        description:
+          title: Description
+          type: string
+          default: Agent DevSpaces workspace with Continue → LiteLLM
   steps:
-    - id: fetch
-      name: Fetch skeleton
-      action: fetch:template
-      input:
-        url: ./skeletons/${{ parameters.stack }}
-        values:
-          name: ${{ parameters.name }}
-          description: ${{ parameters.description }}
-          owner: ${{ parameters.owner }}
-          stack: ${{ parameters.stack }}
-    - id: publish
-      name: Publish instructions
+    - id: resolve
+      name: Resolve stack from language
       action: debug:log
       input:
-        message: |
-          Workspace files prepared for ${{ parameters.name }}.
-          Next: push to Git (or import into DevSpaces), open from devfile.yaml,
-          wire Continue to the LiteLLM Route (see README). Guest Hub is for Lightspeed/MCP.
+        message: >-
+          Creating DevSpaces workspace ${{ parameters.name }}
+          language=${{ parameters.language }}
+          framework=${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}
+          model=${{ parameters.model }}
+    - id: register
+      name: Register Component (triggers DevWorkspace)
+      action: catalog:write
+      input:
+        entity:
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.name }}
+            title: ${{ parameters.name }}
+            description: ${{ parameters.description }}
+            tags:
+              - agent
+              - golden-path
+              - devspaces
+              - ${{ parameters.language }}
+            annotations:
+              rhdh-agent-sandbox.io/managed-devworkspace: "true"
+              rhdh-agent-sandbox.io/language: ${{ parameters.language }}
+              rhdh-agent-sandbox.io/framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
+              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
+              rhdh-agent-sandbox.io/devspaces-workspace: ${{ parameters.name }}
+            links:
+              - url: https://workspaces.openshift.com/dashboard/#/workspaces
+                title: Open DevSpaces dashboard
+                icon: catalog
+              - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}
+                title: Language factory URL (fallback)
+                icon: github
+          spec:
+            type: website
+            lifecycle: experimental
+            owner: ${{ parameters.owner }}
+            system: agent-sandbox
+    - id: done
+      name: Workspace queued
+      action: debug:log
+      input:
+        message: >-
+          Component registered. agent-applier will create DevWorkspace ${{ parameters.name }}
+          (language=${{ parameters.language }}, model=${{ parameters.model }}, started=true).
+          Continue wires to LiteLLM via Secret rhdh-agent-sandbox-continue on postStart.
   output:
+    links:
+      - title: Open DevSpaces dashboard
+        url: https://workspaces.openshift.com/dashboard/#/workspaces
+      - title: Language factory URL
+        url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}
+      - title: Open Component
+        icon: catalog
+        entityRef: "component:default/${{ parameters.name }}"
     text:
-      - title: Next steps
+      - title: Ready to code
         content: |
-          1. Commit/push the generated workspace (or download and import).
-          2. In OpenShift DevSpaces, create a workspace from `devfile.yaml`.
-          3. Continue is preinstalled on start; run `wire-continue` (uses chart Secret `rhdh-agent-sandbox-continue`).
-          4. Skills are under `.continue/skills/`; prompts under `docs/prompts/`.
-          5. Use Developer Hub **Guest** login for Lightspeed + MCP triage.
+          Catalog Component **${{ parameters.name }}** is registered. Within ~1 minute the
+          agent-applier creates a **started** DevWorkspace for language **${{ parameters.language }}**
+          with Continue → LiteLLM (default model **${{ parameters.model }}**).
+
+          Open the **DevSpaces dashboard**, select **${{ parameters.name }}**, and start coding.
+          No git push step. If the workspace is not listed yet, use the language factory URL.

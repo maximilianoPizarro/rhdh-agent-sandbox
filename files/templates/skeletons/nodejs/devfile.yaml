@@ -1,9 +1,9 @@
 schemaVersion: 2.2.0
 metadata:
   name: agent-friendly-workspace
-  version: 0.3.0
+  version: 0.4.0
   displayName: Agent-friendly DevSpaces AI Workspace
-  description: Browser IDE (Che Code) with Continue preinstalled → LiteLLM on Developer Sandbox
+  description: Browser IDE (Che Code) with Continue preinstalled → LiteLLM; language skeleton selected via AGENT_LANGUAGE
   tags:
     - continue
     - mcp
@@ -31,15 +31,16 @@ components:
       env:
         - name: SHELL
           value: /bin/bash
-        # Preinstall Continue (Che Code reads DEFAULT_EXTENSIONS at startup).
         - name: DEFAULT_EXTENSIONS
           value: /tmp/continue.vsix
-        # Set these when starting the workspace (or edit .continue/config.json).
+        - name: AGENT_LANGUAGE
+          value: nodejs
+        - name: CONTINUE_DEFAULT_MODEL
+          value: granite
         - name: LITELLM_API_BASE
           value: ""
         - name: LITELLM_API_KEY
           value: ""
-      # Che Code / VS Code extensions for in-browser AI
       attributes:
         controller.devfile.io/merge-contribution: true
 commands:
@@ -66,7 +67,6 @@ commands:
       commandLine: |
         set -euo pipefail
         OUT=/tmp/continue.vsix
-        # Wait briefly for Che Code IPC (DEFAULT_EXTENSIONS may already install in background).
         SOCK=""
         for _ in $(seq 1 45); do
           SOCK="$(ls /tmp/vscode-ipc-*.sock 2>/dev/null | head -1 || true)"
@@ -96,19 +96,20 @@ commands:
     exec:
       component: tools
       commandLine: |
-        cat <<'EOF'
+        cat <<EOF
         DevSpaces AI workspace
         ----------------------
-        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS). Open it in the Che Code sidebar.
+        Language: ${AGENT_LANGUAGE:-python}
+        Default model: ${CONTINUE_DEFAULT_MODEL:-granite}
+        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS).
         2) Env LITELLM_API_* from Secret rhdh-agent-sandbox-continue (chart), or set manually then wire-continue.
-             oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d
-        3) Models: granite | qwen3
-        4) Skills live under .continue/skills/ — prompts under docs/prompts/
-        5) Hub Lightspeed + MCP stay in Developer Hub (guest login). This IDE talks to LiteLLM Route only.
+        3) Models: granite | qwen3 | litemaas-qwen
+        4) Skills live under .continue/skills/ and .cursor/skills/
         EOF
   - id: wire-continue
     exec:
       component: tools
+      workingDir: ${PROJECT_SOURCE}
       commandLine: |
         set -euo pipefail
         CFG=".continue/config.json"
@@ -122,7 +123,13 @@ commands:
           echo "Set LITELLM_API_BASE and LITELLM_API_KEY (or mount rhdh-agent-sandbox-continue), then re-run wire-continue."
           exit 0
         fi
+        MODEL="${CONTINUE_DEFAULT_MODEL:-granite}"
+        LANG_DIR="${AGENT_LANGUAGE:-python}"
         mkdir -p .continue
+        SRC="files/templates/skeletons/${LANG_DIR}"
+        if [[ -d "${SRC}" ]]; then
+          cp -a "${SRC}/." .
+        fi
         cat > "${CFG}" <<EOF
         {
           "models": [
@@ -139,18 +146,25 @@ commands:
               "model": "qwen3",
               "apiBase": "${LITELLM_API_BASE}",
               "apiKey": "${LITELLM_API_KEY}"
+            },
+            {
+              "title": "LiteMaaS Qwen (LiteLLM)",
+              "provider": "openai",
+              "model": "litemaas-qwen",
+              "apiBase": "${LITELLM_API_BASE}",
+              "apiKey": "${LITELLM_API_KEY}"
             }
           ],
           "tabAutocompleteModel": {
-            "title": "Granite autocomplete",
+            "title": "Autocomplete",
             "provider": "openai",
-            "model": "granite",
+            "model": "${MODEL}",
             "apiBase": "${LITELLM_API_BASE}",
             "apiKey": "${LITELLM_API_KEY}"
           }
         }
         EOF
-        echo "Wrote ${CFG}"
+        echo "Wrote ${CFG} model=${MODEL} language=${LANG_DIR}"
 events:
   postStart:
     - download-continue-extension

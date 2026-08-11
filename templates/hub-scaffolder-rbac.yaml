@@ -12,13 +12,16 @@ rules:
     resources: ["deployments"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
-    resources: ["services", "configmaps"]
+    resources: ["services", "configmaps", "secrets"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: ["build.openshift.io"]
     resources: ["buildconfigs", "builds"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: ["image.openshift.io"]
     resources: ["imagestreams", "imagestreamtags"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["workspace.devfile.io"]
+    resources: ["devworkspaces", "devworkspacetemplates"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

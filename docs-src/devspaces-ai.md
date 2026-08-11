@@ -16,11 +16,15 @@ Run **OpenShift DevSpaces** with in-browser AI (**Che Code** + **Continue**) aga
 - DevSpaces available on the cluster (true on Developer Sandbox).  
 - Quota for ~200m CPU / 1Gi memory request (limits up to ~2 CPU / 3Gi). Stop other heavy workspaces first.
 
-## Option A — From Hub template
+## Option A — From Hub template (recommended)
 
-1. Guest → **Create** → template **Agent-friendly DevSpaces AI Workspace**.  
-2. Scaffolder steps are guest-safe (log / local). Export or push the generated tree to a git repo DevSpaces can clone, **or** copy files into an existing repo.  
-3. In DevSpaces UI: create workspace from that repo’s `devfile.yaml`.
+1. Guest → **Create** → **Agent-friendly DevSpaces AI Workspace**.  
+2. Choose **workspace name**, **agent language** (Python / Node.js / Quarkus), and default Continue **model**.  
+3. The scaffolder registers a catalog Component (`managed-devworkspace=true`).  
+4. Within ~1 minute the **agent-applier** creates a **started** DevWorkspace with Continue → LiteLLM prewired (Secret `rhdh-agent-sandbox-continue`).  
+5. Open [DevSpaces dashboard](https://workspaces.openshift.com/dashboard/#/workspaces) and open your workspace — **no git push**.
+
+Fallback: Component link **Language factory URL** opens the same language skeleton Devfile via DevSpaces factory.
 
 ## Option B — From this repository
 

@@ -38,11 +38,13 @@ Pre-installed `sample-*-agent` Deployments were removed. Create agents only via 
 
 ## 3. DevSpaces (OpenShift user)
 
-Factory links open language skeletons:
-
-`https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/<language>`
+Use Golden Path **Agent-friendly DevSpaces AI Workspace**: pick language → a started DevWorkspace appears with Continue → LiteLLM.
 
 Wire Continue to the LiteLLM **Route** with `litellm-master-key` (see [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }})).
+
+Factory fallback (same language skeletons):
+
+`https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/<language>`
 
 Official [Red Hat agentic skills](https://www.redhat.com/en/agentic-skills) (CVE, lifecycle, diagnostics, support severity) are available in the catalog and can be installed into IDE skill directories.
 
@@ -51,5 +53,5 @@ Official [Red Hat agentic skills](https://www.redhat.com/en/agentic-skills) (CVE
 | Actor | Token / power |
 |---|---|
 | Hub Guest | Catalog + Lightspeed + scaffolder register (no cluster admin) |
-| Agent Pod SA / applier | Namespace create/update Deployment, Service, BuildConfig, ImageStream; start builds |
+| Agent Pod SA / applier | Namespace create/update Deployment, Service, BuildConfig, ImageStream, DevWorkspace; start builds |
 | OpenShift Sandbox user | `model-api-key` refresh, DevSpaces start, read secrets |

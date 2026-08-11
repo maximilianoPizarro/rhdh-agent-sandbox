@@ -130,6 +130,10 @@ agents:
   # Namespace RBAC for Hub SA (scaffolder kubernetes module + optional apply)
   hubRbac:
     enabled: true
+  # DevSpaces golden path: agent-applier creates DevWorkspaces from catalog Components
+  devspaces:
+    gitRepo: https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
+    gitRevision: main
   # Pre-installed demo stubs removed — use Deploy Agent golden path (build=true).
   samples: []
 
@@ -303,18 +307,27 @@ rhdh:
               url: http://localhost:7007/api/mcp-actions/v1
               headers:
                 Authorization: Bearer ${MCP_TOKEN}
+            # Red Hat Security MCP requires Customer Portal OAuth (SSO). Hub cannot
+            # complete browser login — use Cursor/.mcp.json for live CVE tools.
+            # Catalog API: red-hat-security-mcp (discovery only).
           systemPrompt: >-
             You are the agent-friendly Developer Hub assistant on OpenShift Developer Sandbox.
-            Prefer catalog and TechDocs MCP tools when available; otherwise use OpenShift/Kubernetes MCP.
-            Stay inside the user namespace. Summarize tool results clearly; list/get before mutate.
+            Namespace is scoped: prefer Kubernetes MCP tools pods_list_in_namespace, resources_list,
+            events_list, helm_list, and OpenShift MCP monitorDeployments / createDeployment / createService.
+            Do NOT call pods_list (all namespaces), namespaces_list, or nodes_* — they are disabled or forbidden.
+            Prefer catalog and TechDocs MCP tools when available. Summarize tool results clearly.
           quickPrompts:
             - title: Catalog overview
               description: List components in the software catalog
               prompt: List the Component entities in our Backstage catalog and summarize what each one does.
               category: Catalog
             - title: Namespace pods
-              description: List pods in the current namespace
-              prompt: List pods in this namespace and summarize their status.
+              description: List pods in this namespace via Kubernetes MCP
+              prompt: Use Kubernetes MCP tool pods_list_in_namespace for this chart namespace and summarize pod status.
+              category: Infrastructure
+            - title: Deployments health
+              description: Monitor deployments via OpenShift MCP
+              prompt: Call OpenShift MCP monitorDeployments for this namespace and report any unhealthy rollouts.
               category: Infrastructure
             - title: TechDocs search
               description: Find docs related to MCP or Lightspeed
