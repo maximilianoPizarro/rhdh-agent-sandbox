@@ -189,7 +189,7 @@ def main() -> None:
         smoke = run(
             f"oc run curl-smoke --rm -i --restart=Never "
             f"-n {ns} --image=registry.access.redhat.com/ubi9/ubi-minimal:latest -- "
-            "curl -sS -m 60 http://gp-ai-mcp-demo:8080/mcp/smoke",
+            "curl -sS -m 60 http://my-agent:8080/mcp/smoke",
             check=False,
         )
         # strip pod deleted noise
@@ -199,7 +199,7 @@ def main() -> None:
         smoke_text = exc.output or '{"k8s_mcp":{"ok":true},"openshift_mcp":{"ok":true}}'
 
     smoke_body = (
-        line_prompt("curl -sS http://gp-ai-mcp-demo:8080/mcp/smoke")
+        line_prompt("curl -sS http://my-agent:8080/mcp/smoke")
         + line_out(smoke_text)
     )
     screenshot("ai-service-mcp-smoke.png", render_html("MCP smoke", ns, smoke_body), 520)
