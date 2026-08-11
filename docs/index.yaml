@@ -27,7 +27,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-11T22:21:29.667124324Z"
+    created: "2026-08-11T23:28:47.733406944Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -36,7 +36,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: ee585dd033979c764d1ad9ca33b8b2d598e6a0c2183be9fed85ebf142c1eb199
+    digest: 52018a9769cd8c037e6e5f8dbdd3ed05edad95abfbf64b8d97109c8ccc91a134
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -60,4 +60,4 @@ entries:
     urls:
     - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.2.tgz
     version: 0.1.2
-generated: "2026-08-11T22:21:29.646099416Z"
+generated: "2026-08-11T23:28:47.708191377Z"
