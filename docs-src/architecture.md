@@ -1,76 +1,52 @@
 ---
+layout: default
 title: Architecture
+permalink: /architecture/
 ---
 
-# Architecture
 
-## End-to-end picture
-
-![Architecture overview]({{ '/assets/diagrams/architecture-overview.png' | relative_url }})
+![Architecture overview](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/architecture-overview.png)
 
 ## Components
 
-| Component | How it is delivered | Network |
-|---|---|---|
-| Red Hat Developer Hub 1.10.3 | Helm subchart `redhat-developer-hub` | Route `*-developer-hub` |
-| lightspeed-core | Sidecar on Hub pod (RHDH Lightspeed flavour) | localhost from Hub plugin |
-| LiteLLM | Chart Deployment | ClusterIP + **Route** (for DevSpaces) |
-| Shared models | Cluster `sandbox-shared-models` InferenceServices | Called by LiteLLM with `model-api-key` |
-| OpenShift MCP (Quarkus) | Chart Deployment | ClusterIP `:8080` |
+| Component | Delivery | Network |
+|-----------|----------|---------|
+| Red Hat Developer Hub 1.10.3 | Helm subchart | Route `*-developer-hub` |
+| LiteLLM | Chart Deployment | ClusterIP + Route |
+| OpenShift MCP | Chart Deployment | ClusterIP `:8080` |
 | Kubernetes MCP | Chart Deployment | ClusterIP `:8085` |
-| AI catalog | ConfigMap `rhdh-agent-sandbox-catalog` | Mounted at `/opt/app-root/src/catalog` |
-| Scaffolder assets | ConfigMap + projected volume | `/opt/app-root/src/scaffolder-assets` |
-| Agent samples + applier | Chart Deployments / SA Role | ClusterIP agents → LiteLLM |
-| DevSpaces | Operator on Sandbox + Devfiles / templates | User-created DevWorkspace |
-| OpenClaw (optional) | Provisioned from sandbox.redhat.com (not this chart) | Managed OpenClaw + LiteMaaS Qwen (tool calling) or vendor keys |
+| agent-applier | Chart Deployment | Polls catalog → builds agents |
+| AI catalog | ConfigMap | `/opt/app-root/src/catalog` |
 
-## Identity and tokens
+## Inference path
 
 ```text
-Hub Guest ──(no token)──► Lightspeed UI
-                              │
-OpenShift user ──model-api-key──► LiteLLM ──► shared models (oauth-proxy)
-OpenShift user ──litellm-master-key──► Continue / LiteLLM Route (chat)
-Continue / Lightspeed ──mcp-token──► Hub Route /api/mcp-actions/v1 (catalog MCP)
+Guest → Lightspeed UI → lightspeed-core → LiteLLM → shared Granite/Qwen
+Guest → MCP Chat → LiteLLM (litemaas-qwen) → MCP tools
 ```
 
-| Secret key | Consumer | Lifetime |
-|---|---|---|
-| `model-api-key` | LiteLLM → shared models | ~24h (refresh with `oc whoami -t`) |
-| `litellm-master-key` | Lightspeed (`VLLM_API_KEY`) + Continue chat | Stable (chart-generated) |
-| `mcp-token` | Lightspeed + Continue Hub MCP Actions | Stable (chart-generated) |
-| `backend-secret` | Hub backend auth | Stable |
+## Tokens
 
-## Catalog loading
+| Secret key | Consumer | Refresh |
+|------------|----------|---------|
+| `model-api-key` | LiteLLM → shared models | `oc whoami -t` (~24h) |
+| `litellm-master-key` | Lightspeed, Continue | Chart-generated |
+| `mcp-token` | MCP Actions, applier | Chart-generated |
 
-Hub `catalog.locations` uses a **file** location:
+## Golden Path flow
 
-```yaml
-type: file
-target: /opt/app-root/src/catalog/all.yaml
-```
+![Golden Path](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png)
 
-The ConfigMap is filled from `files/catalog/*` (skills, prompts, MCP entities, Deploy Agent template, sample agents, users/groups). No GitHub URL location is required for the demo.
+1. Scaffolder registers Component (`catalog:register-entity` via pending ConfigMap)
+2. agent-applier creates BuildConfig + Deployment
+3. Hub shows **Topology** (Kubernetes plugin) and **TechDocs** for the agent
 
-## Lightspeed inference path
+![Agent Topology tab](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/agent-topology-preview.png)
 
-1. UI / plugin posts to Hub `/api/lightspeed/v1/query`.  
-2. Hub proxies to **lightspeed-core** (`streaming_query`).  
-3. lightspeed-core uses provider **`vllm`** (`ENABLE_VLLM=true`) with `VLLM_URL` → LiteLLM Service.  
-4. Model ids in the UI look like `vllm/granite` / `vllm/qwen3` (llama-stack provider prefix).  
-5. LiteLLM forwards to Granite/Qwen. Shared Sandbox models do **not** accept `tool_choice=auto`; the chart disables function-calling params for those aliases.
+## MCP tools flow
 
-## MCP path
+![MCP tools flow](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/mcp-tools-flow.png)
 
-- **Hub Lightspeed** uses ClusterIP MCP services and RHDH mcp-actions (`mcp-integration-tools` + `MCP_TOKEN`).  
-- MCP ServiceAccount has **namespace** Role only (Sandbox-safe).  
-- **No public Routes for OpenShift/Kubernetes MCP** (ClusterIP only).  
-- **DevSpaces Continue** uses two hops: LiteLLM Route for **chat**, and the **Hub Route** `/api/mcp-actions/v1` (with `mcp-token`) for **catalog/TechDocs** tools only — see [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
+## Skills ↔ MCP APIs
 
-## Quota sketch (NotTerminating)
-
-Typical stack requests leave headroom for one modest DevSpaces workspace. Stop extra workspaces when finished so Hub + LiteLLM stay schedulable.
-
-## Going to production
-
-This chart is a Sandbox demo. For enterprise identity, secrets, gateway policies, token budgets, Guardrails, and supply-chain CI/CD around the same agent pattern, see [Production considerations]({{ '/production-considerations/' | relative_url }}).
+![Skills catalog map](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/skills-catalog-map.png)

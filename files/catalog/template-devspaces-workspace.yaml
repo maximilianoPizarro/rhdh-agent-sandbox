@@ -67,39 +67,20 @@ spec:
           framework=${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}
           model=${{ parameters.model }}
     - id: register
-      name: Register Component (triggers DevWorkspace)
-      action: catalog:write
+      name: Register Component (catalog:register-entity)
+      action: fetch:template
       input:
-        entity:
-          apiVersion: backstage.io/v1alpha1
-          kind: Component
-          metadata:
-            name: ${{ parameters.name }}
-            title: ${{ parameters.name }}
-            description: ${{ parameters.description }}
-            tags:
-              - agent
-              - golden-path
-              - devspaces
-              - ${{ parameters.language }}
-            annotations:
-              rhdh-agent-sandbox.io/managed-devworkspace: "true"
-              rhdh-agent-sandbox.io/language: ${{ parameters.language }}
-              rhdh-agent-sandbox.io/framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
-              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
-              rhdh-agent-sandbox.io/devspaces-workspace: ${{ parameters.name }}
-            links:
-              - url: https://workspaces.openshift.com/dashboard/#/workspaces
-                title: Open DevSpaces dashboard
-                icon: catalog
-              - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}
-                title: Language factory URL (fallback)
-                icon: github
-          spec:
-            type: website
-            lifecycle: experimental
-            owner: ${{ parameters.owner }}
-            system: agent-sandbox
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/scaffolder/pending-catalog-entity-devspaces
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          language: ${{ parameters.language }}
+          model: ${{ parameters.model }}
+          description: ${{ parameters.description }}
+          framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
+    - id: apply-register
+      name: Apply catalog registration to cluster
+      action: kubernetes:apply
     - id: done
       name: Workspace queued
       action: debug:log

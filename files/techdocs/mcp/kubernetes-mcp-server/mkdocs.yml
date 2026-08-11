@@ -1,0 +1,7 @@
+site_name: Kubernetes MCP Server
+nav:
+  - Overview: index.md
+  - Skills:
+      - OpenShift MCP (shared rules): skills/openshift-mcp.md
+plugins:
+  - techdocs-core

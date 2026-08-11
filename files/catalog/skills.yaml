@@ -12,6 +12,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .continue/skills/devspaces-ai/SKILL.md
+    backstage.io/view-url: /docs/default/api/rhdh-mcp-actions/skills/devspaces-ai
 spec:
   type: skill
   owner: group:default/developers
@@ -32,6 +33,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .continue/skills/openshift-mcp/SKILL.md
+    backstage.io/view-url: /docs/default/api/openshift-mcp-server/skills/openshift-mcp
 spec:
   type: skill
   owner: group:default/developers
@@ -52,6 +54,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .continue/skills/lightspeed-rag/SKILL.md
+    backstage.io/view-url: /docs/default/api/rhdh-mcp-actions/skills/lightspeed-rag
 spec:
   type: skill
   owner: group:default/developers
@@ -71,6 +74,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-cve-explainer/SKILL.md
+    backstage.io/view-url: /docs/default/api/red-hat-security-mcp/skills/red-hat-cve-explainer
 spec:
   type: ai-skill
   owner: group:default/developers
@@ -89,6 +93,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-diagnostics/SKILL.md
+    backstage.io/view-url: /docs/default/api/red-hat-security-mcp/skills/red-hat-diagnostics
 spec:
   type: ai-skill
   owner: group:default/developers
@@ -107,6 +112,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-product-lifecycle/SKILL.md
+    backstage.io/view-url: /docs/default/api/red-hat-security-mcp/skills/red-hat-product-lifecycle
 spec:
   type: ai-skill
   owner: group:default/developers
@@ -125,6 +131,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-security-mcp-setup/SKILL.md
+    backstage.io/view-url: /docs/default/api/red-hat-security-mcp/skills/red-hat-security-mcp-setup
 spec:
   type: ai-skill
   owner: group:default/developers
@@ -143,6 +150,7 @@ metadata:
   annotations:
     rhdh-agent-sandbox/asset-type: skill
     rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-support-severity/SKILL.md
+    backstage.io/view-url: /docs/default/api/red-hat-security-mcp/skills/red-hat-support-severity
 spec:
   type: ai-skill
   owner: group:default/developers

@@ -17,11 +17,16 @@ data:
   prompts.yaml: |
 {{ .Files.Get "files/catalog/prompts.yaml" | indent 4 }}
   users.yaml: |
-{{ .Files.Get "files/catalog/users.yaml" | indent 4 }}
+{{- $users := .Files.Get "files/catalog/users.yaml" | replace "__RELEASE_NAMESPACE__" .Release.Namespace }}
+{{ $users | indent 4 }}
   template-devspaces-workspace.yaml: |
 {{ .Files.Get "files/catalog/template-devspaces-workspace.yaml" | indent 4 }}
   template-ai-service.yaml: |
 {{ .Files.Get "files/catalog/template-ai-service.yaml" | indent 4 }}
   template-deploy-agent.yaml: |
 {{ .Files.Get "files/catalog/template-deploy-agent.yaml" | indent 4 }}
+  system.yaml: |
+{{ .Files.Get "files/catalog/system.yaml" | indent 4 }}
+  locations.yaml: |
+{{ .Files.Get "files/catalog/locations.yaml" | indent 4 }}
 {{- end }}

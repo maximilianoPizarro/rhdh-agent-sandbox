@@ -21,6 +21,8 @@ jobs:
           version: v3.16.2
       - name: Helm dependency + lint
         run: |
+          chmod +x scripts/sync-skills-to-techdocs.sh
+          ./scripts/sync-skills-to-techdocs.sh
           helm dependency update
           helm lint .
           helm template rhdh-agent . \
@@ -74,6 +76,10 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
+      - name: Sync TechDocs platform → docs-src
+        run: |
+          chmod +x scripts/sync-techdocs-to-pages.sh
+          ./scripts/sync-techdocs-to-pages.sh
       - name: Build Jekyll into docs/
         run: |
           gem install jekyll jekyll-seo-tag webrick

@@ -1,0 +1,7 @@
+site_name: OpenShift MCP Server
+nav:
+  - Overview: index.md
+  - Skills:
+      - OpenShift MCP: skills/openshift-mcp.md
+plugins:
+  - techdocs-core

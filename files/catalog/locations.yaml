@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: registered-catalog-entities
+  description: Scaffolder-registered entities (Golden Path Components)
+spec:
+  targets:
+    - /opt/app-root/src/scaffolder-registered/entities/*.yaml
+  rules:
+    - allow: [Component, API, Resource, Location, System]

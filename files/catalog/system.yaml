@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: agent-sandbox
+  title: Agent Sandbox
+  description: Golden Path agents, DevSpaces workspaces, and MCP-wired AI services on Developer Sandbox
+  tags:
+    - ai
+    - golden-path
+    - demo
+spec:
+  owner: group:default/developers

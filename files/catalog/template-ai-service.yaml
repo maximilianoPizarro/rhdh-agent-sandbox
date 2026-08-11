@@ -49,38 +49,18 @@ spec:
           AI service ${{ parameters.name }} will depend on openshift-mcp + k8s-mcp
           and smoke-call pods_list_in_namespace + monitorDeployments (model=${{ parameters.model }}).
     - id: register
-      name: Register Component (triggers MCP-wired deploy)
-      action: catalog:write
+      name: Register Component (catalog:register-entity)
+      action: fetch:template
       input:
-        entity:
-          apiVersion: backstage.io/v1alpha1
-          kind: Component
-          metadata:
-            name: ${{ parameters.name }}
-            title: ${{ parameters.name }}
-            description: ${{ parameters.description }}
-            tags:
-              - ai
-              - mcp
-              - golden-path
-              - lightspeed
-            annotations:
-              rhdh-agent-sandbox.io/managed-ai-service: "true"
-              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
-            links:
-              - url: http://${{ parameters.name }}:8080/
-                title: In-cluster service
-                icon: catalog
-          spec:
-            type: service
-            lifecycle: experimental
-            owner: ${{ parameters.owner }}
-            system: agent-sandbox
-            dependsOn:
-              - api:default/openshift-mcp-server
-              - api:default/kubernetes-mcp-server
-              - api:default/rhdh-mcp-actions
-              - api:default/red-hat-security-mcp
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/scaffolder/pending-catalog-entity-ai-service
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          model: ${{ parameters.model }}
+          description: ${{ parameters.description }}
+    - id: apply-register
+      name: Apply catalog registration to cluster
+      action: kubernetes:apply
     - id: done
       name: Queued
       action: debug:log

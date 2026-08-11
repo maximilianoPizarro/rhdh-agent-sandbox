@@ -6,6 +6,8 @@ metadata:
 spec:
   targets:
     # Paths relative to this file (ConfigMap mount flattens siblings).
+    - ./system.yaml
+    - ./locations.yaml
     - ./mcp-servers.yaml
     - ./skills.yaml
     - ./prompts.yaml

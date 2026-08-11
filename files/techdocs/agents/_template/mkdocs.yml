@@ -1,0 +1,6 @@
+site_name: "{{name}}"
+nav:
+  - Overview: index.md
+  - Runbook: runbook.md
+plugins:
+  - techdocs-core

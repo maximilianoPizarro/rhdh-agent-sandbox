@@ -1,0 +1,28 @@
+{
+  "name": "@internal/plugin-scaffolder-backend-module-catalog-register",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "backstage": {
+    "role": "backend-plugin-module"
+  },
+  "main": "dist/index.cjs.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.2.0",
+    "@backstage/catalog-model": "^1.10.0",
+    "@backstage/plugin-catalog-node": "^1.14.0",
+    "@backstage/plugin-scaffolder-node": "^1.14.0",
+    "fs-extra": "^11.2.0",
+    "yaml": "^2.4.5"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.29.0"
+  },
+  "files": ["dist"]
+}

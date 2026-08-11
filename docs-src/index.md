@@ -1,93 +1,32 @@
 ---
-layout: home
-title: Developer Hub Agent Sandbox
-description: >-
-  Umbrella Helm chart for Red Hat Developer Hub on OpenShift Developer Sandbox —
-  Lightspeed, LiteLLM, MCP, Golden Paths, DevSpaces Continue, and OpenClaw.
+layout: default
+title: Agent-friendly Developer Hub
 permalink: /
-image:
-  path: /assets/brand/og-preview.png
-  width: 1200
-  height: 630
-  alt: Developer Hub Agent Sandbox — OpenShift, Lightspeed, MCP, DevSpaces, OpenClaw
 ---
 
-# Agent-friendly Developer Hub on Developer Sandbox
 
-Umbrella Helm chart that deploys **Red Hat Developer Hub 1.10.3** on **OpenShift Developer Sandbox** with a working agent loop: Lightspeed → LiteLLM → shared Granite/Qwen (chat) or LiteMaaS Qwen (tool calling), plus MCP tools, Golden Paths, and DevSpaces AI workspaces.
+![Install overview](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/install-one-command.png)
 
-![One-command install]({{ '/assets/diagrams/install-one-command.png' | relative_url }})
+This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP tools, Golden Paths, and DevSpaces AI on **OpenShift Developer Sandbox**.
+
+## Who is this for?
+
+| Identity | What you do |
+|----------|-------------|
+| **Hub Guest** | Browse catalog, run Golden Paths, use Lightspeed and MCP Chat — no OpenShift token |
+| **Sandbox user (`oc`)** | Install the chart, refresh tokens, open DevSpaces workspaces |
 
 ## What you get
 
-<div class="card-grid" markdown="0">
-<div class="card">
-<h3>Developer Hub</h3>
-<p>Guest login, catalog, scaffolder, TechDocs, and Lightspeed UI — all in one portal.</p>
-</div>
-<div class="card">
-<h3>LiteLLM Gateway</h3>
-<p>OpenAI-compatible proxy to shared Granite &amp; Qwen models via sandbox-shared-models.</p>
-</div>
-<div class="card">
-<h3>MCP Servers</h3>
-<p>OpenShift + Kubernetes tools (namespace-scoped) for Lightspeed AI interactions.</p>
-</div>
-<div class="card">
-<h3>Golden Paths</h3>
-<p>Deploy Agent → Pod + Component + Open in DevSpaces — no git push required.</p>
-</div>
-<div class="card">
-<h3>DevSpaces AI</h3>
-<p>Browser IDE (Che Code + Continue) connected to the LiteLLM Route, with Hub MCP Actions over the Hub Route. <a href="{{ '/devspaces-journey/' | relative_url }}">See the journey</a>.</p>
-</div>
-<div class="card">
-<h3>AI Catalog</h3>
-<p>Skills, prompts, MCP entities, and software templates mounted via ConfigMaps.</p>
-</div>
-<div class="card">
-<h3>Hub tool calling</h3>
-<p>Lightspeed + MCP Chat with <code>litemaas-qwen</code> call real Kubernetes tools. <a href="{{ '/tool-calling-journey/' | relative_url }}">See the journey</a>.</p>
-</div>
-<div class="card">
-<h3>OpenClaw + Qwen</h3>
-<p>Personal AI assistant with <strong>tool calling</strong> via LiteMaaS Qwen3.6-35B-A3B. <a href="{{ '/openclaw-journey/' | relative_url }}">See the journey</a>.</p>
-</div>
-</div>
-
-## Two identities (important)
-
-| Who | What they do |
-|---|---|
-| **Hub Guest** | Signs into Developer Hub only. Uses Lightspeed + catalog. No OpenShift token. |
-| **OpenShift Sandbox user** (`oc` / console) | Refreshes `model-api-key`, starts DevSpaces workspaces, reads `litellm-master-key`. |
-
-Guest Hub ≠ DevSpaces login. The chart prepares Devfiles and IDE config; the Sandbox user opens the workspace.
+- **Developer Hub** — catalog, scaffolder, TechDocs, Topology, Lightspeed
+- **LiteLLM** — Granite, Qwen, LiteMaaS Qwen (tool calling)
+- **MCP servers** — OpenShift + Kubernetes (namespace-scoped)
+- **Golden Paths** — Deploy Agent, DevSpaces AI, AI Service with MCP wiring
 
 ## Recommended path
 
-1. [Install journey]({{ '/install-journey/' | relative_url }}) — visual Helm walkthrough (Topology when ready)  
-2. [Quickstart]({{ '/quickstart/' | relative_url }}) — single `helm upgrade --install`  
-3. [Verify the install]({{ '/verify/' | relative_url }}) — confirm Hub, LiteLLM, routes  
-4. [Golden Path journey]({{ '/journey/' | relative_url }}) — Deploy Agent, DevSpaces, AI Service MCP  
-5. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — reference for each template  
-6. [Agents]({{ '/agents/' | relative_url }}) — Hub Guest, agent Pods, DevSpaces loops  
-7. [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}) — Continue → LiteLLM + Hub MCP from the IDE  
-8. [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}) — reference for Devfile / Secret wiring  
-9. [Demo script]({{ '/demo-script/' | relative_url }}) — guided ~10 minute walkthrough  
+1. [Quickstart](quickstart.md) — Helm install
+2. [Golden Paths](golden-paths.md) — create an agent
+3. [Demo script](demo-script.md) — 10-minute walkthrough
 
-Deeper reading: [Architecture]({{ '/architecture/' | relative_url }}), [Lightspeed & models]({{ '/lightspeed-models/' | relative_url }}), [AI capabilities]({{ '/ai-capabilities/' | relative_url }}), [OpenClaw]({{ '/openclaw/' | relative_url }}), [Troubleshooting]({{ '/troubleshooting/' | relative_url }}), [Community packs]({{ '/community-plugins-quay/' | relative_url }}).
-
-## Beyond Sandbox (production)
-
-This chart proves an agent loop on Developer Sandbox. For a managed OpenShift cluster, harden identity, secrets, gateway control, token budgets, AI safety, and CI/CD with Connectivity Link, RHBK, Vault + External Secrets, OpenShift AI Guardrails, Trusted Software Supply Chain, and `TokenRateLimitPolicy`.
-
-See **[Production considerations]({{ '/production-considerations/' | relative_url }})** under Operations (recommendations + official docs links — not installed by this chart).
-
-## Install
-
-One `helm upgrade --install` deploys everything. Two options: clone the repo or add the Pages Helm repo. See **[Quickstart]({{ '/quickstart/' | relative_url }})** for full commands, prerequisites, and post-install checks.
-
-## Source
-
-[github.com/maximilianopizarro/rhdh-agent-sandbox](https://github.com/maximilianopizarro/rhdh-agent-sandbox)
+See [Architecture](architecture.md) for tokens, networking, and component map.

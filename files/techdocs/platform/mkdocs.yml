@@ -1,0 +1,10 @@
+site_name: Agent Sandbox Platform
+site_description: Onboarding for the agent-friendly Developer Hub demo
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Architecture: architecture.md
+  - Golden Paths: golden-paths.md
+  - Demo script: demo-script.md
+plugins:
+  - techdocs-core

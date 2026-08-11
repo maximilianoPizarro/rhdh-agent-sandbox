@@ -88,41 +88,23 @@ spec:
           agentSpec: ${{ parameters.agentSpec }}
           model: ${{ parameters.model }}
           framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
-    - id: write
-      name: Register Component (triggers build+deploy)
-      action: catalog:write
+    - id: register
+      name: Register Component (catalog:register-entity)
+      action: fetch:template
       input:
-        entity:
-          apiVersion: backstage.io/v1alpha1
-          kind: Component
-          metadata:
-            name: ${{ parameters.name }}
-            title: ${{ parameters.name }}
-            description: ${{ parameters.agentSpec }}
-            tags:
-              - agent
-              - golden-path
-              - ${{ parameters.language }}
-              - build
-            annotations:
-              rhdh-agent-sandbox.io/managed-agent: "true"
-              rhdh-agent-sandbox.io/build: "true"
-              rhdh-agent-sandbox.io/language: ${{ parameters.language }}
-              rhdh-agent-sandbox.io/framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
-              rhdh-agent-sandbox.io/model: ${{ parameters.model }}
-              rhdh-agent-sandbox.io/agent-type: ${{ parameters.agentType }}
-              rhdh-agent-sandbox.io/agent-spec: ${{ parameters.agentSpec }}
-              rhdh-agent-sandbox.io/image-stream: "${{ parameters.name }}:latest"
-              rhdh-agent-sandbox.io/build-source: "${{ parameters.language }}"
-            links:
-              - url: "https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ parameters.language }}"
-                title: Open skeleton in DevSpaces
-                icon: catalog
-          spec:
-            type: service
-            lifecycle: experimental
-            owner: ${{ parameters.owner }}
-            system: agent-sandbox
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/scaffolder/pending-catalog-entity
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          language: ${{ parameters.language }}
+          agentType: ${{ parameters.agentType }}
+          agentSpec: ${{ parameters.agentSpec }}
+          model: ${{ parameters.model }}
+          description: ${{ parameters.agentSpec }}
+          framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
+    - id: apply-register
+      name: Apply catalog registration to cluster
+      action: kubernetes:apply
     - id: apply-hint
       name: Build + deploy via agent-applier
       action: debug:log
@@ -151,4 +133,4 @@ spec:
             oc get deploy/${{ parameters.name }}
             oc logs deploy/${{ parameters.name }}
 
-          Open the Component page for DevSpaces links.
+          Open the Component page for Topology and Documentation tabs.

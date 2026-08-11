@@ -1,0 +1,11 @@
+site_name: Red Hat Security MCP
+nav:
+  - Overview: index.md
+  - Skills:
+      - CVE Explainer: skills/red-hat-cve-explainer.md
+      - Product Lifecycle: skills/red-hat-product-lifecycle.md
+      - Diagnostics: skills/red-hat-diagnostics.md
+      - Support Severity: skills/red-hat-support-severity.md
+      - MCP Setup: skills/red-hat-security-mcp-setup.md
+plugins:
+  - techdocs-core

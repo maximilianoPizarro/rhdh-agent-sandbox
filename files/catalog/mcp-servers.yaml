@@ -10,6 +10,7 @@ metadata:
     - ai
   annotations:
     backstage.io/source-location: url:https://github.com/maximilianoPizarro/openshift-mcp-server
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/mcp/openshift-mcp-server
 spec:
   type: mcp-server
   lifecycle: experimental
@@ -28,6 +29,8 @@ metadata:
     - mcp
     - kubernetes
     - ai
+  annotations:
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/mcp/kubernetes-mcp-server
 spec:
   type: mcp-server
   lifecycle: experimental
@@ -54,6 +57,8 @@ metadata:
       title: MCP endpoint
     - url: https://www.redhat.com/en/agentic-skills
       title: Red Hat agentic skills
+  annotations:
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/mcp/red-hat-security-mcp
 spec:
   type: mcp-server
   lifecycle: experimental
@@ -79,6 +84,8 @@ metadata:
     - mcp
     - catalog
     - techdocs
+  annotations:
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/mcp/rhdh-mcp-actions
 spec:
   type: mcp-server
   lifecycle: production

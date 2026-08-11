@@ -119,7 +119,7 @@ data:
             headers["Content-Type"] = content_type
         elif body is not None:
             data = json.dumps(body).encode()
-            headers["Content-Type"] = "application/json"
+            headers["Content-Type"] = content_type
         req = urllib.request.Request(API + path, data=data, method=method, headers=headers)
         try:
             with urllib.request.urlopen(req, context=ctx, timeout=120) as resp:
@@ -169,6 +169,123 @@ data:
 
     def catalog_ai_services():
         return catalog_entities("rhdh-agent-sandbox.io/managed-ai-service")
+
+    REGISTERED_CM = os.environ.get("REGISTERED_CATALOG_CM", f"{FULLNAME}-registered-catalog")
+    REGISTERED_MOUNT = os.environ.get(
+        "REGISTERED_CATALOG_MOUNT",
+        "/opt/app-root/src/scaffolder-registered/entities",
+    )
+    PENDING_LABEL = "rhdh-agent-sandbox.io/pending-catalog-entity"
+
+    def catalog_refresh():
+        body = json.dumps(
+            {"entityRef": "location:default/registered-catalog-entities"}
+        ).encode()
+        req = urllib.request.Request(
+            f"{CATALOG}/api/catalog/refresh",
+            data=body,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {TOKEN}",
+                "Content-Type": "application/json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return resp.status, None
+        except Exception as exc:
+            return 0, str(exc)
+
+    def process_pending_catalog_entities():
+        path = f"/api/v1/namespaces/{NS}/configmaps?labelSelector={PENDING_LABEL}=true"
+        status, body = k8s("GET", path)
+        if status != 200:
+            log("WARN", "pending_catalog_list_failed", status=status, body=_k8s_err(body))
+            return 0, 0
+        registered = errors = 0
+        for cm in body.get("items") or []:
+            meta = cm.get("metadata") or {}
+            cm_name = meta.get("name", "")
+            labels = dict(meta.get("labels") or {})
+            if labels.get("rhdh-agent-sandbox.io/catalog-registered") == "true":
+                continue
+            data = cm.get("data") or {}
+            entity_yaml = data.get("entity.yaml", "")
+            if not entity_yaml.strip():
+                log("WARN", "pending_catalog_empty", configmap=cm_name)
+                errors += 1
+                continue
+            import re
+            name_m = re.search(r"^\s+name:\s+(\S+)", entity_yaml, re.MULTILINE)
+            kind_m = re.search(r"^kind:\s+(\w+)", entity_yaml, re.MULTILINE)
+            ent_name = name_m.group(1) if name_m else cm_name.replace("pending-entity-", "", 1)
+            ent_kind = (kind_m.group(1) if kind_m else "Component").lower()
+            if "backstage.io/kubernetes-namespace:" not in entity_yaml:
+                entity_yaml = entity_yaml.replace(
+                    "      annotations:\n",
+                    f"      annotations:\n        backstage.io/kubernetes-namespace: {NS}\n",
+                    1,
+                )
+            key = f"{ent_kind}-{ent_name}.yaml"
+            st, reg_body = k8s(
+                "GET",
+                f"/api/v1/namespaces/{NS}/configmaps/{REGISTERED_CM}",
+            )
+            if st == 404:
+                st_post, post_body = k8s(
+                    "POST",
+                    f"/api/v1/namespaces/{NS}/configmaps",
+                    {
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
+                        "metadata": {"name": REGISTERED_CM},
+                        "data": {key: entity_yaml},
+                    },
+                )
+                if st_post not in (200, 201):
+                    log("ERROR", "registered_catalog_create_failed", status=st_post, body=_k8s_err(post_body))
+                    errors += 1
+                    continue
+            elif st == 200:
+                patch_data = dict(reg_body.get("data") or {})
+                patch_data[key] = entity_yaml
+                st_patch, patch_body = k8s(
+                    "PATCH",
+                    f"/api/v1/namespaces/{NS}/configmaps/{REGISTERED_CM}",
+                    {"data": patch_data},
+                    content_type="application/merge-patch+json",
+                )
+                if st_patch not in (200, 201):
+                    log("ERROR", "registered_catalog_patch_failed", status=st_patch, body=_k8s_err(patch_body))
+                    errors += 1
+                    continue
+            else:
+                log("ERROR", "registered_catalog_get_failed", status=st, body=_k8s_err(reg_body))
+                errors += 1
+                continue
+            file_path = f"{REGISTERED_MOUNT}/{key}"
+            st_refresh, refresh_err = catalog_refresh()
+            if st_refresh not in (200, 202) and refresh_err:
+                log("WARN", "catalog_refresh_failed", status=st_refresh, error=refresh_err)
+            label_patch = {
+                "metadata": {
+                    "labels": {
+                        PENDING_LABEL: None,
+                        "rhdh-agent-sandbox.io/catalog-registered": "true",
+                    }
+                }
+            }
+            st_lbl, lbl_body = k8s(
+                "PATCH",
+                f"/api/v1/namespaces/{NS}/configmaps/{cm_name}",
+                label_patch,
+                content_type="application/merge-patch+json",
+            )
+            if st_lbl not in (200, 201):
+                log("WARN", "pending_catalog_label_patch_failed", configmap=cm_name, status=st_lbl, body=_k8s_err(lbl_body))
+            log("INFO", "catalog_entity_registered", name=ent_name, kind=ent_kind, key=key)
+            registered += 1
+        return registered, errors
 
     FRAMEWORK = {
         "python": "langgraph",
@@ -895,6 +1012,7 @@ data:
 
     while True:
         cycle_started = time.monotonic()
+        pending_reg, pending_err = process_pending_catalog_entities()
         agents, err = catalog_agents()
         dws, err_dw = catalog_devworkspaces()
         ais, err_ai = catalog_ai_services()
@@ -968,6 +1086,8 @@ data:
             "INFO",
             "poll_cycle",
             cycle=STATE["cycles"],
+            pending_registered=pending_reg,
+            pending_errors=pending_err,
             agents=len(agents),
             created=created,
             updated=updated,
@@ -1056,6 +1176,8 @@ spec:
               value: {{ .Values.agents.devspaces.gitRepo | default "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git" | quote }}
             - name: GIT_REVISION
               value: {{ .Values.agents.devspaces.gitRevision | default "main" | quote }}
+            - name: REGISTERED_CATALOG_CM
+              value: {{ include "rhdh-agent-sandbox.fullname" . }}-registered-catalog
           volumeMounts:
             - name: app
               mountPath: /app

@@ -1,0 +1,8 @@
+site_name: Developer Hub MCP Actions
+nav:
+  - Overview: index.md
+  - Skills:
+      - Lightspeed RAG: skills/lightspeed-rag.md
+      - DevSpaces AI: skills/devspaces-ai.md
+plugins:
+  - techdocs-core

@@ -117,6 +117,10 @@ catalog:
   enabled: true
   # Mount AI catalog entities + software templates into a ConfigMap for RHDH locations
   configMapName: rhdh-agent-sandbox-catalog
+  techdocs:
+    githubBase: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs
+  registered:
+    catalogConfigMapName: rhdh-agent-sandbox-registered-catalog
 
 # Golden Path agent pods (samples + catalog-driven applier with BuildConfig)
 agents:
@@ -258,12 +262,20 @@ rhdh:
               dangerouslyAllowOutsideDevelopment: true
         permission:
           enabled: false
+        techdocs:
+          builder: local
+          publisher:
+            type: local
         catalog:
           locations:
             - type: file
               target: /opt/app-root/src/catalog/all.yaml
               rules:
                 - allow: [Component, System, API, Resource, Location, Template, User, Group]
+            - type: file
+              target: /opt/app-root/src/scaffolder-registered/entities/*.yaml
+              rules:
+                - allow: [Component, API, Resource, Location, System]
         backend:
           actions:
             pluginSources:
@@ -404,6 +416,9 @@ rhdh:
         - name: scaffolder-assets
           mountPath: /opt/app-root/src/scaffolder-assets
           readOnly: true
+        - name: registered-catalog
+          mountPath: /opt/app-root/src/scaffolder-registered/entities
+          readOnly: true
       extraVolumes:
         - name: dynamic-plugins-root
           ephemeral:
@@ -462,6 +477,9 @@ rhdh:
                       path: agent-runtimes/quarkus/manifests.yaml
                     - key: quarkus-catalog-info.yaml
                       path: agent-runtimes/quarkus/catalog-info.yaml
+        - name: registered-catalog
+          configMap:
+            name: rhdh-agent-sandbox-registered-catalog
     postgresql:
       primary:
         persistence:
