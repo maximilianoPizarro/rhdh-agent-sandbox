@@ -83,14 +83,21 @@ jobs:
       - name: Build Jekyll into docs/
         run: |
           gem install jekyll jekyll-seo-tag webrick
-          # Save helm artifacts before Jekyll cleans docs/
-          mkdir -p /tmp/helm-keep
+          # Save helm artifacts + agent design docs before Jekyll cleans docs/
+          mkdir -p /tmp/helm-keep /tmp/superpowers-keep
           cp -f docs/index.yaml docs/artifacthub-repo.yml docs/rhdh-agent-sandbox-*.tgz /tmp/helm-keep/ 2>/dev/null || true
+          if [ -d docs/superpowers ]; then
+            cp -a docs/superpowers/. /tmp/superpowers-keep/
+          fi
           cd docs-src
           JEKYLL_ENV=production jekyll build --destination ../docs
           cd ..
-          # Restore helm artifacts + add .nojekyll
+          # Restore helm artifacts + design docs + add .nojekyll
           cp /tmp/helm-keep/* docs/ 2>/dev/null || true
+          if [ -n "$(ls -A /tmp/superpowers-keep 2>/dev/null)" ]; then
+            mkdir -p docs/superpowers
+            cp -a /tmp/superpowers-keep/. docs/superpowers/
+          fi
           touch docs/.nojekyll
       - name: Package Helm chart into docs/
         run: |
