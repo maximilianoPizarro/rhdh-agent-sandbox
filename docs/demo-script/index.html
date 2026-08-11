@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -252,7 +266,7 @@
       <div class="pf-v6-c-content">
         <h1 id="demo-script-10-minutes">Demo script (~10 minutes)</h1>
 
-<p>Audience: show an <strong>agent loop</strong> on Developer Sandbox — Guest Hub + Lightspeed, then DevSpaces AI.</p>
+<p>Audience: show an <strong>agent loop</strong> on Developer Sandbox — <a href="/rhdh-agent-sandbox/install-journey/">Helm install</a>, Guest Hub + Golden Paths, then DevSpaces AI.</p>
 
 <h2 id="prep-openshift-user--oc">Prep (OpenShift user / <code class="language-plaintext highlighter-rouge">oc</code>)</h2>
 
@@ -280,19 +294,15 @@ curl <span class="nt">-skI</span> <span class="s2">"https://</span><span class="
 <ol>
   <li>Open the Developer Hub Route → <strong>Enter as Guest</strong>.</li>
   <li><strong>Catalog</strong> → filter tag <code class="language-plaintext highlighter-rouge">mcp</code> → open OpenShift / Kubernetes MCP entities. Mention namespace-scoped RBAC.</li>
-  <li>Filter tag <code class="language-plaintext highlighter-rouge">agent</code> → open a <strong>sample-*-agent</strong> Component → show <strong>Open in DevSpaces</strong>.</li>
-  <li>Optional Golden Path: <strong>Create</strong> → <strong>Deploy Agent</strong> (language python, short agentSpec) → wait for Deployment.</li>
-  <li>Filter <code class="language-plaintext highlighter-rouge">skill</code> / <code class="language-plaintext highlighter-rouge">prompt</code> → open the DevSpaces AI skill and a triage / catalog prompt.</li>
-  <li>Open <strong>Lightspeed</strong> → select <strong>vllm/granite</strong> (or granite).</li>
+  <li><strong>Create</strong> → run each Golden Path once (Deploy Agent, DevSpaces workspace, AI Service MCP) — see <a href="/rhdh-agent-sandbox/journey/">Golden Path journey</a>.</li>
+  <li>Filter <code class="language-plaintext highlighter-rouge">skill</code> / <code class="language-plaintext highlighter-rouge">prompt</code> → open Red Hat agentic skills and a triage prompt.</li>
+  <li>Open <strong>Lightspeed</strong> or <strong>MCP Chat</strong> → select <strong>litemaas-qwen</strong> for tool demos (<a href="/rhdh-agent-sandbox/tool-calling-journey/">tool calling journey</a>).</li>
   <li>
     <p>Ask:</p>
 
     <blockquote>
-      <p>List pods in this namespace and summarize anything that looks unhealthy. Prefer read-only tools.</p>
+      <p>Use pods_list_in_namespace for this namespace and summarize pod status. Prefer read-only tools.</p>
     </blockquote>
-  </li>
-  <li>
-    <p>Talking points while it runs:</p>
 
     <ul>
       <li>Guest has <strong>no</strong> OpenShift token; models are wired by the operator.</li>
@@ -307,18 +317,11 @@ curl <span class="nt">-skI</span> <span class="s2">"https://</span><span class="
 <h2 id="part-b--devspaces-ai-openshift-user--5-min">Part B — DevSpaces AI (OpenShift user) — ~5 min</h2>
 
 <ol>
-  <li>In Hub, open a sample agent <strong>Open in DevSpaces</strong> link, or Create → <strong>Agent-friendly DevSpaces AI Workspace</strong> (or use <code class="language-plaintext highlighter-rouge">files/devfiles/</code>).</li>
-  <li>Guest scaffolder ends in local/log steps — push or import the generated files yourself if needed.</li>
-  <li>In <strong>OpenShift DevSpaces</strong>, start a workspace from <code class="language-plaintext highlighter-rouge">devfile.yaml</code>.</li>
-  <li>
-    <p>In Che Code, open <strong>Continue</strong> and point it at the LiteLLM Route:</p>
-
-    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">LITELLM_API_BASE</span><span class="o">=</span><span class="s2">"https://</span><span class="si">$(</span>oc get route <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>litellm <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.items[0].spec.host}'</span><span class="si">)</span><span class="s2">/v1"</span>
-<span class="nb">export </span><span class="nv">LITELLM_API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc get secret rhdh-agent-sandbox-secrets <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.litellm-master-key}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span><span class="s2">"</span>
-<span class="c"># Devfile command wire-continue, or edit .continue/config.json</span>
-</code></pre></div>    </div>
-  </li>
-  <li>Chat: <em>“Explain the Devfile and how granite is reached via LiteLLM.”</em></li>
+  <li>Hub → <strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong> (pick language + model).</li>
+  <li>Wait ~1 minute for agent-applier to create a <strong>started</strong> DevWorkspace.</li>
+  <li>Open <strong>DevSpaces dashboard</strong> → Open your workspace (no git push).</li>
+  <li>In Che Code, open <strong>Continue</strong> — LiteLLM is wired on postStart via chart Secret.</li>
+  <li>Chat: <em>“Explain the language skeleton and how granite is reached via LiteLLM.”</em></li>
   <li>Show <code class="language-plaintext highlighter-rouge">.continue/skills/</code> and <code class="language-plaintext highlighter-rouge">docs/prompts/</code> — same names as Hub catalog.</li>
 </ol>
 

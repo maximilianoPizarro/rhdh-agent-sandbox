@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -304,11 +318,13 @@ oc logs deploy/&lt;name&gt;
 
 <h2 id="3-devspaces-openshift-user">3. DevSpaces (OpenShift user)</h2>
 
-<p>Factory links open language skeletons:</p>
-
-<p><code class="language-plaintext highlighter-rouge">https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/&lt;language&gt;</code></p>
+<p>Use Golden Path <strong>Agent-friendly DevSpaces AI Workspace</strong>: pick language → a started DevWorkspace appears with Continue → LiteLLM.</p>
 
 <p>Wire Continue to the LiteLLM <strong>Route</strong> with <code class="language-plaintext highlighter-rouge">litellm-master-key</code> (see <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>).</p>
+
+<p>Factory fallback (same language skeletons):</p>
+
+<p><code class="language-plaintext highlighter-rouge">https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/&lt;language&gt;</code></p>
 
 <p>Official <a href="https://www.redhat.com/en/agentic-skills">Red Hat agentic skills</a> (CVE, lifecycle, diagnostics, support severity) are available in the catalog and can be installed into IDE skill directories.</p>
 
@@ -328,7 +344,7 @@ oc logs deploy/&lt;name&gt;
     </tr>
     <tr>
       <td>Agent Pod SA / applier</td>
-      <td>Namespace create/update Deployment, Service, BuildConfig, ImageStream; start builds</td>
+      <td>Namespace create/update Deployment, Service, BuildConfig, ImageStream, DevWorkspace; start builds</td>
     </tr>
     <tr>
       <td>OpenShift Sandbox user</td>

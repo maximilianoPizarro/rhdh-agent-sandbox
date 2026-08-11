@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -268,13 +282,17 @@
   <li>Quota for ~200m CPU / 1Gi memory request (limits up to ~2 CPU / 3Gi). Stop other heavy workspaces first.</li>
 </ul>
 
-<h2 id="option-a--from-hub-template">Option A — From Hub template</h2>
+<h2 id="option-a--from-hub-template-recommended">Option A — From Hub template (recommended)</h2>
 
 <ol>
-  <li>Guest → <strong>Create</strong> → template <strong>Agent-friendly DevSpaces AI Workspace</strong>.</li>
-  <li>Scaffolder steps are guest-safe (log / local). Export or push the generated tree to a git repo DevSpaces can clone, <strong>or</strong> copy files into an existing repo.</li>
-  <li>In DevSpaces UI: create workspace from that repo’s <code class="language-plaintext highlighter-rouge">devfile.yaml</code>.</li>
+  <li>Guest → <strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong>.</li>
+  <li>Choose <strong>workspace name</strong>, <strong>agent language</strong> (Python / Node.js / Quarkus), and default Continue <strong>model</strong>.</li>
+  <li>The scaffolder registers a catalog Component (<code class="language-plaintext highlighter-rouge">managed-devworkspace=true</code>).</li>
+  <li>Within ~1 minute the <strong>agent-applier</strong> creates a <strong>started</strong> DevWorkspace with Continue → LiteLLM prewired (Secret <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code>).</li>
+  <li>Open <a href="https://workspaces.openshift.com/dashboard/#/workspaces">DevSpaces dashboard</a> and open your workspace — <strong>no git push</strong>.</li>
 </ol>
+
+<p>Fallback: Component link <strong>Language factory URL</strong> opens the same language skeleton Devfile via DevSpaces factory.</p>
 
 <h2 id="option-b--from-this-repository">Option B — From this repository</h2>
 

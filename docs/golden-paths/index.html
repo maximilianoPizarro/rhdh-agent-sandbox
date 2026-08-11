@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -378,6 +392,78 @@ oc logs deploy/&lt;name&gt;
 <h3 id="sample-agents">Sample agents</h3>
 
 <p>Sample Deployments were removed from the chart. Use <strong>Deploy Agent</strong> to generate and build a real LangGraph / LangChain.js / LangChain4j agent.</p>
+
+<h2 id="devspaces-ai-workspace">DevSpaces AI Workspace</h2>
+
+<p>Creates a <strong>started</strong> DevWorkspace (Continue → LiteLLM) for the language you select. No git push.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">name</code></td>
+      <td>DevWorkspace + catalog Component name</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">owner</code></td>
+      <td>Catalog owner (Group)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">language</code></td>
+      <td>Skeleton / framework: python → LangGraph, nodejs → LangChain.js, quarkus → LangChain4j</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">model</code></td>
+      <td>Default Continue autocomplete/chat alias</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="what-you-get-1">What you get</h3>
+
+<ol>
+  <li>Catalog Component with <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox.io/managed-devworkspace=true</code>.</li>
+  <li><strong>agent-applier</strong> creates <code class="language-plaintext highlighter-rouge">DevWorkspace</code> (<code class="language-plaintext highlighter-rouge">started: true</code>, Che Code, Continue postStart).</li>
+  <li>Workspace clones this repo and materializes <code class="language-plaintext highlighter-rouge">files/templates/skeletons/&lt;language&gt;/</code> with Continue wired to the chart Continue Secret.</li>
+</ol>
+
+<h3 id="run-it-guest-1">Run it (Guest)</h3>
+
+<ol>
+  <li>Hub → <strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong>.</li>
+  <li>Pick language + model → Create.</li>
+  <li>Open <a href="https://workspaces.openshift.com/dashboard/#/workspaces">DevSpaces dashboard</a> → open your workspace.</li>
+</ol>
+
+<h2 id="ai-service-with-mcp-wiring">AI Service with MCP wiring</h2>
+
+<p>Registers a Component and deploys a small HTTP service that <strong>calls MCP for real</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GET /</code></td>
+      <td>Service info + MCP URLs + LiteLLM model</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GET /mcp/smoke</code></td>
+      <td><code class="language-plaintext highlighter-rouge">pods_list_in_namespace</code> (k8s-mcp) + <code class="language-plaintext highlighter-rouge">monitorDeployments</code> (openshift-mcp)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Catalog <code class="language-plaintext highlighter-rouge">dependsOn</code>: OpenShift MCP, Kubernetes MCP, Hub MCP Actions, <strong>Red Hat Security MCP</strong> (SSO via Cursor — Hub cannot complete browser OAuth).</p>
 
 <h2 id="related">Related</h2>
 

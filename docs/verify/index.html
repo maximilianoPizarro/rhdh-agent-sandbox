@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -268,8 +282,9 @@
   <li>Hub Deployment available, pod <strong>2/2</strong></li>
   <li>LiteLLM <strong>1/1</strong></li>
   <li>Both MCP Deployments <strong>1/1</strong></li>
-  <li>Agent samples (<code class="language-plaintext highlighter-rouge">sample-*-agent</code>) and <code class="language-plaintext highlighter-rouge">*-agent-applier</code> <strong>1/1</strong></li>
+  <li><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-agent-applier</code> <strong>1/1</strong></li>
   <li>Routes for <code class="language-plaintext highlighter-rouge">developer-hub</code> and <code class="language-plaintext highlighter-rouge">litellm</code></li>
+  <li>Topology group <strong>rhdh-agent</strong> (see <a href="/rhdh-agent-sandbox/install-journey/">Install journey</a>)</li>
 </ul>
 
 <h2 id="2-secret-shape-lightspeed-credentials">2. Secret shape (Lightspeed credentials)</h2>
@@ -374,15 +389,20 @@ curl <span class="nt">-skI</span> <span class="s2">"https://</span><span class="
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">exec</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">HUB</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-c</span> backstage-backend <span class="nt">--</span> <span class="nb">ls</span> <span class="nt">-R</span> /opt/app-root/src/scaffolder-assets
 </code></pre></div></div>
 
-<h2 id="5-sample-agents--golden-path-builds">5. Sample agents / Golden Path builds</h2>
+<h2 id="5-golden-path-workloads-after-create-templates">5. Golden Path workloads (after Create templates)</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get deploy,svc,bc,is <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent
-oc get deploy <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent-applier
-oc get bc,is <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> | <span class="nb">head</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Deploy Agent (build=true)</span>
+oc get bc,deploy <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox | <span class="nb">grep</span> <span class="nt">-v</span> agent-applier
+
+<span class="c"># DevSpaces workspace</span>
+oc get dw
+
+<span class="c"># AI Service MCP smoke</span>
+oc run curl-smoke <span class="nt">--rm</span> <span class="nt">-i</span> <span class="nt">--restart</span><span class="o">=</span>Never <span class="nt">--image</span><span class="o">=</span>registry.access.redhat.com/ubi9/ubi-minimal:latest <span class="nt">--</span> <span class="se">\</span>
+  curl <span class="nt">-s</span> http://&lt;ai-service-name&gt;:8080/mcp/smoke
 </code></pre></div></div>
 
-<p>Expect agent-applier Running.
-Golden Path agents use BuildConfigs (<code class="language-plaintext highlighter-rouge">oc logs -f bc/&lt;name&gt;</code>) then Deployments from ImageStreams.</p>
+<p>Expect agent-applier Running. Golden Path agents use BuildConfigs (<code class="language-plaintext highlighter-rouge">oc logs -f bc/&lt;name&gt;</code>) then Deployments from ImageStreams. AI Service <code class="language-plaintext highlighter-rouge">/mcp/smoke</code> should show <code class="language-plaintext highlighter-rouge">k8s_mcp.ok</code> and <code class="language-plaintext highlighter-rouge">openshift_mcp.ok</code>.</p>
 
 <h2 id="6-lightspeed-streaming-query">6. Lightspeed streaming query</h2>
 
@@ -419,10 +439,11 @@ print(data[:400])
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Secret has <code class="language-plaintext highlighter-rouge">ENABLE_VLLM=true</code> and <strong>no</strong> <code class="language-plaintext highlighter-rouge">ENABLE_OPENAI</code></li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Catalog files visible under <code class="language-plaintext highlighter-rouge">/opt/app-root/src/catalog</code></li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Scaffolder assets under <code class="language-plaintext highlighter-rouge">/opt/app-root/src/scaffolder-assets</code></li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Sample agent Deployments Ready</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />agent-applier Deployment Ready</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Topology shows <code class="language-plaintext highlighter-rouge">rhdh-agent</code> group (Hub, LiteLLM, MCP, applier, PostgreSQL)</li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Lightspeed streaming_query returns tokens (no error event)</li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Guest login works without IdP</li>
-  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Catalog shows Deploy Agent template + sample agents 
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Catalog shows three Golden Path templates (no pre-installed sample agents)
 If any step fails, see <a href="/rhdh-agent-sandbox/troubleshooting/">Troubleshooting</a>.</li>
 </ul>
 

@@ -58,6 +58,10 @@
         
         
         
+        <a href="/rhdh-agent-sandbox/install-journey/" class="masthead-nav-link">Install journey</a>
+        
+        
+        
         <a href="/rhdh-agent-sandbox/journey/" class="masthead-nav-link">Journey</a>
         
         
@@ -109,6 +113,12 @@
     
     
     <li class="pf-v6-c-nav__item">
+      <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+    </li>
+    
+    
+    
+    <li class="pf-v6-c-nav__item">
       <a href="/rhdh-agent-sandbox/journey/" class="pf-v6-c-nav__link">Journey</a>
     </li>
     
@@ -138,6 +148,10 @@
         <span class="nav-toggle-icon" aria-hidden="true">&#9654;</span>
       </button>
       <ul class="pf-v6-c-nav__list nav-section-items" hidden>
+        
+        <li class="pf-v6-c-nav__item">
+          <a href="/rhdh-agent-sandbox/install-journey/" class="pf-v6-c-nav__link">Install journey</a>
+        </li>
         
         <li class="pf-v6-c-nav__item">
           <a href="/rhdh-agent-sandbox/quickstart/" class="pf-v6-c-nav__link">Quickstart</a>
@@ -302,11 +316,15 @@
     </tr>
     <tr>
       <td>Golden Path agents</td>
-      <td>Deploy Agent template → catalog Component + Deployment/Service (no git push)</td>
+      <td>Deploy Agent template → catalog Component + BuildConfig + Deployment (no git push)</td>
     </tr>
     <tr>
-      <td>Sample agent Components</td>
-      <td><code class="language-plaintext highlighter-rouge">sample-{python,nodejs,quarkus}-agent</code> with Open in DevSpaces</td>
+      <td>DevSpaces workspace</td>
+      <td>DevSpaces template → agent-applier creates started DevWorkspace + Continue</td>
+    </tr>
+    <tr>
+      <td>AI Service + MCP</td>
+      <td>AI Service template → Deployment with <code>/mcp/smoke</code> wiring</td>
     </tr>
   </tbody>
 </table>
@@ -440,11 +458,11 @@
     </tr>
     <tr>
       <td>Templates</td>
-      <td>Deploy Agent (Golden Path), DevSpaces AI Workspace, AI service skeleton</td>
+      <td>Deploy Agent, DevSpaces AI Workspace, AI Service with MCP wiring</td>
     </tr>
     <tr>
       <td>tag <code class="language-plaintext highlighter-rouge">agent</code></td>
-      <td>Sample + golden-path agent Components</td>
+      <td>Golden-path agent Components you create via templates</td>
     </tr>
     <tr>
       <td>Groups</td>
