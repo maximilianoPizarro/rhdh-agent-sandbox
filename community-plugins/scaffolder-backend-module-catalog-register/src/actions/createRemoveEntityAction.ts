@@ -74,7 +74,7 @@ function k8sRequest(
   });
 }
 
-function backstageRequest(pathname: string): Promise<HttpResponse> {
+function backstageRequest(pathname: string, body: unknown): Promise<HttpResponse> {
   const backendUrl = process.env.BACKSTAGE_BACKEND_URL ?? 'http://localhost:7007';
   const token = process.env.MCP_TOKEN?.trim();
   if (!token) {
@@ -84,6 +84,7 @@ function backstageRequest(pathname: string): Promise<HttpResponse> {
     });
   }
   const target = new URL(pathname, backendUrl);
+  const payload = JSON.stringify(body);
   const client = target.protocol === 'https:' ? https : http;
 
   return new Promise((resolve, reject) => {
@@ -98,7 +99,7 @@ function backstageRequest(pathname: string): Promise<HttpResponse> {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json, text/event-stream',
           'Content-Type': 'application/json',
-          'Content-Length': 2,
+          'Content-Length': Buffer.byteLength(payload),
         },
       },
       res => {
@@ -115,7 +116,7 @@ function backstageRequest(pathname: string): Promise<HttpResponse> {
       },
     );
     req.on('error', reject);
-    req.write('{}');
+    req.write(payload);
     req.end();
   });
 }
@@ -223,7 +224,9 @@ export function createRemoveEntityAction() {
         );
       }
 
-      const refresh = await backstageRequest('/api/catalog/refresh');
+      const refresh = await backstageRequest('/api/catalog/refresh', {
+        entityRef: 'location:default/rhdh-agent-sandbox-catalog',
+      });
       if (refresh.status && ![200, 202].includes(refresh.status)) {
         ctx.logger.warn(
           `Catalog refresh failed after removal: HTTP ${refresh.status} ${refresh.body}`,

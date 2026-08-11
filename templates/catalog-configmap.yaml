@@ -25,6 +25,12 @@ data:
 {{ .Files.Get "files/catalog/template-ai-service.yaml" | indent 4 }}
   template-deploy-agent.yaml: |
 {{ .Files.Get "files/catalog/template-deploy-agent.yaml" | indent 4 }}
+  template-remove-devspaces-workspace.yaml: |
+{{ .Files.Get "files/catalog/template-remove-devspaces-workspace.yaml" | indent 4 }}
+  template-remove-ai-service.yaml: |
+{{ .Files.Get "files/catalog/template-remove-ai-service.yaml" | indent 4 }}
+  template-remove-deploy-agent.yaml: |
+{{ .Files.Get "files/catalog/template-remove-deploy-agent.yaml" | indent 4 }}
   system.yaml: |
 {{ .Files.Get "files/catalog/system.yaml" | indent 4 }}
   locations.yaml: |
