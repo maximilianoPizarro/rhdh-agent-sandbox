@@ -5,9 +5,10 @@ USER 1001
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev 2>/dev/null || npm install --omit=dev
+RUN npm install --no-save typescript@5
 COPY src ./src
 COPY tsconfig.json ./
-RUN npx tsc --outDir dist --module commonjs --target es2022 --esModuleInterop --skipLibCheck \
+RUN ./node_modules/.bin/tsc --outDir dist --module commonjs --target es2022 --esModuleInterop --skipLibCheck \
     src/index.ts src/module.ts \
     src/actions/createCatalogRegisterEntityAction.ts \
     src/actions/createApplyPendingConfigMapAction.ts \
