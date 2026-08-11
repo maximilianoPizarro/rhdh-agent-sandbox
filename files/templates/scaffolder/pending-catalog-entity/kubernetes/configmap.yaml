@@ -28,7 +28,6 @@ data:
         rhdh-agent-sandbox.io/image-stream: "${{ values.name }}:latest"
         rhdh-agent-sandbox.io/build-source: ${{ values.language }}
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"
-        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform/golden-paths
       links:
         - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ values.language }}
           title: Open skeleton in DevSpaces

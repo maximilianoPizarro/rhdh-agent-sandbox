@@ -15,3 +15,6 @@ spec:
     - ./template-devspaces-workspace.yaml
     - ./template-ai-service.yaml
     - ./template-deploy-agent.yaml
+    - ./template-remove-devspaces-workspace.yaml
+    - ./template-remove-ai-service.yaml
+    - ./template-remove-deploy-agent.yaml

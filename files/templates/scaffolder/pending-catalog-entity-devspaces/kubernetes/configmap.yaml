@@ -23,7 +23,6 @@ data:
         rhdh-agent-sandbox.io/framework: ${{ values.framework }}
         rhdh-agent-sandbox.io/model: ${{ values.model }}
         rhdh-agent-sandbox.io/devspaces-workspace: ${{ values.name }}
-        backstage.io/techdocs-ref: dir:/opt/app-root/src/techdocs/platform
       links:
         - url: https://workspaces.openshift.com/dashboard/#/workspaces
           title: Open DevSpaces dashboard

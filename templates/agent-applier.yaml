@@ -216,10 +216,15 @@ data:
                 errors += 1
                 continue
             import re
-            name_m = re.search(r"^\s+name:\s+(\S+)", entity_yaml, re.MULTILINE)
+            api_m = re.search(r"^apiVersion:\s+\S+", entity_yaml, re.MULTILINE)
             kind_m = re.search(r"^kind:\s+(\w+)", entity_yaml, re.MULTILINE)
-            ent_name = name_m.group(1) if name_m else cm_name.replace("pending-entity-", "", 1)
-            ent_kind = (kind_m.group(1) if kind_m else "Component").lower()
+            name_m = re.search(r"^\s+name:\s+(\S+)", entity_yaml, re.MULTILINE)
+            if not api_m or not kind_m or not name_m:
+                log("WARN", "pending_catalog_invalid_entity_yaml", configmap=cm_name)
+                errors += 1
+                continue
+            ent_name = name_m.group(1)
+            ent_kind = kind_m.group(1).lower()
             if "backstage.io/kubernetes-namespace:" not in entity_yaml:
                 entity_yaml = entity_yaml.replace(
                     "      annotations:\n",

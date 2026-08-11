@@ -324,9 +324,13 @@ rhdh:
               url: http://localhost:7007/api/mcp-actions/v1
               headers:
                 Authorization: Bearer ${MCP_TOKEN}
+                Accept: application/json, text/event-stream
             # Red Hat Security MCP requires Customer Portal OAuth (SSO). Hub cannot
             # complete browser login — use Cursor/.mcp.json for live CVE tools.
-            # Catalog API: red-hat-security-mcp (discovery only).
+            - id: redhat-security-mcp
+              name: Red Hat Security MCP (requires SSO)
+              url: https://access.redhat.com/hydra/mcp/v1
+              enabled: false
           systemPrompt: >-
             You are the agent-friendly Developer Hub assistant on OpenShift Developer Sandbox.
             Namespace is scoped: prefer Kubernetes MCP tools pods_list_in_namespace, resources_list,

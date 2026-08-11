@@ -1,0 +1,41 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: remove-devspaces-workspace
+  title: Remove DevSpaces Workspace (Golden Path)
+  description: Remove a registered Golden Path DevSpaces workspace and related resources.
+  tags:
+    - golden-path
+    - devspaces
+    - remove
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: Workspace to remove
+      required: [name]
+      properties:
+        name:
+          title: Workspace name
+          description: Existing DevSpaces workspace component name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
+  steps:
+    - id: remove
+      name: Remove workspace resources
+      action: catalog:remove-entity
+      input:
+        name: ${{ parameters.name }}
+        kind: Component
+    - id: done
+      name: Confirm removal
+      action: debug:log
+      input:
+        message: Removed DevSpaces workspace ${{ parameters.name }} and related runtime/catalog resources.
+  output:
+    text:
+      - title: Workspace removed
+        content: |
+          DevSpaces workspace **${{ parameters.name }}** was removed.
+          Runtime resources and catalog registration were cleaned up.

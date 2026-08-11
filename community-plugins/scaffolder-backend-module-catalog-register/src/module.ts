@@ -3,6 +3,8 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node';
 import { createApplyPendingConfigMapAction } from './actions/createApplyPendingConfigMapAction';
 import { createCatalogRegisterEntityAction } from './actions/createCatalogRegisterEntityAction';
+import { createRemoveEntityAction } from './actions/createRemoveEntityAction';
+import { createWaitForEntityAction } from './actions/createWaitForEntityAction';
 
 export const catalogRegisterEntityModule = createBackendModule({
   pluginId: 'scaffolder',
@@ -16,6 +18,8 @@ export const catalogRegisterEntityModule = createBackendModule({
       async init({ scaffolder, catalog }) {
         scaffolder.addActions(
           createApplyPendingConfigMapAction(),
+          createWaitForEntityAction(),
+          createRemoveEntityAction(),
           createCatalogRegisterEntityAction({
             catalog,
             registeredRoot:

@@ -83,14 +83,15 @@ spec:
       action: catalog:apply-pending-configmap
       input:
         manifestPath: kubernetes/configmap.yaml
-    - id: done
-      name: Workspace queued
-      action: debug:log
+    - id: verify
+      name: Verify entity in catalog
+      action: catalog:wait-for-entity
       input:
-        message: >-
-          Component registered. agent-applier will create DevWorkspace ${{ parameters.name }}
-          (language=${{ parameters.language }}, model=${{ parameters.model }}, started=true).
-          Continue wires to LiteLLM via Secret rhdh-agent-sandbox-continue on postStart.
+        name: ${{ parameters.name }}
+        kind: Component
+        namespace: default
+        timeoutSeconds: 120
+        pollIntervalSeconds: 5
   output:
     links:
       - title: Open DevSpaces dashboard

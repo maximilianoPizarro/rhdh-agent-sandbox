@@ -107,15 +107,15 @@ spec:
       action: catalog:apply-pending-configmap
       input:
         manifestPath: kubernetes/configmap.yaml
-    - id: apply-hint
-      name: Build + deploy via agent-applier
-      action: debug:log
+    - id: verify
+      name: Verify entity in catalog
+      action: catalog:wait-for-entity
       input:
-        message: >-
-          Component registered with build=true. The chart agent-applier will
-          (1) materialize ${{ parameters.language }} source from chart assets with your agentSpec,
-          (2) ensure ImageStream + BuildConfig, (3) start a binary Docker build,
-          (4) deploy the resulting image. Poll ~45s. Quarkus builds take longer (Maven).
+        name: ${{ parameters.name }}
+        kind: Component
+        namespace: default
+        timeoutSeconds: 120
+        pollIntervalSeconds: 5
   output:
     links:
       - title: Open Component
@@ -135,4 +135,4 @@ spec:
             oc get deploy/${{ parameters.name }}
             oc logs deploy/${{ parameters.name }}
 
-          Open the Component page for Topology and Documentation tabs.
+          Open the Component page for Topology and Dependencies tabs.

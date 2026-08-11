@@ -1,0 +1,41 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: remove-deploy-agent
+  title: Remove Agent (Golden Path)
+  description: Remove a previously deployed Golden Path agent and its runtime resources.
+  tags:
+    - golden-path
+    - agent
+    - remove
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: Agent to remove
+      required: [name]
+      properties:
+        name:
+          title: Agent name
+          description: Existing deployed agent name (DNS-1123)
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
+  steps:
+    - id: remove
+      name: Remove agent resources
+      action: catalog:remove-entity
+      input:
+        name: ${{ parameters.name }}
+        kind: Component
+    - id: done
+      name: Confirm removal
+      action: debug:log
+      input:
+        message: Removed agent ${{ parameters.name }} and related runtime/catalog resources.
+  output:
+    text:
+      - title: Agent removed
+        content: |
+          Agent **${{ parameters.name }}** was removed.
+          Runtime resources and catalog registration were cleaned up.

@@ -1,0 +1,42 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: remove-ai-service
+  title: Remove AI Service (Golden Path)
+  description: Remove a previously deployed AI service and its catalog registration.
+  tags:
+    - golden-path
+    - ai
+    - mcp
+    - remove
+spec:
+  owner: group:default/developers
+  type: service
+  parameters:
+    - title: AI service to remove
+      required: [name]
+      properties:
+        name:
+          title: Service name
+          description: Existing AI service component name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 63
+  steps:
+    - id: remove
+      name: Remove AI service resources
+      action: catalog:remove-entity
+      input:
+        name: ${{ parameters.name }}
+        kind: Component
+    - id: done
+      name: Confirm removal
+      action: debug:log
+      input:
+        message: Removed AI service ${{ parameters.name }} and related runtime/catalog resources.
+  output:
+    text:
+      - title: AI service removed
+        content: |
+          AI service **${{ parameters.name }}** was removed.
+          Runtime resources and catalog registration were cleaned up.
