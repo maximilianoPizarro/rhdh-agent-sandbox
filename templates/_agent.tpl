@@ -1,7 +1,8 @@
 {{- /*
-Shared stub: tiny HTTP agent that echoes AGENT_SPEC and proxies chat to LiteLLM.
-Language images only change the base image label; the runtime is a portable shell+python one-liner via ubi-minimal isn't enough for all —
-use python UBI for all three stubs so Sandbox pulls one image, with FRAMEWORK label distinguishing LangGraph / LangChain.js / LangChain4j intent.
+Shared sample-agent Deployment helper.
+Legacy samples still use the portable Python HTTP stub (ConfigMap agent-runtime).
+Golden Path agents with annotation build=true are built from language skeletons
+(LangGraph / LangChain.js / LangChain4j) via BuildConfig + ImageStream.
 */ -}}
 {{- define "rhdh-agent-sandbox.agentDeployment" -}}
 apiVersion: apps/v1

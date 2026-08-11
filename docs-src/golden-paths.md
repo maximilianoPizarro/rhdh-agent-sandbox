@@ -4,7 +4,7 @@ title: Golden Paths
 
 # Golden Paths
 
-Deploy namespace-scoped agents from Developer Hub **without git push**. The primary path is **Deploy Agent**.
+Deploy namespace-scoped agents from Developer Hub **without git push**. The primary path is **Deploy Agent**: it generates **real** framework source, starts a **BuildConfig**, and deploys the resulting image.
 
 ![Deploy Agent Golden Path]({{ '/assets/diagrams/golden-path-deploy-agent.png' | relative_url }})
 
@@ -12,40 +12,56 @@ Deploy namespace-scoped agents from Developer Hub **without git push**. The prim
 
 | Field | Role |
 |---|---|
-| `name` | Deployment / Service / Component name |
+| `name` | Deployment / Service / BuildConfig / ImageStream name |
 | `owner` | Catalog owner (Group) |
-| `language` | Selects framework (deterministic map) |
-| `agentType` | `tool-agent` / `chat-agent` / `rag-agent` |
-| `agentSpec` | Stored as `AGENT_SPEC` on the Pod |
-| `model` | LiteLLM alias (`granite` or `qwen3`) |
+| `language` | Selects framework skeleton + build |
+| `agentType` | `tool-agent` / `chat-agent` / `rag-agent` (selects tools in generated code) |
+| `agentSpec` | Injected as agent behaviour / system prompt |
+| `model` | LiteLLM alias (`granite`, `qwen3`, or `litemaas-qwen`) |
 
 ### Framework map (fixed)
 
-| language | default agentType | framework |
+| language | default agentType | framework (real code) |
 |---|---|---|
-| python | tool-agent | LangGraph (HTTP stub) |
-| nodejs | tool-agent | LangChain.js (HTTP stub) |
-| quarkus | tool-agent | LangChain4j (HTTP stub) |
+| python | tool-agent | **LangGraph** `StateGraph` + FastAPI |
+| nodejs | tool-agent | **LangChain.js** `createReactAgent` |
+| quarkus | tool-agent | **LangChain4j** `@RegisterAiService` |
 
-No LLM chooses the framework — the scaffolder logs the map and stamps annotations.
+No LLM chooses the framework — the scaffolder logs the map and stamps annotations. The **agent-applier** builds from chart source assets and deploys the ImageStream tag.
 
 ### What you get
 
-1. **Catalog Component** with annotations `rhdh-agent-sandbox.io/managed-agent=true` and an **Open in DevSpaces** factory link.
-2. **Deployment + Service (ClusterIP)** created/updated by the chart **agent-applier** from those annotations (poll ~45s). Runtime talks to LiteLLM over Service DNS; no public agent Route.
+1. **Generated source** for the selected framework (under `files/templates/skeletons/deploy-agent/<language>/`).
+2. **Catalog Component** with `rhdh-agent-sandbox.io/managed-agent=true` and `rhdh-agent-sandbox.io/build=true`.
+3. **BuildConfig + ImageStream** created/updated by the agent-applier; binary Docker build of the skeleton.
+4. **Deployment + Service (ClusterIP)** using `image-registry.../<name>:latest`. Runtime talks to LiteLLM over Service DNS.
+
+### Tools by agentType
+
+| agentType | Tools in generated code |
+|---|---|
+| tool-agent | list pods, get deployment, Red Hat CVE lookup, product lifecycle |
+| chat-agent | none (conversation only) |
+| rag-agent | docs search hints + product lifecycle |
+
+Red Hat security/lifecycle tools use public APIs; see also [Red Hat agentic skills](https://www.redhat.com/en/agentic-skills).
 
 ### Run it (Guest)
 
 1. Hub → **Create** → **Deploy Agent (Golden Path)**.
 2. Fill name, language, agentSpec, model → Create.
-3. Open the Component → use **Open in DevSpaces**.
-4. As OpenShift user: `oc get deploy/<name>` and `oc logs deploy/<name>`.
+3. As OpenShift user:
+   ```bash
+   oc get bc/<name>
+   oc logs -f bc/<name>
+   oc get deploy/<name>
+   oc logs deploy/<name>
+   ```
+4. Open the Component → **Open skeleton in DevSpaces**.
 
-Skeletons and agent-runtime manifests are mounted at `/opt/app-root/src/scaffolder-assets` (no `publish:github`).
+### Sample agents
 
-## Sample agents
-
-The chart also ships three sample Components + Deployments: `sample-python-agent`, `sample-nodejs-agent`, `sample-quarkus-agent`. Same Open in DevSpaces links under `files/templates/skeletons/<lang>`.
+Sample Deployments were removed from the chart. Use **Deploy Agent** to generate and build a real LangGraph / LangChain.js / LangChain4j agent.
 
 ## Related
 

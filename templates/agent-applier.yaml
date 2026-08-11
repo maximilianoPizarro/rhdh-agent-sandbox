@@ -20,7 +20,16 @@ rules:
     resources: ["deployments"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
-    resources: ["services", "configmaps"]
+    resources: ["services", "configmaps", "pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs", "builds"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs/instantiate", "buildconfigs/instantiatebinary"]
+    verbs: ["create"]
+  - apiGroups: ["image.openshift.io"]
+    resources: ["imagestreams", "imagestreamtags"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -48,7 +57,7 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
 data:
   applier.py: |
-    import hashlib, json, os, time, threading, urllib.error, urllib.request, ssl
+    import hashlib, io, json, os, tarfile, time, threading, urllib.error, urllib.request, ssl
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
     NS = os.environ["NAMESPACE"]
@@ -60,6 +69,7 @@ data:
     POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "45"))
     HEALTH_PORT = int(os.environ.get("HEALTH_PORT", "8080"))
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+    SOURCES_CM = os.environ.get("SOURCES_CM", f"{FULLNAME}-agent-build-sources")
     _LEVELS = {"DEBUG": 10, "INFO": 20, "WARN": 30, "WARNING": 30, "ERROR": 40}
     _MIN = _LEVELS.get(LOG_LEVEL, 20)
 
@@ -68,7 +78,6 @@ data:
     API = "https://kubernetes.default.svc"
     ctx = ssl.create_default_context(cafile=CA)
 
-    # Shared mutable health for probes
     STATE = {
         "ready": False,
         "last_poll_ok": False,
@@ -77,6 +86,9 @@ data:
         "cycles": 0,
         "agents_seen": 0,
     }
+
+    # Avoid re-triggering builds every poll
+    BUILD_STARTED = {}
 
     def log(level, msg, **fields):
         lvl = level.upper()
@@ -87,28 +99,28 @@ data:
         extra = (" " + " ".join(parts)) if parts else ""
         print(f"{ts} {lvl} {msg}{extra}", flush=True)
 
-    def k8s(method, path, body=None):
-        data = None if body is None else json.dumps(body).encode()
-        req = urllib.request.Request(
-            API + path,
-            data=data,
-            method=method,
-            headers={
-                "Authorization": f"Bearer {SA}",
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        )
+    def k8s(method, path, body=None, raw=None, content_type="application/json"):
+        data = raw
+        headers = {
+            "Authorization": f"Bearer {SA}",
+            "Accept": "application/json",
+        }
+        if raw is not None:
+            headers["Content-Type"] = content_type
+        elif body is not None:
+            data = json.dumps(body).encode()
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(API + path, data=data, method=method, headers=headers)
         try:
-            with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
-                raw = resp.read().decode() or "{}"
-                return resp.status, json.loads(raw) if raw else {}
+            with urllib.request.urlopen(req, context=ctx, timeout=120) as resp:
+                raw_body = resp.read().decode() or "{}"
+                return resp.status, json.loads(raw_body) if raw_body else {}
         except urllib.error.HTTPError as e:
-            raw = e.read().decode() if e.fp else ""
+            raw_body = e.read().decode() if e.fp else ""
             try:
-                payload = json.loads(raw) if raw else {}
+                payload = json.loads(raw_body) if raw_body else {}
             except Exception:
-                payload = {"message": raw}
+                payload = {"message": raw_body}
             return e.code, payload
 
     def _k8s_err(body):
@@ -145,17 +157,291 @@ data:
         "quarkus": "langchain4j",
     }
 
-    def ensure(agent):
-        meta = agent.get("metadata", {})
-        ann = meta.get("annotations") or {}
-        name = meta.get("name")
-        language = ann.get("rhdh-agent-sandbox.io/language", "python")
-        framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
-        model = ann.get("rhdh-agent-sandbox.io/model", "granite")
-        spec = ann.get("rhdh-agent-sandbox.io/agent-spec", "You are a helpful namespace-scoped agent.")
-        if not name:
-            log("WARN", "skip_nameless_entity")
-            return "skip"
+    def substitute(text, name, language, framework, model, agent_type, spec):
+        # Escape for JS String.raw / Python triple-quoted defaults: keep as plain text
+        repl = {
+            "${{"{{"}} values.name }}": name,
+            "${{"{{"}} values.language }}": language,
+            "${{"{{"}} values.framework }}": framework,
+            "${{"{{"}} values.model }}": model,
+            "${{"{{"}} values.agentType }}": agent_type,
+            "${{"{{"}} values.agentSpec }}": spec,
+            "${{"{{"}} values.owner }}": "group:default/developers",
+        }
+        out = text
+        for k, v in repl.items():
+            out = out.replace(k, v)
+        return out
+
+    def key_to_path(key, language):
+        # python---app---main.py -> app/main.py (--- separator avoids __init__.py clash)
+        prefix = language + "---"
+        if not key.startswith(prefix):
+            return None
+        rest = key[len(prefix):]
+        return rest.replace("---", "/")
+
+    def load_sources(language, name, framework, model, agent_type, spec):
+        code, body = k8s("GET", f"/api/v1/namespaces/{NS}/configmaps/{SOURCES_CM}")
+        if code != 200:
+            log("ERROR", "sources_cm_missing", status=code, name=SOURCES_CM, error=_k8s_err(body))
+            return None
+        data = body.get("data") or {}
+        files = {}
+        for key, content in data.items():
+            path = key_to_path(key, language)
+            if not path:
+                continue
+            files[path] = substitute(content, name, language, framework, model, agent_type, spec)
+        if not files:
+            log("ERROR", "sources_empty", language=language)
+            return None
+        return files
+
+    def tar_bytes(files):
+        buf = io.BytesIO()
+        with tarfile.open(fileobj=buf, mode="w") as tar:
+            for path, content in sorted(files.items()):
+                raw = content.encode("utf-8")
+                info = tarfile.TarInfo(name=path)
+                info.size = len(raw)
+                info.mtime = int(time.time())
+                tar.addfile(info, io.BytesIO(raw))
+        return buf.getvalue()
+
+    def ensure_imagestream(name):
+        code, body = k8s("GET", f"/apis/image.openshift.io/v1/namespaces/{NS}/imagestreams/{name}")
+        if code == 200:
+            return True
+        if code != 404:
+            log("ERROR", "imagestream_get_failed", name=name, status=code, error=_k8s_err(body))
+            return False
+        is_obj = {
+            "apiVersion": "image.openshift.io/v1",
+            "kind": "ImageStream",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/part-of": FULLNAME},
+            },
+        }
+        c, b = k8s("POST", f"/apis/image.openshift.io/v1/namespaces/{NS}/imagestreams", is_obj)
+        if 200 <= c < 300:
+            log("INFO", "imagestream_created", name=name)
+            return True
+        log("ERROR", "imagestream_create_failed", name=name, status=c, error=_k8s_err(b))
+        return False
+
+    def ensure_buildconfig(name, language):
+        code, body = k8s("GET", f"/apis/build.openshift.io/v1/namespaces/{NS}/buildconfigs/{name}")
+        limits = {"cpu": "1", "memory": "1Gi"}
+        requests = {"cpu": "100m", "memory": "256Mi"}
+        if language == "quarkus":
+            limits = {"cpu": "1", "memory": "2Gi"}
+            requests = {"cpu": "200m", "memory": "512Mi"}
+        desired = {
+            "apiVersion": "build.openshift.io/v1",
+            "kind": "BuildConfig",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "rhdh-agent-sandbox.io/language": language,
+                },
+            },
+            "spec": {
+                "runPolicy": "Serial",
+                "successfulBuildsHistoryLimit": 2,
+                "failedBuildsHistoryLimit": 3,
+                "source": {"type": "Binary", "binary": {}},
+                "strategy": {
+                    "type": "Docker",
+                    "dockerStrategy": {"dockerfilePath": "Containerfile"},
+                },
+                "output": {"to": {"kind": "ImageStreamTag", "name": f"{name}:latest"}},
+                "resources": {"limits": limits, "requests": requests},
+            },
+        }
+        if code == 404:
+            c, b = k8s("POST", f"/apis/build.openshift.io/v1/namespaces/{NS}/buildconfigs", desired)
+            if 200 <= c < 300:
+                log("INFO", "buildconfig_created", name=name, language=language)
+                return True
+            log("ERROR", "buildconfig_create_failed", name=name, status=c, error=_k8s_err(b))
+            return False
+        if 200 <= code < 300:
+            return True
+        log("ERROR", "buildconfig_get_failed", name=name, status=code, error=_k8s_err(body))
+        return False
+
+    def imagestream_has_image(name):
+        code, body = k8s("GET", f"/apis/image.openshift.io/v1/namespaces/{NS}/imagestreamtags/{name}:latest")
+        if code != 200:
+            return False
+        tag = body.get("tag") or {}
+        items = tag.get("items") or []
+        return len(items) > 0
+
+    def latest_build_phase(name):
+        code, body = k8s(
+            "GET",
+            f"/apis/build.openshift.io/v1/namespaces/{NS}/builds?labelSelector=buildconfig={name}&limit=5",
+        )
+        if code != 200:
+            return None
+        items = body.get("items") or []
+        if not items:
+            return None
+        items.sort(key=lambda b: b.get("metadata", {}).get("creationTimestamp", ""), reverse=True)
+        return (items[0].get("status") or {}).get("phase")
+
+    def start_binary_build(name, language, framework, model, agent_type, spec):
+        key = f"{name}|{language}|{model}|{agent_type}|{hashlib.sha256(spec.encode()).hexdigest()[:12]}"
+        phase = latest_build_phase(name)
+        if phase in ("New", "Pending", "Running"):
+            log("INFO", "build_in_progress", name=name, phase=phase)
+            return "building"
+        if BUILD_STARTED.get(name) == key and phase not in ("Failed", "Error", "Cancelled", None):
+            return "skipped"
+        files = load_sources(language, name, framework, model, agent_type, spec)
+        if not files:
+            return "error"
+        archive = tar_bytes(files)
+        path = f"/apis/build.openshift.io/v1/namespaces/{NS}/buildconfigs/{name}/instantiatebinary?asFile="
+        # OpenShift expects a tar archive body
+        c, b = k8s(
+            "POST",
+            path,
+            raw=archive,
+            content_type="application/tar",
+        )
+        if 200 <= c < 300:
+            BUILD_STARTED[name] = key
+            build_name = (b.get("metadata") or {}).get("name", "?")
+            log("INFO", "build_started", name=name, build=build_name, language=language, bytes=len(archive))
+            return "started"
+        log("ERROR", "build_start_failed", name=name, status=c, error=_k8s_err(b))
+        return "error"
+
+    def image_ref(name):
+        # In-cluster pull through image-registry
+        return f"image-registry.openshift-image-registry.svc:5000/{NS}/{name}:latest"
+
+    def ensure_built_deployment(name, language, framework, model, agent_type, spec):
+        agent_log_level = os.environ.get("AGENT_LOG_LEVEL", LOG_LEVEL)
+        desired_hash = hashlib.sha256(
+            f"build|{language}|{framework}|{model}|{spec}|{agent_type}|{agent_log_level}|{FULLNAME}".encode()
+        ).hexdigest()[:16]
+        deploy = {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "agent",
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "app.openshift.io/runtime": language,
+                    "rhdh-agent-sandbox.io/language": language,
+                    "rhdh-agent-sandbox.io/framework": framework,
+                    "rhdh-agent-sandbox.io/build": "true",
+                },
+                "annotations": {
+                    "app.openshift.io/connects-to": json.dumps(
+                        [{"apiVersion": "apps/v1", "kind": "Deployment", "name": f"{FULLNAME}-litellm"}]
+                    ),
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
+                },
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {"matchLabels": {"app.kubernetes.io/name": name}},
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app.kubernetes.io/name": name,
+                            "app.kubernetes.io/component": "agent",
+                            "app.kubernetes.io/part-of": FULLNAME,
+                            "app.openshift.io/runtime": language,
+                        },
+                    },
+                    "spec": {
+                        "containers": [{
+                            "name": "agent",
+                            "image": image_ref(name),
+                            "imagePullPolicy": "Always",
+                            "ports": [{"name": "http", "containerPort": 8080}],
+                            "env": [
+                                {"name": "AGENT_NAME", "value": name},
+                                {"name": "MODEL", "value": model},
+                                {"name": "FRAMEWORK", "value": framework},
+                                {"name": "LANGUAGE", "value": language},
+                                {"name": "AGENT_TYPE", "value": agent_type},
+                                {"name": "AGENT_SPEC", "value": spec},
+                                {"name": "LOG_LEVEL", "value": agent_log_level},
+                                {"name": "NAMESPACE", "value": NS},
+                                {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
+                                {"name": "LITELLM_API_KEY", "valueFrom": {"secretKeyRef": {"name": SECRETS, "key": "litellm-master-key"}}},
+                            ],
+                            "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 10, "periodSeconds": 10},
+                            "livenessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 30, "periodSeconds": 20},
+                            "resources": {
+                                "requests": {"cpu": "25m", "memory": "64Mi"} if language != "quarkus" else {"cpu": "50m", "memory": "256Mi"},
+                                "limits": {"cpu": "200m", "memory": "256Mi"} if language != "quarkus" else {"cpu": "500m", "memory": "768Mi"},
+                            },
+                        }],
+                    },
+                },
+            },
+        }
+        svc = {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {"name": name, "namespace": NS, "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/part-of": FULLNAME}},
+            "spec": {
+                "selector": {"app.kubernetes.io/name": name},
+                "ports": [{"name": "http", "port": 8080, "targetPort": "http"}],
+            },
+        }
+        code, existing = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
+        action = "unchanged"
+        if code == 404:
+            c, body = k8s("POST", f"/apis/apps/v1/namespaces/{NS}/deployments", deploy)
+            if 200 <= c < 300:
+                log("INFO", "deployment_created", name=name, mode="build", language=language, framework=framework)
+                action = "created"
+            else:
+                log("ERROR", "deployment_create_failed", name=name, status=c, error=_k8s_err(body))
+                action = "error"
+        elif 200 <= code < 300:
+            current_hash = (existing.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if current_hash != desired_hash:
+                deploy["metadata"]["resourceVersion"] = existing.get("metadata", {}).get("resourceVersion", "")
+                c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
+                if 200 <= c < 300:
+                    log("INFO", "deployment_updated", name=name, mode="build")
+                    action = "updated"
+                else:
+                    log("ERROR", "deployment_update_failed", name=name, status=c, error=_k8s_err(body))
+                    action = "error"
+        else:
+            log("ERROR", "deployment_get_failed", name=name, status=code, error=_k8s_err(existing))
+            action = "error"
+
+        scode, sbody = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
+        if scode == 404:
+            c, body = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
+            if not (200 <= c < 300):
+                log("ERROR", "service_create_failed", name=name, status=c, error=_k8s_err(body))
+                action = "error"
+            else:
+                log("INFO", "service_created", name=name)
+        return action
+
+    def ensure_stub(agent, name, language, framework, model, spec):
         agent_log_level = os.environ.get("AGENT_LOG_LEVEL", LOG_LEVEL)
         desired_hash = hashlib.sha256(
             f"{language}|{framework}|{model}|{spec}|{agent_log_level}|{FULLNAME}|{LITELLM_PORT}|{SECRETS}".encode()
@@ -233,7 +519,7 @@ data:
         if code == 404:
             c, body = k8s("POST", f"/apis/apps/v1/namespaces/{NS}/deployments", deploy)
             if 200 <= c < 300:
-                log("INFO", "deployment_created", name=name, status=c, language=language, framework=framework, model=model, hash=desired_hash)
+                log("INFO", "deployment_created", name=name, mode="stub", language=language)
                 action = "created"
             else:
                 log("ERROR", "deployment_create_failed", name=name, status=c, error=_k8s_err(body))
@@ -241,14 +527,12 @@ data:
         elif 200 <= code < 300:
             current_hash = (existing.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
             if current_hash == desired_hash:
-                log("DEBUG", "deployment_unchanged", name=name, hash=desired_hash)
                 action = "unchanged"
             else:
-                # Preserve resourceVersion for PUT
                 deploy["metadata"]["resourceVersion"] = existing.get("metadata", {}).get("resourceVersion", "")
                 c, body = k8s("PUT", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}", deploy)
                 if 200 <= c < 300:
-                    log("INFO", "deployment_updated", name=name, status=c, language=language, framework=framework, model=model, hash=desired_hash)
+                    log("INFO", "deployment_updated", name=name, mode="stub")
                     action = "updated"
                 else:
                     log("ERROR", "deployment_update_failed", name=name, status=c, error=_k8s_err(body))
@@ -256,21 +540,41 @@ data:
         else:
             log("ERROR", "deployment_get_failed", name=name, status=code, error=_k8s_err(existing))
             action = "error"
-
         scode, sbody = k8s("GET", f"/api/v1/namespaces/{NS}/services/{name}")
         if scode == 404:
             c, body = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
-            if 200 <= c < 300:
-                log("INFO", "service_created", name=name, status=c)
-            else:
-                log("ERROR", "service_create_failed", name=name, status=c, error=_k8s_err(body))
+            if not (200 <= c < 300):
                 action = "error"
-        elif 200 <= scode < 300:
-            log("DEBUG", "service_exists", name=name)
-        else:
-            log("ERROR", "service_get_failed", name=name, status=scode, error=_k8s_err(sbody))
-            action = "error"
         return action
+
+    def ensure(agent):
+        meta = agent.get("metadata", {})
+        ann = meta.get("annotations") or {}
+        name = meta.get("name")
+        language = ann.get("rhdh-agent-sandbox.io/language", "python")
+        framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
+        model = ann.get("rhdh-agent-sandbox.io/model", "granite")
+        agent_type = ann.get("rhdh-agent-sandbox.io/agent-type", "tool-agent")
+        spec = ann.get("rhdh-agent-sandbox.io/agent-spec", "You are a helpful namespace-scoped agent.")
+        build = (ann.get("rhdh-agent-sandbox.io/build") or "").lower() in ("true", "1", "yes")
+        if not name:
+            log("WARN", "skip_nameless_entity")
+            return "skip"
+
+        if not build:
+            return ensure_stub(agent, name, language, framework, model, spec)
+
+        if not ensure_imagestream(name) or not ensure_buildconfig(name, language):
+            return "error"
+
+        if imagestream_has_image(name):
+            return ensure_built_deployment(name, language, framework, model, agent_type, spec)
+
+        result = start_binary_build(name, language, framework, model, agent_type, spec)
+        if result == "error":
+            return "error"
+        log("INFO", "waiting_for_image", name=name, build_result=result)
+        return "building"
 
     class HealthHandler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -304,15 +608,7 @@ data:
         log("INFO", "health_server_started", port=HEALTH_PORT)
 
     start_health_server()
-    log(
-        "INFO",
-        "applier_started",
-        namespace=NS,
-        catalog=CATALOG,
-        poll_seconds=POLL_SECONDS,
-        log_level=LOG_LEVEL,
-    )
-    # Become ready after first attempt (even if catalog empty/errors) so probes pass once process is alive.
+    log("INFO", "applier_started", namespace=NS, catalog=CATALOG, poll_seconds=POLL_SECONDS, sources_cm=SOURCES_CM)
     STATE["ready"] = True
 
     while True:
@@ -324,7 +620,7 @@ data:
         STATE["last_poll_ok"] = err is None
         STATE["agents_seen"] = len(agents)
 
-        created = updated = unchanged = errors = skipped = 0
+        created = updated = unchanged = errors = skipped = building = 0
         for ent in agents:
             try:
                 result = ensure(ent)
@@ -334,6 +630,8 @@ data:
                     updated += 1
                 elif result == "unchanged":
                     unchanged += 1
+                elif result == "building":
+                    building += 1
                 elif result == "error":
                     errors += 1
                 else:
@@ -352,6 +650,7 @@ data:
             created=created,
             updated=updated,
             unchanged=unchanged,
+            building=building,
             errors=errors,
             skipped=skipped,
             duration_ms=ms,
@@ -419,6 +718,8 @@ spec:
               value: {{ .Values.agents.logLevel | default "INFO" | quote }}
             - name: HEALTH_PORT
               value: "8080"
+            - name: SOURCES_CM
+              value: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-build-sources
           volumeMounts:
             - name: app
               mountPath: /app

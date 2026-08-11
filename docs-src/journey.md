@@ -42,7 +42,7 @@ carousel: true
 <figcaption>
 <span class="slide-num">Step 04</span>
 <strong>Deploy Agent — success</strong>
-<span class="desc">All steps green: skeleton materialized, runtime manifests applied, Component registered. The agent-applier creates the Deployment + Service automatically.</span>
+<span class="desc">All steps green: framework source generated, Component registered with build=true. The agent-applier starts a Binary BuildConfig and deploys the ImageStream image.</span>
 </figcaption>
 </figure>
 
@@ -152,22 +152,23 @@ carousel: true
 
 | Template | What it does | Steps |
 |----------|-------------|-------|
-| **Deploy Agent** | Creates a namespace-scoped agent Pod (Deployment + Service) without git push. Framework chosen from language. | fetch skeleton → fetch runtime → catalog:write → agent-applier creates K8s resources |
+| **Deploy Agent** | Generates real LangGraph / LangChain.js / LangChain4j source, BuildConfig-compiles, and deploys without git push. | fetch skeleton → catalog:write (build=true) → applier builds + deploys |
 | **DevSpaces AI Workspace** | Scaffolds a repository with Devfile, Continue→LiteLLM config, and AI skills for browser IDE. | fetch skeleton from GitHub → log next steps |
 | **AI Service with MCP wiring** | Scaffolds a service with catalog Component/API entities for MCP and Lightspeed integration. | fetch skeleton from GitHub → log next actions |
 
 ## What happens behind the scenes
 
 1. **Resolve framework** — `python` → LangGraph, `nodejs` → LangChain.js, `quarkus` → LangChain4j
-2. **Materialize skeleton** — `fetch:template` downloads files from GitHub repository
-3. **Materialize runtime** — language-specific Deployment + Service manifests (Deploy Agent only)
-4. **Write Component** — `catalog:write` registers the entity directly in the Hub catalog
-5. **Agent-applier** — watches for `managed-agent` annotations and creates/updates K8s resources
+2. **Generate source** — `fetch:template` materializes framework skeleton with your `agentSpec` / `agentType`
+3. **Write Component** — `catalog:write` registers the entity with `build=true` annotations
+4. **Agent-applier** — creates ImageStream + BuildConfig, starts binary Docker build from chart source assets, then deploys the ImageStream tag
 
 ## Verify
 
 ```bash
-# Deploy Agent — check the deployed pod
+# Deploy Agent — watch build then pod
+oc get bc/<agent-name>
+oc logs -f bc/<agent-name>
 oc get deploy/<agent-name>
 oc logs deploy/<agent-name>
 curl -s http://<agent-name>:8080/health | jq .

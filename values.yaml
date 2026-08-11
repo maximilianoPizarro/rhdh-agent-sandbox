@@ -118,10 +118,11 @@ catalog:
   # Mount AI catalog entities + software templates into a ConfigMap for RHDH locations
   configMapName: rhdh-agent-sandbox-catalog
 
-# Golden Path agent pods (samples + catalog-driven applier)
+# Golden Path agent pods (samples + catalog-driven applier with BuildConfig)
 agents:
   enabled: true
   # Shared sample-agent stub log level (DEBUG|INFO|WARN|ERROR)
+  # Note: Golden Path agents (build=true) use real LangGraph/LangChain.js/LangChain4j images.
   logLevel: INFO
   applier:
     enabled: true
@@ -129,22 +130,8 @@ agents:
   # Namespace RBAC for Hub SA (scaffolder kubernetes module + optional apply)
   hubRbac:
     enabled: true
-  samples:
-    - name: sample-python-agent
-      language: python
-      framework: langgraph
-      model: granite
-      agentSpec: "You are a Python/LangGraph sample agent on Developer Sandbox. Prefer list/get before mutate."
-    - name: sample-nodejs-agent
-      language: nodejs
-      framework: langchain-js
-      model: granite
-      agentSpec: "You are a Node.js/LangChain.js sample agent on Developer Sandbox. Prefer list/get before mutate."
-    - name: sample-quarkus-agent
-      language: quarkus
-      framework: langchain4j
-      model: granite
-      agentSpec: "You are a Quarkus/LangChain4j sample agent on Developer Sandbox. Prefer list/get before mutate."
+  # Pre-installed demo stubs removed — use Deploy Agent golden path (build=true).
+  samples: []
 
 communityPlugins:
   # OCI asset packs published by CI to Quay (Podman). Tag = <pack>-<tag>.

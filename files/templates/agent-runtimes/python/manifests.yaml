@@ -1,4 +1,5 @@
-# Reference manifests for Python / LangGraph agent (applied by chart agent-applier).
+# Reference manifests for legacy sample stubs (chart agents.samples).
+# Golden Path Deploy Agent uses BuildConfig + ImageStream instead (see agent-applier).
 apiVersion: apps/v1
 kind: Deployment
 metadata:

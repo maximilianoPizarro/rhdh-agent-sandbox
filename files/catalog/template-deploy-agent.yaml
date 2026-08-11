@@ -4,13 +4,15 @@ metadata:
   name: deploy-agent
   title: Deploy Agent (Golden Path)
   description: >
-    Create a namespace-scoped agent Pod without git push. Framework is chosen
-    deterministically from language (python→LangGraph, nodejs→LangChain.js, quarkus→LangChain4j).
+    Generate a real LangGraph / LangChain.js / LangChain4j agent from your specification,
+    then BuildConfig-compile and deploy it in the namespace (no git push required).
   tags:
     - golden-path
     - agent
     - ai
     - mcp
+    - langgraph
+    - langchain
 spec:
   owner: group:default/developers
   type: service
@@ -20,7 +22,7 @@ spec:
       properties:
         name:
           title: Agent name
-          description: DNS-1123 name for the Deployment/Service (e.g. my-triage-agent)
+          description: DNS-1123 name for the Deployment/Service/BuildConfig (e.g. my-triage-agent)
           type: string
           pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
           maxLength: 63
@@ -31,8 +33,8 @@ spec:
           ui:options:
             allowedKinds: [Group]
         language:
-          title: Language
-          description: Selects the recommended agent framework (deterministic map)
+          title: Language / framework
+          description: Selects the real agent framework skeleton and build image
           type: string
           default: python
           enum:
@@ -40,49 +42,44 @@ spec:
             - nodejs
             - quarkus
           enumNames:
-            - "Python → LangGraph"
-            - "Node.js → LangChain.js"
-            - "Quarkus → LangChain4j"
+            - "Python → LangGraph (StateGraph + tools)"
+            - "Node.js → LangChain.js (createReactAgent)"
+            - "Quarkus → LangChain4j (@RegisterAiService)"
         agentType:
           title: Agent type
+          description: Selects which tools are enabled in the generated code
           type: string
           default: tool-agent
           enum: [tool-agent, chat-agent, rag-agent]
+          enumNames:
+            - "tool-agent — k8s + Red Hat CVE/lifecycle tools"
+            - "chat-agent — conversation only"
+            - "rag-agent — docs search + lifecycle"
         agentSpec:
           title: Agent specification
-          description: What should this agent do? Stored as AGENT_SPEC on the Pod.
+          description: Natural-language spec injected as the agent system prompt / behaviour
           type: string
           ui:widget: textarea
         model:
           title: LiteLLM model
           type: string
           default: granite
-          enum: [granite, qwen3]
+          enum: [granite, qwen3, litemaas-qwen]
   steps:
     - id: map-framework
       name: Resolve framework from language
       action: debug:log
       input:
-        message: "language=${{ parameters.language }} agentType=${{ parameters.agentType }}"
+        message: >-
+          language=${{ parameters.language }}
+          framework=${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}
+          agentType=${{ parameters.agentType }}
+          model=${{ parameters.model }}
     - id: fetch
-      name: Materialize agent skeleton
+      name: Generate framework source
       action: fetch:template
       input:
-        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent
-        values:
-          name: ${{ parameters.name }}
-          owner: ${{ parameters.owner }}
-          language: ${{ parameters.language }}
-          agentType: ${{ parameters.agentType }}
-          agentSpec: ${{ parameters.agentSpec }}
-          model: ${{ parameters.model }}
-          framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
-    - id: fetch-runtime
-      name: Materialize language runtime manifests
-      action: fetch:template
-      input:
-        url: "https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/agent-runtimes/${{ parameters.language }}"
-        targetPath: ./runtime
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ parameters.language }}
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
@@ -92,7 +89,7 @@ spec:
           model: ${{ parameters.model }}
           framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
     - id: write
-      name: Write Component to catalog workspace
+      name: Register Component (triggers build+deploy)
       action: catalog:write
       input:
         entity:
@@ -106,16 +103,20 @@ spec:
               - agent
               - golden-path
               - ${{ parameters.language }}
+              - build
             annotations:
               rhdh-agent-sandbox.io/managed-agent: "true"
+              rhdh-agent-sandbox.io/build: "true"
               rhdh-agent-sandbox.io/language: ${{ parameters.language }}
               rhdh-agent-sandbox.io/framework: "${{ parameters.language === 'python' and 'langgraph' or parameters.language === 'nodejs' and 'langchain-js' or 'langchain4j' }}"
               rhdh-agent-sandbox.io/model: ${{ parameters.model }}
               rhdh-agent-sandbox.io/agent-type: ${{ parameters.agentType }}
               rhdh-agent-sandbox.io/agent-spec: ${{ parameters.agentSpec }}
+              rhdh-agent-sandbox.io/image-stream: "${{ parameters.name }}:latest"
+              rhdh-agent-sandbox.io/build-source: "${{ parameters.language }}"
             links:
-              - url: "https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ parameters.language }}"
-                title: Open in DevSpaces
+              - url: "https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ parameters.language }}"
+                title: Open skeleton in DevSpaces
                 icon: catalog
           spec:
             type: service
@@ -123,22 +124,31 @@ spec:
             owner: ${{ parameters.owner }}
             system: agent-sandbox
     - id: apply-hint
-      name: Namespace apply via agent-applier
+      name: Build + deploy via agent-applier
       action: debug:log
       input:
-        message: "Component registered with managed-agent annotations. Chart agent-applier creates/updates Deployment+Service within about one poll interval."
+        message: >-
+          Component registered with build=true. The chart agent-applier will
+          (1) materialize ${{ parameters.language }} source from chart assets with your agentSpec,
+          (2) ensure ImageStream + BuildConfig, (3) start a binary Docker build,
+          (4) deploy the resulting image. Poll ~45s. Quarkus builds take longer (Maven).
   output:
     links:
       - title: Open Component
         icon: catalog
         entityRef: "component:default/${{ parameters.name }}"
     text:
-      - title: Agent created
+      - title: Agent scaffolding complete
         content: |
+          Framework source generated for **${{ parameters.language }}**.
           Model: ${{ parameters.model }}
+          Type: ${{ parameters.agentType }}
 
-          Check the Pod:
+          Watch the build and rollout:
+            oc get bc/${{ parameters.name }}
+            oc logs -f bc/${{ parameters.name }}
+            oc get is/${{ parameters.name }}
             oc get deploy/${{ parameters.name }}
             oc logs deploy/${{ parameters.name }}
 
-          Open in DevSpaces from the Component page link.
+          Open the Component page for DevSpaces links.

@@ -33,3 +33,66 @@ metadata:
 spec:
   type: skill
   owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-cve-explainer
+  title: Red Hat CVE Explainer
+  tags: [skill, security, red-hat, cve]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-cve-explainer/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-diagnostics
+  title: Red Hat Diagnostics
+  tags: [skill, support, red-hat]
+  annotations:
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-diagnostics/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-product-lifecycle
+  title: Red Hat Product Lifecycle Advisor
+  tags: [skill, lifecycle, red-hat]
+  annotations:
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-product-lifecycle/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-security-mcp-setup
+  title: Red Hat Security MCP Setup
+  tags: [skill, mcp, security, red-hat]
+  annotations:
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-security-mcp-setup/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-support-severity
+  title: Red Hat Support Severity Helper
+  tags: [skill, support, red-hat]
+  annotations:
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-support-severity/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers

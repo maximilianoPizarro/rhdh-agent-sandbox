@@ -57,3 +57,93 @@ spec:
   owner: group:default/developers
   dependencyOf:
     - component:default/rhdh-agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-cve-explainer
+  title: Red Hat CVE Explainer
+  description: Explain CVEs with Red Hat severity rating and recommended action (official agentic skill)
+  tags: [skill, security, red-hat, cve]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-cve-explainer/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+  system: agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-diagnostics
+  title: Red Hat Diagnostics
+  description: Gather sosreport / must-gather / support diagnostics for Red Hat products
+  tags: [skill, support, red-hat]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-diagnostics/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+  system: agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-product-lifecycle
+  title: Red Hat Product Lifecycle Advisor
+  description: Check lifecycle / support phase for any Red Hat product version
+  tags: [skill, lifecycle, red-hat]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-product-lifecycle/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+  system: agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-security-mcp-setup
+  title: Red Hat Security MCP Setup
+  description: Configure the Red Hat Security MCP server (CVE/advisory live data)
+  tags: [skill, mcp, security, red-hat]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-security-mcp-setup/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+  system: agent-sandbox
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: red-hat-support-severity
+  title: Red Hat Support Severity Helper
+  description: Determine correct severity / SLA for a Red Hat support case
+  tags: [skill, support, red-hat]
+  links:
+    - url: https://www.redhat.com/en/agentic-skills
+      title: Red Hat Agentic Skills
+  annotations:
+    rhdh-agent-sandbox/asset-type: skill
+    rhdh-agent-sandbox/install-path: .cursor/skills/red-hat-support-severity/SKILL.md
+spec:
+  type: ai-skill
+  owner: group:default/developers
+  system: agent-sandbox

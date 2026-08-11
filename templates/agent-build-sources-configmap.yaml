@@ -1,0 +1,55 @@
+{{- if and .Values.agents.enabled .Values.agents.applier.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-build-sources
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-build-sources
+data:
+  # Path separator in keys is '---' (avoids clash with __init__.py)
+  # --- Python / LangGraph ---
+  python---Containerfile: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/Containerfile" | indent 4 }}
+  python---requirements.txt: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/requirements.txt" | indent 4 }}
+  python---README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/README.md" | indent 4 }}
+  python---app---__init__.py: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/app/__init__.py" | indent 4 }}
+  python---app---config.py: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/app/config.py" | indent 4 }}
+  python---app---tools.py: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/app/tools.py" | indent 4 }}
+  python---app---main.py: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/app/main.py" | indent 4 }}
+  # --- Node.js / LangChain.js ---
+  nodejs---Containerfile: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/Containerfile" | indent 4 }}
+  nodejs---package.json: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/package.json" | indent 4 }}
+  nodejs---README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/README.md" | indent 4 }}
+  nodejs---src---config.js: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/src/config.js" | indent 4 }}
+  nodejs---src---tools.js: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/src/tools.js" | indent 4 }}
+  nodejs---src---index.js: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/src/index.js" | indent 4 }}
+  # --- Quarkus / LangChain4j ---
+  quarkus---Containerfile: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/Containerfile" | indent 4 }}
+  quarkus---pom.xml: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/pom.xml" | indent 4 }}
+  quarkus---README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/README.md" | indent 4 }}
+  quarkus---src---main---resources---application.properties: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/src/main/resources/application.properties" | indent 4 }}
+  quarkus---src---main---java---com---redhat---agent---AgentService.java: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/src/main/java/com/redhat/agent/AgentService.java" | indent 4 }}
+  quarkus---src---main---java---com---redhat---agent---AgentTools.java: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/src/main/java/com/redhat/agent/AgentTools.java" | indent 4 }}
+  quarkus---src---main---java---com---redhat---agent---AgentResource.java: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/src/main/java/com/redhat/agent/AgentResource.java" | indent 4 }}
+{{- end }}

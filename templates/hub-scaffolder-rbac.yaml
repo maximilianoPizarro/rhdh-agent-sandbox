@@ -14,6 +14,12 @@ rules:
   - apiGroups: [""]
     resources: ["services", "configmaps"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs", "builds"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["image.openshift.io"]
+    resources: ["imagestreams", "imagestreamtags"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

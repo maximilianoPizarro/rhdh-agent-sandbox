@@ -14,6 +14,13 @@ data:
 {{ .Files.Get "files/templates/skeletons/deploy-agent/catalog-info.yaml" | indent 4 }}
   deploy-agent-devfile.yaml: |
 {{ .Files.Get "files/templates/skeletons/deploy-agent/devfile.yaml" | indent 4 }}
+  # Language-specific golden path skeletons (also mirrored in agent-build-sources)
+  python-README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/python/README.md" | indent 4 }}
+  nodejs-README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/nodejs/README.md" | indent 4 }}
+  quarkus-README.md: |
+{{ .Files.Get "files/templates/skeletons/deploy-agent/quarkus/README.md" | indent 4 }}
   python-manifests.yaml: |
 {{ .Files.Get "files/templates/agent-runtimes/python/manifests.yaml" | indent 4 }}
   python-catalog-info.yaml: |

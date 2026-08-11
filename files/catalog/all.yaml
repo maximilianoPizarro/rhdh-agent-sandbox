@@ -13,4 +13,3 @@ spec:
     - ./template-devspaces-workspace.yaml
     - ./template-ai-service.yaml
     - ./template-deploy-agent.yaml
-    - ./sample-agents.yaml

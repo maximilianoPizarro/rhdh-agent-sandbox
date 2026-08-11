@@ -94,7 +94,7 @@ Catalog ConfigMap mount:
 oc exec -n "${NAMESPACE}" "${HUB}" -c backstage-backend -- ls /opt/app-root/src/catalog
 ```
 
-Expect at least: `all.yaml`, `skills.yaml`, `prompts.yaml`, `mcp-servers.yaml`, `template-deploy-agent.yaml`, `sample-agents.yaml`, `users.yaml`.
+Expect at least: `all.yaml`, `skills.yaml`, `prompts.yaml`, `mcp-servers.yaml`, `template-deploy-agent.yaml`, `users.yaml`.
 
 Scaffolder assets mount:
 
@@ -102,14 +102,16 @@ Scaffolder assets mount:
 oc exec -n "${NAMESPACE}" "${HUB}" -c backstage-backend -- ls -R /opt/app-root/src/scaffolder-assets
 ```
 
-## 5. Sample agents
+## 5. Sample agents / Golden Path builds
 
 ```bash
-oc get deploy,svc -n "${NAMESPACE}" -l app.kubernetes.io/component=agent
+oc get deploy,svc,bc,is -n "${NAMESPACE}" -l app.kubernetes.io/component=agent
 oc get deploy -n "${NAMESPACE}" -l app.kubernetes.io/component=agent-applier
+oc get bc,is -n "${NAMESPACE}" | head
 ```
 
-Expect three sample agent Deployments Ready and the agent-applier Running.
+Expect agent-applier Running.
+Golden Path agents use BuildConfigs (`oc logs -f bc/<name>`) then Deployments from ImageStreams.
 
 ## 6. Lightspeed streaming query
 

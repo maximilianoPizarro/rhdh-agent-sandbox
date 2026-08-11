@@ -16,8 +16,8 @@ Docs site: **https://maximilianopizarro.github.io/rhdh-agent-sandbox/** (Jekyll 
 | **LiteLLM Proxy** | OpenAI-compatible gateway to Sandbox shared models (**Granite**, **Qwen3**) |
 | **OpenShift + Kubernetes MCP** | Namespace-scoped tools for Lightspeed / MCP Chat (ClusterIP) |
 | **Backstage MCP Actions** | Software Catalog + TechDocs tools on Hub Route `/api/mcp-actions/v1` |
-| **Agent Applier + samples** | Catalog-driven Deployments; Python/LangGraph, Node.js, Quarkus stubs with structured logs |
-| **Golden Path Templates** | Deploy Agent, DevSpaces AI Workspace, AI Service with MCP |
+| **Agent Applier** | Catalog-driven BuildConfig + Deployments; Golden Path generates real LangGraph / LangChain.js / LangChain4j agents |
+| **Golden Path Templates** | Deploy Agent (scaffold+build+deploy), DevSpaces AI Workspace, AI Service with MCP |
 | **DevSpaces + Continue** | Preinstalled Continue → LiteLLM; optional Hub MCP from the IDE |
 | **OpenClaw (optional)** | Provisioned from sandbox.redhat.com (separate `*-claw` ns); wire Hub MCP via Claw CR |
 

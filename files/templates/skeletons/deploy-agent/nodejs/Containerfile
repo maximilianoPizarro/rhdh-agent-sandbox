@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest
+USER 0
+WORKDIR /opt/app-root/src
+COPY package.json ./
+RUN npm install --omit=dev
+COPY src/ ./src/
+USER 1001
+ENV PORT=8080 \
+    NODE_ENV=production
+EXPOSE 8080
+CMD ["node", "src/index.js"]

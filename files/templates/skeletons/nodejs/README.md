@@ -14,14 +14,20 @@ export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='
 # then run Devfile command wire-continue, or edit .continue/config.json
 ```
 
-Models: `granite` (default), `qwen3`.
+Models: `granite` (default), `qwen3`, `litemaas-qwen`.
 
 ## Skills and prompts
 
-- Skills: `.continue/skills/`
+- Skills: `.continue/skills/` and `.cursor/skills/` (includes official [Red Hat agentic skills](https://www.redhat.com/en/agentic-skills))
 - Prompts: `docs/prompts/`
 - Discover the same assets in Developer Hub Catalog (tags `skill` / `prompt`) while logged in as **Guest**.
+
+Try: `/red-hat-cve-explainer`, `/red-hat-product-lifecycle`, `/red-hat-diagnostics`.
 
 ## Hub agent loop
 
 Use Developer Hub Lightspeed (guest) for MCP tool-calling against the namespace. This workspace uses LiteLLM for code assistance only.
+
+## Deploy Agent golden path
+
+Prefer **Create → Deploy Agent** to generate a real **Node.js/LangChain.js** agent with BuildConfig deploy.
