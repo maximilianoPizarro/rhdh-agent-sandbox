@@ -37,3 +37,8 @@ data:
       lifecycle: experimental
       owner: ${{ values.owner }}
       system: agent-sandbox
+      dependsOn:
+        - api:default/openshift-mcp-server
+        - api:default/kubernetes-mcp-server
+        - api:default/rhdh-mcp-actions
+        - api:default/red-hat-security-mcp

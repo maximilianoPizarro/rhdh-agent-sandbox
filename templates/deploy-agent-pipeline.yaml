@@ -1,0 +1,527 @@
+{{- if and .Values.agents.enabled .Values.agents.applier.enabled }}
+# Task 4 only installs the shared Tekton assets. PipelineRuns are created later by the applier.
+#
+# Developer Sandbox note:
+# This pipeline intentionally uses an OpenShift binary build (`oc start-build --from-dir`)
+# instead of an in-pod Buildah step. In practice that path is more likely to work in Sandbox
+# namespaces because it reuses OpenShift Builds and avoids extra SCC friction for Tekton task pods.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-pipeline
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs", "builds"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs/instantiate", "buildconfigs/instantiatebinary"]
+    verbs: ["create"]
+  - apiGroups: ["image.openshift.io"]
+    resources: ["imagestreams", "imagestreamtags"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-pipeline
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-pipeline
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-materialize
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+spec:
+  description: Copy a language skeleton from the chart build-sources ConfigMap into a workspace and render its placeholders.
+  params:
+    - name: name
+      type: string
+    - name: language
+      type: string
+    - name: model
+      type: string
+    - name: agent-type
+      type: string
+    - name: agent-spec
+      type: string
+  workspaces:
+    - name: source
+  volumes:
+    - name: build-sources
+      configMap:
+        name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-build-sources
+  steps:
+    - name: materialize
+      image: registry.access.redhat.com/ubi9/python-311:latest
+      volumeMounts:
+        - name: build-sources
+          mountPath: /build-sources
+          readOnly: true
+      script: |
+        #!/usr/bin/env python3
+        import os
+        import pathlib
+        import shutil
+        import sys
+
+        language = os.environ["PARAM_LANGUAGE"]
+        framework_by_language = {
+            "python": "langgraph",
+            "nodejs": "langchain-js",
+            "quarkus": "langchain4j",
+        }
+        if language not in framework_by_language:
+            raise SystemExit(f"unsupported language: {language}")
+
+        framework = framework_by_language[language]
+        source_root = pathlib.Path("/build-sources")
+        target_root = pathlib.Path(os.environ["WORKSPACE_SOURCE"])
+        if target_root.exists():
+            shutil.rmtree(target_root)
+        target_root.mkdir(parents=True, exist_ok=True)
+
+        replacements = {
+            {{ print "${{ values.name }}" | quote }}: os.environ["PARAM_NAME"],
+            {{ print "${{ values.language }}" | quote }}: language,
+            {{ print "${{ values.framework }}" | quote }}: framework,
+            {{ print "${{ values.model }}" | quote }}: os.environ["PARAM_MODEL"],
+            {{ print "${{ values.agentType }}" | quote }}: os.environ["PARAM_AGENT_TYPE"],
+            {{ print "${{ values.agentSpec }}" | quote }}: os.environ["PARAM_AGENT_SPEC"],
+            {{ print "${{ values.owner }}" | quote }}: "group:default/developers",
+        }
+
+        copied = 0
+        prefix = f"{language}---"
+        for source_file in source_root.iterdir():
+            if not source_file.is_file() or not source_file.name.startswith(prefix):
+                continue
+            relative_path = source_file.name[len(prefix):].replace("---", "/")
+            destination = target_root / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            text = source_file.read_text(encoding="utf-8")
+            for old, new in replacements.items():
+                text = text.replace(old, new)
+            destination.write_text(text, encoding="utf-8")
+            copied += 1
+
+        if copied == 0:
+            raise SystemExit(f"no sources found for language: {language}")
+
+        print(f"materialized language={language} framework={framework} files={copied}")
+      env:
+        - name: WORKSPACE_SOURCE
+          value: $(workspaces.source.path)
+        - name: PARAM_NAME
+          value: $(params.name)
+        - name: PARAM_LANGUAGE
+          value: $(params.language)
+        - name: PARAM_MODEL
+          value: $(params.model)
+        - name: PARAM_AGENT_TYPE
+          value: $(params.agent-type)
+        - name: PARAM_AGENT_SPEC
+          value: $(params.agent-spec)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-build
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+spec:
+  description: Build the materialized workspace with an OpenShift binary build and push it to the in-cluster registry by default.
+  params:
+    - name: name
+      type: string
+    - name: language
+      type: string
+    - name: namespace
+      type: string
+    - name: image
+      type: string
+      default: ""
+  workspaces:
+    - name: source
+  steps:
+    - name: build
+      image: registry.redhat.io/openshift4/ose-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        TARGET_IMAGE="$(params.image)"
+        if [[ -z "${TARGET_IMAGE}" ]]; then
+          TARGET_IMAGE="image-registry.openshift-image-registry.svc:5000/$(params.namespace)/$(params.name):latest"
+        fi
+
+        OUTPUT_KIND="DockerImage"
+        OUTPUT_NAME="${TARGET_IMAGE}"
+        if [[ "${TARGET_IMAGE}" == "image-registry.openshift-image-registry.svc:5000/$(params.namespace)/$(params.name):latest" ]]; then
+          OUTPUT_KIND="ImageStreamTag"
+          OUTPUT_NAME="$(params.name):latest"
+          cat <<'EOF' | oc apply -f -
+        apiVersion: image.openshift.io/v1
+        kind: ImageStream
+        metadata:
+          name: $(params.name)
+          namespace: $(params.namespace)
+          labels:
+            app.kubernetes.io/name: $(params.name)
+            app.kubernetes.io/component: agent
+            app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+            rhdh-agent-sandbox.io/language: $(params.language)
+        EOF
+        fi
+
+        cat <<EOF | oc apply -f -
+        apiVersion: build.openshift.io/v1
+        kind: BuildConfig
+        metadata:
+          name: $(params.name)
+          namespace: $(params.namespace)
+          labels:
+            app.kubernetes.io/name: $(params.name)
+            app.kubernetes.io/component: agent
+            app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+            rhdh-agent-sandbox.io/language: $(params.language)
+        spec:
+          runPolicy: Serial
+          successfulBuildsHistoryLimit: 2
+          failedBuildsHistoryLimit: 3
+          source:
+            type: Binary
+            binary: {}
+          strategy:
+            type: Docker
+            dockerStrategy:
+              dockerfilePath: Containerfile
+          output:
+            to:
+              kind: ${OUTPUT_KIND}
+              name: ${OUTPUT_NAME}
+        EOF
+
+        oc start-build "$(params.name)" \
+          --from-dir="$(workspaces.source.path)" \
+          --follow \
+          --wait
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-deploy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+spec:
+  description: Deploy the built image as a namespaced Deployment and Service.
+  params:
+    - name: name
+      type: string
+    - name: language
+      type: string
+    - name: namespace
+      type: string
+    - name: model
+      type: string
+    - name: agent-type
+      type: string
+    - name: agent-spec
+      type: string
+    - name: image
+      type: string
+      default: ""
+  steps:
+    - name: deploy
+      image: registry.redhat.io/openshift4/ose-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        TARGET_IMAGE="$(params.image)"
+        if [[ -z "${TARGET_IMAGE}" ]]; then
+          TARGET_IMAGE="image-registry.openshift-image-registry.svc:5000/$(params.namespace)/$(params.name):latest"
+        fi
+
+        case "$(params.language)" in
+          python)
+            FRAMEWORK="langgraph"
+            REQUEST_CPU="25m"
+            REQUEST_MEMORY="64Mi"
+            LIMIT_CPU="200m"
+            LIMIT_MEMORY="256Mi"
+            ;;
+          nodejs)
+            FRAMEWORK="langchain-js"
+            REQUEST_CPU="25m"
+            REQUEST_MEMORY="64Mi"
+            LIMIT_CPU="200m"
+            LIMIT_MEMORY="256Mi"
+            ;;
+          quarkus)
+            FRAMEWORK="langchain4j"
+            REQUEST_CPU="50m"
+            REQUEST_MEMORY="256Mi"
+            LIMIT_CPU="500m"
+            LIMIT_MEMORY="768Mi"
+            ;;
+          *)
+            echo "unsupported language: $(params.language)" >&2
+            exit 1
+            ;;
+        esac
+
+        cat <<EOF | oc apply -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: $(params.name)
+          namespace: $(params.namespace)
+          labels:
+            app.kubernetes.io/name: $(params.name)
+            app.kubernetes.io/component: agent
+            app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+            app.openshift.io/runtime: $(params.language)
+            rhdh-agent-sandbox.io/language: $(params.language)
+            rhdh-agent-sandbox.io/framework: ${FRAMEWORK}
+            rhdh-agent-sandbox.io/build: "true"
+          annotations:
+            app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ include "rhdh-agent-sandbox.fullname" . }}-litellm"}]'
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: $(params.name)
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: $(params.name)
+                app.kubernetes.io/component: agent
+                app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+                app.openshift.io/runtime: $(params.language)
+            spec:
+              containers:
+                - name: agent
+                  image: ${TARGET_IMAGE}
+                  imagePullPolicy: Always
+                  ports:
+                    - name: http
+                      containerPort: 8080
+                  env:
+                    - name: AGENT_NAME
+                      value: $(params.name)
+                    - name: MODEL
+                      value: $(params.model)
+                    - name: FRAMEWORK
+                      value: ${FRAMEWORK}
+                    - name: LANGUAGE
+                      value: $(params.language)
+                    - name: AGENT_TYPE
+                      value: $(params.agent-type)
+                    - name: AGENT_SPEC
+                      value: $(params.agent-spec)
+                    - name: LOG_LEVEL
+                      value: {{ .Values.agents.logLevel | default "INFO" | quote }}
+                    - name: NAMESPACE
+                      value: $(params.namespace)
+                    - name: LITELLM_API_BASE
+                      value: http://{{ include "rhdh-agent-sandbox.fullname" . }}-litellm:{{ .Values.litellm.service.port }}/v1
+                    - name: LITELLM_API_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: {{ .Values.secrets.name }}
+                          key: litellm-master-key
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: http
+                    initialDelaySeconds: 10
+                    periodSeconds: 10
+                  livenessProbe:
+                    httpGet:
+                      path: /health
+                      port: http
+                    initialDelaySeconds: 30
+                    periodSeconds: 20
+                  resources:
+                    requests:
+                      cpu: ${REQUEST_CPU}
+                      memory: ${REQUEST_MEMORY}
+                    limits:
+                      cpu: ${LIMIT_CPU}
+                      memory: ${LIMIT_MEMORY}
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: $(params.name)
+          namespace: $(params.namespace)
+          labels:
+            app.kubernetes.io/name: $(params.name)
+            app.kubernetes.io/component: agent
+            app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+        spec:
+          selector:
+            app.kubernetes.io/name: $(params.name)
+          ports:
+            - name: http
+              port: 8080
+              targetPort: http
+        EOF
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-verify
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+spec:
+  description: Wait for the Deployment rollout created by the deploy step.
+  params:
+    - name: name
+      type: string
+    - name: namespace
+      type: string
+  steps:
+    - name: verify
+      image: registry.redhat.io/openshift4/ose-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        oc rollout status "deployment/$(params.name)" -n "$(params.namespace)" --timeout=180s
+        oc get service "$(params.name)" -n "$(params.namespace)"
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: deploy-agent-pipeline
+    app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
+spec:
+  description: Materialize a golden-path agent, build it with an OpenShift binary build, deploy it, and verify rollout health.
+  params:
+    - name: name
+      type: string
+    - name: language
+      type: string
+    - name: namespace
+      type: string
+      default: {{ .Release.Namespace | quote }}
+    - name: model
+      type: string
+      default: granite
+    - name: agent-type
+      type: string
+      default: tool-agent
+    - name: agent-spec
+      type: string
+      default: You are a helpful namespace-scoped agent.
+    - name: image
+      type: string
+      default: ""
+  workspaces:
+    - name: source
+  tasks:
+    - name: materialize
+      taskRef:
+        name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-materialize
+      params:
+        - name: name
+          value: $(params.name)
+        - name: language
+          value: $(params.language)
+        - name: model
+          value: $(params.model)
+        - name: agent-type
+          value: $(params.agent-type)
+        - name: agent-spec
+          value: $(params.agent-spec)
+      workspaces:
+        - name: source
+          workspace: source
+    - name: build
+      runAfter:
+        - materialize
+      taskRef:
+        name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-build
+      params:
+        - name: name
+          value: $(params.name)
+        - name: language
+          value: $(params.language)
+        - name: namespace
+          value: $(params.namespace)
+        - name: image
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: source
+    - name: deploy
+      runAfter:
+        - build
+      taskRef:
+        name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-deploy
+      params:
+        - name: name
+          value: $(params.name)
+        - name: language
+          value: $(params.language)
+        - name: namespace
+          value: $(params.namespace)
+        - name: model
+          value: $(params.model)
+        - name: agent-type
+          value: $(params.agent-type)
+        - name: agent-spec
+          value: $(params.agent-spec)
+        - name: image
+          value: $(params.image)
+    - name: verify
+      runAfter:
+        - deploy
+      taskRef:
+        name: {{ include "rhdh-agent-sandbox.fullname" . }}-deploy-agent-verify
+      params:
+        - name: name
+          value: $(params.name)
+        - name: namespace
+          value: $(params.namespace)
+{{- end }}

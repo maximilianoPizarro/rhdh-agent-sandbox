@@ -42,15 +42,31 @@ catalog:
         - allow: [Component, System, API, Resource, Location, Template, User, Group]
 
 kubernetes:
+  customResources:
+    - group: tekton.dev
+      apiVersion: v1
+      plural: pipelines
+    - group: tekton.dev
+      apiVersion: v1
+      plural: pipelineruns
+    - group: tekton.dev
+      apiVersion: v1
+      plural: taskruns
+    - group: route.openshift.io
+      apiVersion: v1
+      plural: routes
   serviceLocatorMethod:
     type: multiTenant
   clusterLocatorMethods:
     - type: config
       clusters:
-        - url: https://kubernetes.default.svc
-          name: sandbox
+        # Public API + SA token (see developer-hub-on-developer-sandbox).
+        - url: ${K8S_CLUSTER_URL}
+          name: ${K8S_CLUSTER_NAME}
           authProvider: serviceAccount
           skipTLSVerify: true
+          skipMetricsLookup: true
+          serviceAccountToken: ${K8S_CLUSTER_TOKEN}
 
 lightspeed:
   systemPrompt: >-

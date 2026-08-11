@@ -1,6 +1,6 @@
 # Agent-friendly Developer Hub on Developer Sandbox
 
-![Install overview](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/install-one-command.png)
+![Install overview](assets/install-one-command.png)
 
 This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP tools, Golden Paths, and DevSpaces AI on **OpenShift Developer Sandbox**.
 

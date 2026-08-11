@@ -205,6 +205,9 @@ rhdh:
           disabled: false
         - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
           disabled: false
+        # CI tab — Tekton PipelineRuns (same pattern as developer-hub-on-developer-sandbox)
+        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.49.4__3.37.0!backstage-community-plugin-tekton
+          disabled: false
         - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
           disabled: false
         - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
@@ -355,17 +358,33 @@ rhdh:
               prompt: Search TechDocs for MCP, Lightspeed, or LiteLLM and summarize the key pages.
               category: Docs
         kubernetes:
+          # Tekton + OpenShift routes (Topology / CI)
+          customResources:
+            - group: tekton.dev
+              apiVersion: v1
+              plural: pipelines
+            - group: tekton.dev
+              apiVersion: v1
+              plural: pipelineruns
+            - group: tekton.dev
+              apiVersion: v1
+              plural: taskruns
+            - group: route.openshift.io
+              apiVersion: v1
+              plural: routes
           serviceLocatorMethod:
             type: multiTenant
           clusterLocatorMethods:
             - type: config
               clusters:
-                - url: https://kubernetes.default.svc
-                  name: sandbox
+                # Public API + SA token (developer-hub-on-developer-sandbox pattern).
+                # kubernetes.default.svc hits self-signed TLS that Node/fetch does not honor reliably.
+                - url: ${K8S_CLUSTER_URL}
+                  name: ${K8S_CLUSTER_NAME}
                   authProvider: serviceAccount
                   skipTLSVerify: true
-                  serviceAccountToken:
-                    $file: /var/run/secrets/kubernetes.io/serviceaccount/token
+                  skipMetricsLookup: true
+                  serviceAccountToken: ${K8S_CLUSTER_TOKEN}
         # Lightspeed → LiteLLM via lightspeed-core (ENABLE_VLLM / VLLM_*).
         # Model identifiers exposed by llama-stack are vllm/<name>.
         lightspeed:
@@ -411,6 +430,16 @@ rhdh:
               key: postgres-password
         - name: NODE_OPTIONS
           value: "--no-node-snapshot"
+        # Kubernetes / Tekton plugin — public API + dedicated reader SA token
+        - name: K8S_CLUSTER_NAME
+          value: sandbox
+        - name: K8S_CLUSTER_URL
+          value: https://api.rm2.thpm.p1.openshiftapps.com:6443
+        - name: K8S_CLUSTER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-hub-k8s-reader
+              key: token
       # RHDH 1.10.3 defaults + AI catalog ConfigMap mount.
       extraVolumeMounts:
         - name: dynamic-plugins-root

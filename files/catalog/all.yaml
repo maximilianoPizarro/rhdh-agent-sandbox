@@ -12,6 +12,7 @@ spec:
     - ./skills.yaml
     - ./prompts.yaml
     - ./users.yaml
+    - ./groups.yaml
     - ./template-devspaces-workspace.yaml
     - ./template-ai-service.yaml
     - ./template-deploy-agent.yaml

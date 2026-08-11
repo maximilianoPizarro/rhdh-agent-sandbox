@@ -19,6 +19,9 @@ data:
   users.yaml: |
 {{- $users := .Files.Get "files/catalog/users.yaml" | replace "__RELEASE_NAMESPACE__" .Release.Namespace }}
 {{ $users | indent 4 }}
+  groups.yaml: |
+{{- $groups := .Files.Get "files/catalog/groups.yaml" | replace "__RELEASE_NAMESPACE__" .Release.Namespace }}
+{{ $groups | indent 4 }}
   template-devspaces-workspace.yaml: |
 {{ .Files.Get "files/catalog/template-devspaces-workspace.yaml" | indent 4 }}
   template-ai-service.yaml: |

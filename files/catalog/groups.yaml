@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: developers
+  title: Developers
+  description: Default owner group for Golden Path entities in the agent sandbox demo
+spec:
+  type: team
+  members:
+    - user:default/guest

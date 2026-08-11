@@ -18,6 +18,6 @@ Creates a started DevWorkspace with Continue → LiteLLM for the selected langua
 
 Deploys a small HTTP service with `/mcp/smoke` calling Kubernetes + OpenShift MCP.
 
-![Deploy Agent](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png)
+![Deploy Agent](assets/golden-path-deploy-agent.png)
 
 Run from Hub → **Create** → pick a template → follow the task log.

@@ -11,9 +11,15 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function httpRequest(url: string, token: string): Promise<HttpResponse> {
+function httpRequest(
+  url: string,
+  token: string,
+  options: { method?: string; body?: unknown } = {},
+): Promise<HttpResponse> {
+  const { method = 'GET', body } = options;
   const parsed = new URL(url);
   const client = parsed.protocol === 'https:' ? https : http;
+  const payload = body === undefined ? undefined : JSON.stringify(body);
 
   return new Promise((resolve, reject) => {
     const req = client.request(
@@ -22,10 +28,16 @@ function httpRequest(url: string, token: string): Promise<HttpResponse> {
         hostname: parsed.hostname,
         port: parsed.port,
         path: `${parsed.pathname}${parsed.search}`,
-        method: 'GET',
+        method,
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
+          ...(payload
+            ? {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload),
+              }
+            : {}),
         },
       },
       res => {
@@ -42,6 +54,9 @@ function httpRequest(url: string, token: string): Promise<HttpResponse> {
       },
     );
     req.on('error', reject);
+    if (payload) {
+      req.write(payload);
+    }
     req.end();
   });
 }
@@ -98,7 +113,11 @@ export function createWaitForEntityAction() {
       const entityRef = `${kind}:${namespace}/${name}`;
       const url = `${baseUrl}/api/catalog/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
 
+      const refreshUrl = `${baseUrl}/api/catalog/refresh`;
+      const catalogLocationRef = 'location:default/rhdh-agent-sandbox-catalog';
       const start = Date.now();
+      let notFoundCount = 0;
+
       while (Date.now() - start < timeoutMs) {
         const response = await httpRequest(url, token);
 
@@ -112,6 +131,25 @@ export function createWaitForEntityAction() {
           throw new Error(
             `Failed while waiting for ${entityRef}: HTTP ${response.status} ${response.body}`,
           );
+        }
+
+        notFoundCount += 1;
+        if (notFoundCount % 3 === 0) {
+          try {
+            const refresh = await httpRequest(refreshUrl, token, {
+              method: 'POST',
+              body: { entityRef: catalogLocationRef },
+            });
+            if (![200, 202].includes(refresh.status)) {
+              ctx.logger.warn(
+                `Catalog refresh failed while waiting for ${entityRef}: HTTP ${refresh.status} ${refresh.body}`,
+              );
+            }
+          } catch (error) {
+            ctx.logger.warn(
+              `Catalog refresh failed while waiting for ${entityRef}: ${error}`,
+            );
+          }
         }
 
         await sleep(pollMs);

@@ -1,6 +1,6 @@
 # Architecture
 
-![Architecture overview](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/architecture-overview.png)
+![Architecture overview](assets/architecture-overview.png)
 
 ## Components
 
@@ -30,18 +30,18 @@ Guest → MCP Chat → LiteLLM (litemaas-qwen) → MCP tools
 
 ## Golden Path flow
 
-![Golden Path](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/golden-path-deploy-agent.png)
+![Golden Path](assets/golden-path-deploy-agent.png)
 
 1. Scaffolder registers Component (`catalog:register-entity` via pending ConfigMap)
 2. agent-applier creates BuildConfig + Deployment
 3. Hub shows **Topology** (Kubernetes plugin) and **TechDocs** for the agent
 
-![Agent Topology tab](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/agent-topology-preview.png)
+![Agent Topology tab](assets/agent-topology-preview.png)
 
 ## MCP tools flow
 
-![MCP tools flow](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/mcp-tools-flow.png)
+![MCP tools flow](assets/mcp-tools-flow.png)
 
 ## Skills ↔ MCP APIs
 
-![Skills catalog map](https://maximilianopizarro.github.io/rhdh-agent-sandbox/assets/diagrams/skills-catalog-map.png)
+![Skills catalog map](assets/skills-catalog-map.png)

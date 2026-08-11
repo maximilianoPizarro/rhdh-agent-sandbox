@@ -12,6 +12,8 @@ metadata:
     backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
     backstage.io/kubernetes-label-selector: "app.kubernetes.io/part-of=rhdh-agent-sandbox"
     backstage.io/kubernetes-namespace: __RELEASE_NAMESPACE__
+    # Tekton CI tab (PipelineRuns with the same label selector)
+    janus-idp.io/tekton: "app.kubernetes.io/part-of=rhdh-agent-sandbox"
 spec:
   type: website
   lifecycle: experimental

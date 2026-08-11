@@ -31,6 +31,12 @@ rules:
   - apiGroups: ["image.openshift.io"]
     resources: ["imagestreams", "imagestreamtags"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelineruns", "taskruns"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelines", "tasks"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["workspace.devfile.io"]
     resources: ["devworkspaces", "devworkspacetemplates"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
@@ -60,7 +66,7 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
 data:
   applier.py: |
-    import hashlib, io, json, os, tarfile, time, threading, urllib.error, urllib.request, ssl
+    import hashlib, io, json, os, re, tarfile, time, threading, urllib.error, urllib.parse, urllib.request, ssl
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
     NS = os.environ["NAMESPACE"]
@@ -73,6 +79,8 @@ data:
     HEALTH_PORT = int(os.environ.get("HEALTH_PORT", "8080"))
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
     SOURCES_CM = os.environ.get("SOURCES_CM", f"{FULLNAME}-agent-build-sources")
+    USE_TEKTON = os.environ.get("AGENT_USE_TEKTON", "true").lower() in ("true", "1", "yes")
+    DEPLOY_PIPELINE = os.environ.get("DEPLOY_AGENT_PIPELINE", f"{FULLNAME}-deploy-agent")
     _LEVELS = {"DEBUG": 10, "INFO": 20, "WARN": 30, "WARNING": 30, "ERROR": 40}
     _MIN = _LEVELS.get(LOG_LEVEL, 20)
 
@@ -216,26 +224,47 @@ data:
                 errors += 1
                 continue
             import re
-            api_m = re.search(r"^apiVersion:\s+\S+", entity_yaml, re.MULTILINE)
-            kind_m = re.search(r"^kind:\s+(\w+)", entity_yaml, re.MULTILINE)
-            name_m = re.search(r"^\s+name:\s+(\S+)", entity_yaml, re.MULTILINE)
-            if not api_m or not kind_m or not name_m:
-                log("WARN", "pending_catalog_invalid_entity_yaml", configmap=cm_name)
+            # Support multi-doc entity.yaml (e.g. API + Component) as separate registered keys.
+            docs = [d.strip() for d in re.split(r"\n---\n", entity_yaml) if d.strip()]
+            if not docs:
+                log("WARN", "pending_catalog_empty", configmap=cm_name)
                 errors += 1
                 continue
-            ent_name = name_m.group(1)
-            ent_kind = kind_m.group(1).lower()
-            if "backstage.io/kubernetes-namespace:" not in entity_yaml:
-                entity_yaml = entity_yaml.replace(
-                    "      annotations:\n",
-                    f"      annotations:\n        backstage.io/kubernetes-namespace: {NS}\n",
-                    1,
-                )
-            key = f"{ent_kind}-{ent_name}.yaml"
             st, reg_body = k8s(
                 "GET",
                 f"/api/v1/namespaces/{NS}/configmaps/{REGISTERED_CM}",
             )
+            if st not in (200, 404):
+                log("ERROR", "registered_catalog_get_failed", status=st, body=_k8s_err(reg_body))
+                errors += 1
+                continue
+            patch_data = dict((reg_body.get("data") or {}) if st == 200 else {})
+            doc_ok = 0
+            for doc in docs:
+                api_m = re.search(r"^apiVersion:\s+\S+", doc, re.MULTILINE)
+                kind_m = re.search(r"^kind:\s+(\w+)", doc, re.MULTILINE)
+                name_m = re.search(r"^\s+name:\s+(\S+)", doc, re.MULTILINE)
+                if not api_m or not kind_m or not name_m:
+                    log("WARN", "pending_catalog_invalid_entity_yaml", configmap=cm_name)
+                    errors += 1
+                    continue
+                ent_name = name_m.group(1)
+                ent_kind = kind_m.group(1).lower()
+                if (
+                    "backstage.io/kubernetes-namespace:" not in doc
+                    and "      annotations:\n" in doc
+                ):
+                    doc = doc.replace(
+                        "      annotations:\n",
+                        f"      annotations:\n        backstage.io/kubernetes-namespace: {NS}\n",
+                        1,
+                    )
+                key = f"{ent_kind}-{ent_name}.yaml"
+                patch_data[key] = doc
+                log("INFO", "catalog_entity_registered", name=ent_name, kind=ent_kind, key=key)
+                doc_ok += 1
+            if doc_ok == 0:
+                continue
             if st == 404:
                 st_post, post_body = k8s(
                     "POST",
@@ -244,16 +273,14 @@ data:
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
                         "metadata": {"name": REGISTERED_CM},
-                        "data": {key: entity_yaml},
+                        "data": patch_data,
                     },
                 )
                 if st_post not in (200, 201):
                     log("ERROR", "registered_catalog_create_failed", status=st_post, body=_k8s_err(post_body))
                     errors += 1
                     continue
-            elif st == 200:
-                patch_data = dict(reg_body.get("data") or {})
-                patch_data[key] = entity_yaml
+            else:
                 st_patch, patch_body = k8s(
                     "PATCH",
                     f"/api/v1/namespaces/{NS}/configmaps/{REGISTERED_CM}",
@@ -264,11 +291,6 @@ data:
                     log("ERROR", "registered_catalog_patch_failed", status=st_patch, body=_k8s_err(patch_body))
                     errors += 1
                     continue
-            else:
-                log("ERROR", "registered_catalog_get_failed", status=st, body=_k8s_err(reg_body))
-                errors += 1
-                continue
-            file_path = f"{REGISTERED_MOUNT}/{key}"
             st_refresh, refresh_err = catalog_refresh()
             if st_refresh not in (200, 202) and refresh_err:
                 log("WARN", "catalog_refresh_failed", status=st_refresh, error=refresh_err)
@@ -288,8 +310,7 @@ data:
             )
             if st_lbl not in (200, 201):
                 log("WARN", "pending_catalog_label_patch_failed", configmap=cm_name, status=st_lbl, body=_k8s_err(lbl_body))
-            log("INFO", "catalog_entity_registered", name=ent_name, kind=ent_kind, key=key)
-            registered += 1
+            registered += doc_ok
         return registered, errors
 
     FRAMEWORK = {
@@ -421,9 +442,165 @@ data:
         code, body = k8s("GET", f"/apis/image.openshift.io/v1/namespaces/{NS}/imagestreamtags/{name}:latest")
         if code != 200:
             return False
+        if body.get("image"):
+            return True
         tag = body.get("tag") or {}
         items = tag.get("items") or []
         return len(items) > 0
+
+    def agent_spec_hash(language, framework, model, agent_type, spec):
+        return hashlib.sha256(
+            f"{language}|{framework}|{model}|{agent_type}|{spec}".encode()
+        ).hexdigest()[:12]
+
+    def built_deployment_hash(language, framework, model, agent_type, spec):
+        agent_log_level = os.environ.get("AGENT_LOG_LEVEL", LOG_LEVEL)
+        return hashlib.sha256(
+            f"build|{language}|{framework}|{model}|{spec}|{agent_type}|{agent_log_level}|{FULLNAME}".encode()
+        ).hexdigest()[:16]
+
+    def dns1123_name(*parts, max_len=63):
+        raw = "-".join(str(part or "") for part in parts).lower()
+        safe = re.sub(r"[^a-z0-9-]+", "-", raw).strip("-")
+        safe = re.sub(r"-{2,}", "-", safe)
+        safe = safe[:max_len].rstrip("-")
+        return safe or "deploy-agent"
+
+    def list_agent_pipelineruns(name):
+        sel = urllib.parse.quote(f"app.kubernetes.io/name={name}", safe="=,")
+        code, body = k8s(
+            "GET",
+            f"/apis/tekton.dev/v1/namespaces/{NS}/pipelineruns?labelSelector={sel}",
+        )
+        if code != 200:
+            log("ERROR", "pipelinerun_list_failed", name=name, status=code, error=_k8s_err(body))
+            return None
+        items = body.get("items") or []
+        items.sort(
+            key=lambda pr: (
+                (pr.get("status") or {}).get("completionTime")
+                or (pr.get("status") or {}).get("startTime")
+                or (pr.get("metadata") or {}).get("creationTimestamp", "")
+            ),
+            reverse=True,
+        )
+        return items
+
+    def pipelinerun_condition(pr):
+        status = pr.get("status") or {}
+        for cond in status.get("conditions") or []:
+            if cond.get("type") == "Succeeded":
+                cond_status = cond.get("status")
+                reason = cond.get("reason", "")
+                if cond_status == "True":
+                    return "Succeeded", reason
+                if cond_status == "False":
+                    return "Failed", reason
+                if cond_status == "Unknown":
+                    if "cancel" in reason.lower():
+                        return "Failed", reason
+                    return "Running", reason
+        if status.get("completionTime"):
+            return "Failed", ""
+        if status.get("startTime"):
+            return "Running", ""
+        return "Pending", ""
+
+    def start_deploy_pipelinerun(name, language, model, agent_type, spec, spec_hash):
+        image = image_ref(name)
+        hash8 = spec_hash[:8]
+        pr_name = dns1123_name("deploy", name, hash8)
+        body = {
+            "apiVersion": "tekton.dev/v1",
+            "kind": "PipelineRun",
+            "metadata": {
+                "name": pr_name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "rhdh-agent-sandbox.io/spec-hash": spec_hash,
+                },
+            },
+            "spec": {
+                "pipelineRef": {"name": DEPLOY_PIPELINE},
+                "taskRunTemplate": {"serviceAccountName": "pipeline"},
+                "params": [
+                    {"name": "name", "value": name},
+                    {"name": "language", "value": language},
+                    {"name": "namespace", "value": NS},
+                    {"name": "model", "value": model},
+                    {"name": "agent-type", "value": agent_type},
+                    {"name": "agent-spec", "value": spec},
+                    {"name": "image", "value": image},
+                ],
+                "workspaces": [{
+                    "name": "source",
+                    "volumeClaimTemplate": {
+                        "spec": {
+                            "accessModes": ["ReadWriteOnce"],
+                            "resources": {"requests": {"storage": "1Gi"}},
+                        }
+                    },
+                }],
+            },
+        }
+        c, b = k8s("POST", f"/apis/tekton.dev/v1/namespaces/{NS}/pipelineruns", body)
+        if 200 <= c < 300:
+            log("INFO", "pipelinerun_started", name=name, pipelinerun=pr_name, pipeline=DEPLOY_PIPELINE, spec_hash=spec_hash)
+            return "started"
+        if c == 409:
+            retry_name = dns1123_name("deploy", name, hash8, str(int(time.time()))[-6:])
+            body["metadata"]["name"] = retry_name
+            c, b = k8s("POST", f"/apis/tekton.dev/v1/namespaces/{NS}/pipelineruns", body)
+            if 200 <= c < 300:
+                log("INFO", "pipelinerun_started", name=name, pipelinerun=retry_name, pipeline=DEPLOY_PIPELINE, spec_hash=spec_hash)
+                return "started"
+        log("ERROR", "pipelinerun_start_failed", name=name, status=c, error=_k8s_err(b))
+        return "error"
+
+    def deployment_ready(deploy):
+        status = deploy.get("status") or {}
+        meta = deploy.get("metadata") or {}
+        observed = status.get("observedGeneration", 0)
+        generation = meta.get("generation", 0)
+        return (
+            observed >= generation
+            and (status.get("readyReplicas") or 0) >= 1
+            and (status.get("availableReplicas") or 0) >= 1
+        )
+
+    def ensure_tekton_agent(name, language, framework, model, agent_type, spec):
+        spec_hash = agent_spec_hash(language, framework, model, agent_type, spec)
+        runs = list_agent_pipelineruns(name)
+        if runs is None:
+            return "error"
+
+        for pr in runs:
+            labels = ((pr.get("metadata") or {}).get("labels") or {})
+            pr_hash = labels.get("rhdh-agent-sandbox.io/spec-hash", "")
+            state, reason = pipelinerun_condition(pr)
+            pr_name = (pr.get("metadata") or {}).get("name", "?")
+            if state in ("Running", "Pending"):
+                log("INFO", "pipelinerun_in_progress", name=name, pipelinerun=pr_name, reason=reason or state)
+                return "building"
+            if pr_hash == spec_hash and state == "Succeeded":
+                code, deploy = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
+                if code == 404:
+                    return ensure_built_deployment(name, language, framework, model, agent_type, spec)
+                if not (200 <= code < 300):
+                    log("ERROR", "deployment_get_failed", name=name, status=code, error=_k8s_err(deploy))
+                    return "error"
+                desired_hash = built_deployment_hash(language, framework, model, agent_type, spec)
+                current_hash = (deploy.get("metadata") or {}).get("annotations", {}).get("rhdh-agent-sandbox.io/applier-hash")
+                if current_hash != desired_hash or not deployment_ready(deploy):
+                    return ensure_built_deployment(name, language, framework, model, agent_type, spec)
+                return "unchanged"
+
+        result = start_deploy_pipelinerun(name, language, model, agent_type, spec, spec_hash)
+        if result == "error":
+            return "error"
+        return "building"
 
     def latest_build_phase(name):
         code, body = k8s(
@@ -472,9 +649,7 @@ data:
 
     def ensure_built_deployment(name, language, framework, model, agent_type, spec):
         agent_log_level = os.environ.get("AGENT_LOG_LEVEL", LOG_LEVEL)
-        desired_hash = hashlib.sha256(
-            f"build|{language}|{framework}|{model}|{spec}|{agent_type}|{agent_log_level}|{FULLNAME}".encode()
-        ).hexdigest()[:16]
+        desired_hash = built_deployment_hash(language, framework, model, agent_type, spec)
         deploy = {
             "apiVersion": "apps/v1",
             "kind": "Deployment",
@@ -966,6 +1141,10 @@ data:
         if not build:
             return ensure_stub(agent, name, language, framework, model, spec)
 
+        if USE_TEKTON:
+            # Pipeline creates BC/IS as needed; avoid blocking poll on binary builds.
+            return ensure_tekton_agent(name, language, framework, model, agent_type, spec)
+
         if not ensure_imagestream(name) or not ensure_buildconfig(name, language):
             return "error"
 
@@ -1012,7 +1191,16 @@ data:
         log("INFO", "health_server_started", port=HEALTH_PORT)
 
     start_health_server()
-    log("INFO", "applier_started", namespace=NS, catalog=CATALOG, poll_seconds=POLL_SECONDS, sources_cm=SOURCES_CM)
+    log(
+        "INFO",
+        "applier_started",
+        namespace=NS,
+        catalog=CATALOG,
+        poll_seconds=POLL_SECONDS,
+        sources_cm=SOURCES_CM,
+        deploy_pipeline=DEPLOY_PIPELINE,
+        use_tekton=USE_TEKTON,
+    )
     STATE["ready"] = True
 
     while True:
