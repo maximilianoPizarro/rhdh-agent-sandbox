@@ -10,7 +10,7 @@ COPY tsconfig.json ./
 RUN ./node_modules/.bin/tsc --outDir dist --module commonjs --target es2022 --esModuleInterop --skipLibCheck \
     src/index.ts src/module.ts \
     src/actions/createCatalogRegisterEntityAction.ts \
-    src/actions/createApplyPendingConfigMapAction.ts \
+    src/actions/createApplyPendingConfigMapAction.ts 2>&1 \
     && echo '{"main":"dist/index.js"}' > package.json
 
 FROM scratch
