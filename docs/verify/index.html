@@ -367,20 +367,22 @@ curl <span class="nt">-skI</span> <span class="s2">"https://</span><span class="
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">exec</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">HUB</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-c</span> backstage-backend <span class="nt">--</span> <span class="nb">ls</span> /opt/app-root/src/catalog
 </code></pre></div></div>
 
-<p>Expect at least: <code class="language-plaintext highlighter-rouge">all.yaml</code>, <code class="language-plaintext highlighter-rouge">skills.yaml</code>, <code class="language-plaintext highlighter-rouge">prompts.yaml</code>, <code class="language-plaintext highlighter-rouge">mcp-servers.yaml</code>, <code class="language-plaintext highlighter-rouge">template-deploy-agent.yaml</code>, <code class="language-plaintext highlighter-rouge">sample-agents.yaml</code>, <code class="language-plaintext highlighter-rouge">users.yaml</code>.</p>
+<p>Expect at least: <code class="language-plaintext highlighter-rouge">all.yaml</code>, <code class="language-plaintext highlighter-rouge">skills.yaml</code>, <code class="language-plaintext highlighter-rouge">prompts.yaml</code>, <code class="language-plaintext highlighter-rouge">mcp-servers.yaml</code>, <code class="language-plaintext highlighter-rouge">template-deploy-agent.yaml</code>, <code class="language-plaintext highlighter-rouge">users.yaml</code>.</p>
 
 <p>Scaffolder assets mount:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc <span class="nb">exec</span> <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">HUB</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-c</span> backstage-backend <span class="nt">--</span> <span class="nb">ls</span> <span class="nt">-R</span> /opt/app-root/src/scaffolder-assets
 </code></pre></div></div>
 
-<h2 id="5-sample-agents">5. Sample agents</h2>
+<h2 id="5-sample-agents--golden-path-builds">5. Sample agents / Golden Path builds</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get deploy,svc <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get deploy,svc,bc,is <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent
 oc get deploy <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent-applier
+oc get bc,is <span class="nt">-n</span> <span class="s2">"</span><span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span><span class="s2">"</span> | <span class="nb">head</span>
 </code></pre></div></div>
 
-<p>Expect three sample agent Deployments Ready and the agent-applier Running.</p>
+<p>Expect agent-applier Running.
+Golden Path agents use BuildConfigs (<code class="language-plaintext highlighter-rouge">oc logs -f bc/&lt;name&gt;</code>) then Deployments from ImageStreams.</p>
 
 <h2 id="6-lightspeed-streaming-query">6. Lightspeed streaming query</h2>
 

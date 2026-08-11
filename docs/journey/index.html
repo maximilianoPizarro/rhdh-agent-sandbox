@@ -289,7 +289,7 @@
 <figcaption>
 <span class="slide-num">Step 04</span>
 <strong>Deploy Agent — success</strong>
-<span class="desc">All steps green: skeleton materialized, runtime manifests applied, Component registered. The agent-applier creates the Deployment + Service automatically.</span>
+<span class="desc">All steps green: framework source generated, Component registered with build=true. The agent-applier starts a Binary BuildConfig and deploys the ImageStream image.</span>
 </figcaption>
 </figure>
 
@@ -408,8 +408,8 @@
   <tbody>
     <tr>
       <td><strong>Deploy Agent</strong></td>
-      <td>Creates a namespace-scoped agent Pod (Deployment + Service) without git push. Framework chosen from language.</td>
-      <td>fetch skeleton → fetch runtime → catalog:write → agent-applier creates K8s resources</td>
+      <td>Generates real LangGraph / LangChain.js / LangChain4j source, BuildConfig-compiles, and deploys without git push.</td>
+      <td>fetch skeleton → catalog:write (build=true) → applier builds + deploys</td>
     </tr>
     <tr>
       <td><strong>DevSpaces AI Workspace</strong></td>
@@ -428,15 +428,16 @@
 
 <ol>
   <li><strong>Resolve framework</strong> — <code class="language-plaintext highlighter-rouge">python</code> → LangGraph, <code class="language-plaintext highlighter-rouge">nodejs</code> → LangChain.js, <code class="language-plaintext highlighter-rouge">quarkus</code> → LangChain4j</li>
-  <li><strong>Materialize skeleton</strong> — <code class="language-plaintext highlighter-rouge">fetch:template</code> downloads files from GitHub repository</li>
-  <li><strong>Materialize runtime</strong> — language-specific Deployment + Service manifests (Deploy Agent only)</li>
-  <li><strong>Write Component</strong> — <code class="language-plaintext highlighter-rouge">catalog:write</code> registers the entity directly in the Hub catalog</li>
-  <li><strong>Agent-applier</strong> — watches for <code class="language-plaintext highlighter-rouge">managed-agent</code> annotations and creates/updates K8s resources</li>
+  <li><strong>Generate source</strong> — <code class="language-plaintext highlighter-rouge">fetch:template</code> materializes framework skeleton with your <code class="language-plaintext highlighter-rouge">agentSpec</code> / <code class="language-plaintext highlighter-rouge">agentType</code></li>
+  <li><strong>Write Component</strong> — <code class="language-plaintext highlighter-rouge">catalog:write</code> registers the entity with <code class="language-plaintext highlighter-rouge">build=true</code> annotations</li>
+  <li><strong>Agent-applier</strong> — creates ImageStream + BuildConfig, starts binary Docker build from chart source assets, then deploys the ImageStream tag</li>
 </ol>
 
 <h2 id="verify">Verify</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Deploy Agent — check the deployed pod</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Deploy Agent — watch build then pod</span>
+oc get bc/&lt;agent-name&gt;
+oc logs <span class="nt">-f</span> bc/&lt;agent-name&gt;
 oc get deploy/&lt;agent-name&gt;
 oc logs deploy/&lt;agent-name&gt;
 curl <span class="nt">-s</span> http://&lt;agent-name&gt;:8080/health | jq <span class="nb">.</span>

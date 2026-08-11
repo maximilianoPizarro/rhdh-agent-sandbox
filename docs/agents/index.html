@@ -252,7 +252,7 @@
       <div class="pf-v6-c-content">
         <h1 id="agents">Agents</h1>
 
-<p>Three related loops on Developer Sandbox. Prefer <a href="/rhdh-agent-sandbox/golden-paths/">Golden Paths</a> to create a new agent Pod + catalog Component.</p>
+<p>Three related loops on Developer Sandbox. Prefer <a href="/rhdh-agent-sandbox/golden-paths/">Golden Paths</a> to create a new agent Pod + catalog Component from <strong>real</strong> LangGraph / LangChain.js / LangChain4j source.</p>
 
 <h2 id="1-hub-guest-in-cluster">1. Hub Guest (in-cluster)</h2>
 
@@ -279,30 +279,38 @@
   </tbody>
 </table>
 
-<p>Guest has <strong>no</strong> OpenShift token. Agent Deployments are created by chart RBAC (samples + agent-applier), not by the Guest’s kubeconfig.</p>
+<p>Guest has <strong>no</strong> OpenShift token. Agent Deployments and builds are created by chart RBAC (samples + agent-applier), not by the Guest’s kubeconfig.</p>
 
 <h2 id="2-agent-pod-golden-path--samples">2. Agent Pod (Golden Path / samples)</h2>
 
+<h3 id="golden-path-buildtrue">Golden Path (build=true)</h3>
+
 <ul>
-  <li>Stub HTTP server (<code class="language-plaintext highlighter-rouge">/health</code>, <code class="language-plaintext highlighter-rouge">/v1/chat</code>) with <code class="language-plaintext highlighter-rouge">AGENT_SPEC</code>, <code class="language-plaintext highlighter-rouge">FRAMEWORK</code>, <code class="language-plaintext highlighter-rouge">MODEL</code>, LiteLLM env.</li>
-  <li>Image: shared UBI Python runtime ConfigMap for Sandbox quota; framework is a label/intent (LangGraph / LangChain.js / LangChain4j).</li>
-  <li>Service: <strong>ClusterIP only</strong>.</li>
-  <li>Driven by Component annotations or Helm <code class="language-plaintext highlighter-rouge">agents.samples</code>.</li>
+  <li>Scaffolder generates framework source; agent-applier starts a <strong>Binary BuildConfig</strong>.</li>
+  <li>Image: <code class="language-plaintext highlighter-rouge">image-registry.openshift-image-registry.svc:5000/&lt;ns&gt;/&lt;name&gt;:latest</code></li>
+  <li>Env: <code class="language-plaintext highlighter-rouge">AGENT_SPEC</code>, <code class="language-plaintext highlighter-rouge">AGENT_TYPE</code>, <code class="language-plaintext highlighter-rouge">MODEL</code>, LiteLLM credentials</li>
+  <li>Endpoints: <code class="language-plaintext highlighter-rouge">/health</code>, <code class="language-plaintext highlighter-rouge">/</code>, <code class="language-plaintext highlighter-rouge">/v1/chat</code> (plus <code class="language-plaintext highlighter-rouge">/v1/graph</code> or <code class="language-plaintext highlighter-rouge">/v1/runtime</code> per language)</li>
+  <li>Service: <strong>ClusterIP only</strong></li>
 </ul>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get deploy,svc <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent
-oc logs deploy/sample-python-agent
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get bc,is,deploy,svc <span class="nt">-l</span> app.kubernetes.io/component<span class="o">=</span>agent
+oc logs <span class="nt">-f</span> bc/&lt;name&gt;
+oc logs deploy/&lt;name&gt;
 </code></pre></div></div>
+
+<h3 id="legacy-samples">Legacy samples</h3>
+
+<p>Pre-installed <code class="language-plaintext highlighter-rouge">sample-*-agent</code> Deployments were removed. Create agents only via the Deploy Agent golden path (<code class="language-plaintext highlighter-rouge">build=true</code>).</p>
 
 <h2 id="3-devspaces-openshift-user">3. DevSpaces (OpenShift user)</h2>
 
-<p>Factory links on sample / golden-path Components open:</p>
+<p>Factory links open language skeletons:</p>
 
-<p><code class="language-plaintext highlighter-rouge">https://workspaces.openshift.com/#https://github.com/maximilianopizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/&lt;language&gt;</code></p>
+<p><code class="language-plaintext highlighter-rouge">https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/&lt;language&gt;</code></p>
 
-<p>Agent-oriented Devfiles also live under <code class="language-plaintext highlighter-rouge">files/devfiles/agents/</code>. Wire Continue to the LiteLLM <strong>Route</strong> with <code class="language-plaintext highlighter-rouge">litellm-master-key</code> (see <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>).</p>
+<p>Wire Continue to the LiteLLM <strong>Route</strong> with <code class="language-plaintext highlighter-rouge">litellm-master-key</code> (see <a href="/rhdh-agent-sandbox/devspaces-ai/">DevSpaces AI</a>).</p>
 
-<p>Parallel path: use a DevSpaces catalog sample workspace if you do not have admin on <code class="language-plaintext highlighter-rouge">openshift-devspaces</code>.</p>
+<p>Official <a href="https://www.redhat.com/en/agentic-skills">Red Hat agentic skills</a> (CVE, lifecycle, diagnostics, support severity) are available in the catalog and can be installed into IDE skill directories.</p>
 
 <h2 id="identity-cheat-sheet">Identity cheat sheet</h2>
 
@@ -320,7 +328,7 @@ oc logs deploy/sample-python-agent
     </tr>
     <tr>
       <td>Agent Pod SA / applier</td>
-      <td>Namespace create/update Deployment, Service</td>
+      <td>Namespace create/update Deployment, Service, BuildConfig, ImageStream; start builds</td>
     </tr>
     <tr>
       <td>OpenShift Sandbox user</td>

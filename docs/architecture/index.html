@@ -330,8 +330,8 @@
 <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hub Guest ──(no token)──► Lightspeed UI
                               │
 OpenShift user ──model-api-key──► LiteLLM ──► shared models (oauth-proxy)
-OpenShift user ──litellm-master-key──► Continue / LiteLLM Route
-Hub backend ──mcp-token──► /api/mcp-actions/v1 (Lightspeed MCP integration)
+OpenShift user ──litellm-master-key──► Continue / LiteLLM Route (chat)
+Continue / Lightspeed ──mcp-token──► Hub Route /api/mcp-actions/v1 (catalog MCP)
 </code></pre></div></div>
 
 <table>
@@ -350,12 +350,12 @@ Hub backend ──mcp-token──► /api/mcp-actions/v1 (Lightspeed MCP integra
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">litellm-master-key</code></td>
-      <td>Lightspeed (<code class="language-plaintext highlighter-rouge">VLLM_API_KEY</code>) + Continue</td>
+      <td>Lightspeed (<code class="language-plaintext highlighter-rouge">VLLM_API_KEY</code>) + Continue chat</td>
       <td>Stable (chart-generated)</td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">mcp-token</code></td>
-      <td>Lightspeed → RHDH MCP actions</td>
+      <td>Lightspeed + Continue Hub MCP Actions</td>
       <td>Stable (chart-generated)</td>
     </tr>
     <tr>
@@ -391,7 +391,8 @@ Hub backend ──mcp-token──► /api/mcp-actions/v1 (Lightspeed MCP integra
 <ul>
   <li><strong>Hub Lightspeed</strong> uses ClusterIP MCP services and RHDH mcp-actions (<code class="language-plaintext highlighter-rouge">mcp-integration-tools</code> + <code class="language-plaintext highlighter-rouge">MCP_TOKEN</code>).</li>
   <li>MCP ServiceAccount has <strong>namespace</strong> Role only (Sandbox-safe).</li>
-  <li><strong>No public MCP Routes</strong> — DevSpaces talks to LiteLLM Route only, not MCP.</li>
+  <li><strong>No public Routes for OpenShift/Kubernetes MCP</strong> (ClusterIP only).</li>
+  <li><strong>DevSpaces Continue</strong> uses two hops: LiteLLM Route for <strong>chat</strong>, and the <strong>Hub Route</strong> <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> (with <code class="language-plaintext highlighter-rouge">mcp-token</code>) for <strong>catalog/TechDocs</strong> tools only — see <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</li>
 </ul>
 
 <h2 id="quota-sketch-notterminating">Quota sketch (NotTerminating)</h2>

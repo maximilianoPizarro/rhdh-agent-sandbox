@@ -392,11 +392,33 @@ spec:
   </tbody>
 </table>
 
-<h2 id="mcp-from-the-ide">MCP from the IDE?</h2>
+<h2 id="ai-and-mcp-from-the-ide-two-paths">AI and MCP from the IDE (two paths)</h2>
 
-<p><strong>Hub mcp-actions</strong> are reachable from DevSpaces over the Hub Route with <code class="language-plaintext highlighter-rouge">mcp-token</code> (catalog / TechDocs tools). OpenShift/Kubernetes MCP remain <strong>ClusterIP</strong> and are consumed from <strong>Hub Lightspeed / MCP Chat</strong>, not from the IDE.</p>
+<p>Continue is one sidebar, two network paths:</p>
 
-<p>Continue chat path: Continue → LiteLLM Route → Granite/Qwen. Step-by-step screenshots: <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Path</th>
+      <th>Flow</th>
+      <th>Secret</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>AI chat</strong></td>
+      <td>Continue → LiteLLM Route <code class="language-plaintext highlighter-rouge">/v1</code> → Granite/Qwen</td>
+      <td><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code></td>
+    </tr>
+    <tr>
+      <td><strong>Hub MCP</strong></td>
+      <td>Continue → Hub Route <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> → catalog/TechDocs tools</td>
+      <td><code class="language-plaintext highlighter-rouge">mcp-token</code> (written by <code class="language-plaintext highlighter-rouge">wire-continue</code> into <code class="language-plaintext highlighter-rouge">mcpServers</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>OpenShift/Kubernetes MCP remain <strong>ClusterIP</strong> and are consumed from <strong>Hub Lightspeed / MCP Chat</strong>, not from the IDE. Screenshots and prompts: <a href="/rhdh-agent-sandbox/devspaces-journey/">DevSpaces journey</a>.</p>
 
 <blockquote>
   <p><strong>Info: Continue v2</strong></p>
