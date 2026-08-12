@@ -1,5 +1,7 @@
 - title: Home
   url: /
+- title: Interactive demo
+  url: /demo-script/
 - title: Install journey
   url: /install-journey/
 - title: Journey
@@ -22,7 +24,7 @@
       url: /agents/
     - title: Verify the install
       url: /verify/
-    - title: Demo script
+    - title: Interactive demo
       url: /demo-script/
 - title: How it works
   children:

@@ -1,5 +1,7 @@
 # Agent-friendly Developer Hub on Developer Sandbox
 
+**No cluster?** Start with the [interactive Arcade demo](demo-script.md) — click through the full Sandbox journey in your browser.
+
 ![Install overview](assets/install-one-command.png)
 
 This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP tools, Golden Paths, and DevSpaces AI on **OpenShift Developer Sandbox**.

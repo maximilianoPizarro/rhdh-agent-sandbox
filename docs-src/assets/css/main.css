@@ -366,6 +366,37 @@ button.pf-v6-c-nav__link[aria-expanded="true"] .nav-toggle-icon {
   color: inherit;
 }
 
+/* --- Arcade embed --- */
+.arcade-embed {
+  margin: 1.5rem 0 2rem;
+  border: 1px solid var(--rh-color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f0f10;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+}
+
+.arcade-embed iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  display: block;
+}
+
+.arcade-embed__caption {
+  margin: 0;
+  padding: .75rem 1rem;
+  font-size: .875rem;
+  color: var(--rh-color-text-secondary);
+  background: var(--rh-color-surface-subtle);
+  border-top: 1px solid var(--rh-color-border);
+}
+
+.arcade-embed__caption a {
+  color: var(--rh-color-brand-red);
+  font-weight: 500;
+}
+
 /* --- Hero Section (home layout) --- */
 .hero-section {
   background: linear-gradient(160deg, #1a1a1a 0%, #2a0f0f 50%, #0f0f10 100%);

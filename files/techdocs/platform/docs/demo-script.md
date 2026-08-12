@@ -1,5 +1,21 @@
 # Demo script (~10 minutes)
 
+<div class="arcade-embed" role="region" aria-label="Interactive demo">
+  <iframe
+    src="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI?embed"
+    title="Demo Agentic IA Developer Sandbox"
+    loading="lazy"
+    allow="fullscreen"
+    allowfullscreen
+  ></iframe>
+  <p class="arcade-embed__caption">
+    <a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI" target="_blank" rel="noopener">Open in Arcade</a>
+    if the player does not load.
+  </p>
+</div>
+
+Watch the walkthrough above without a cluster, or follow the live script below.
+
 Interactive recording: **[Demo Agentic IA Developer Sandbox](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI)** (Arcade).
 
 ## Part A — Hub agent loop (~5 min)

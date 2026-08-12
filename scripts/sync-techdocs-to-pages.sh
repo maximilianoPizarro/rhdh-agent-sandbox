@@ -19,7 +19,7 @@ declare -A TITLES=(
   [quickstart.md]="Quickstart"
   [architecture.md]="Architecture"
   [golden-paths.md]="Golden Paths"
-  [demo-script.md]="Demo script"
+  [demo-script.md]="Interactive demo"
 )
 
 for md in index.md quickstart.md architecture.md golden-paths.md demo-script.md; do
@@ -31,15 +31,22 @@ for md in index.md quickstart.md architecture.md golden-paths.md demo-script.md;
   fi
   title="${TITLES[$md]}"
   permalink="${PERMALINKS[$md]}"
+  layout="default"
+  if [[ "${md}" == "index.md" ]]; then
+    layout="home"
+  fi
   {
     echo "---"
-    echo "layout: default"
+    echo "layout: ${layout}"
     echo "title: ${title}"
     echo "permalink: ${permalink}"
     echo "---"
     echo
-    # Strip first heading if present (Jekyll title comes from front matter)
-    tail -n +1 "${src_file}" | sed '1{/^# /d;}'
+    # Strip first heading if present (Jekyll title comes from front matter).
+    # Rewrite TechDocs asset paths and internal .md links for GitHub Pages.
+    tail -n +1 "${src_file}" | sed '1{/^# /d;}' \
+      | sed -E 's#]\(assets/([^)]+)\)#]({{ '\''/assets/diagrams/\1'\'' | relative_url }})#g' \
+      | sed -E "s#\]\\(([a-z0-9-]+)\\.md\\)#]({{ '/\\1/' | relative_url }})#g"
   } > "${dest_file}"
   echo "Synced ${md} -> ${dest_file}"
 done
