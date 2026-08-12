@@ -273,18 +273,27 @@
   </div>
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
-      <div class="pf-v6-c-content">
-        <div class="arcade-embed" role="region" aria-label="Interactive demo">
-  <iframe src="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI?embed" title="Demo Agentic IA Developer Sandbox" loading="lazy" allow="fullscreen" allowfullscreen=""></iframe>
-  <p class="arcade-embed__caption">
-    <a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI" target="_blank" rel="noopener">Open in Arcade</a>
-    if the player does not load.
-  </p>
+      <div class="pf-v6-c-content content--wide">
+        <div class="arcade-embed" role="region" aria-label="Interactive demo" tabindex="0">
+  <div class="arcade-embed__frame">
+    <iframe
+      src="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI?embed"
+      title="Demo Agentic IA Developer Sandbox"
+      loading="lazy"
+      allow="fullscreen"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <div class="arcade-embed__toolbar">
+    <button type="button" class="arcade-embed__fs" data-arcade-fs aria-label="Toggle fullscreen" aria-pressed="false">Fullscreen</button>
+    <span class="arcade-embed__hint">Esc to exit</span>
+    <a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI" class="arcade-embed__open" target="_blank" rel="noopener">Open in Arcade</a>
+  </div>
 </div>
 
 <p>Watch the walkthrough above without a cluster, or follow the live script below.</p>
 
-<p>Interactive recording: <strong><a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI">Demo Agentic IA Developer Sandbox</a></strong> (Arcade).</p>
+<p>Interactive recording: <strong><a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI" target="_blank" rel="noopener">Demo Agentic IA Developer Sandbox</a></strong> (Arcade).</p>
 
 <h2 id="part-a--hub-agent-loop-5-min">Part A — Hub agent loop (~5 min)</h2>
 
@@ -323,6 +332,7 @@
 </footer>
 
   <script src="/rhdh-agent-sandbox/assets/js/nav.js"></script>
+  <script src="/rhdh-agent-sandbox/assets/js/arcade-embed.js"></script>
   
 </body>
 </html>

@@ -259,6 +259,7 @@ button.pf-v6-c-nav__link[aria-expanded="true"] .nav-toggle-icon {
 }
 
 .pf-v6-c-content:has(.journey-carousel),
+.pf-v6-c-content:has(.arcade-embed),
 .pf-v6-c-content.content--wide {
   max-width: none;
   width: 100%;
@@ -373,18 +374,35 @@ button.pf-v6-c-nav__link[aria-expanded="true"] .nav-toggle-icon {
   border-radius: 12px;
   overflow: hidden;
   background: #0f0f10;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .18);
+  width: 100%;
+}
+
+.arcade-embed:focus {
+  outline: 2px solid var(--rh-color-brand-red);
+  outline-offset: 3px;
+}
+
+.arcade-embed__frame {
+  position: relative;
+  width: 100%;
+  background: #151515;
 }
 
 .arcade-embed iframe {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: min(75vh, 820px);
+  min-height: 420px;
   border: 0;
   display: block;
 }
 
-.arcade-embed__caption {
-  margin: 0;
+.arcade-embed__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
   padding: .75rem 1rem;
   font-size: .875rem;
   color: var(--rh-color-text-secondary);
@@ -392,9 +410,71 @@ button.pf-v6-c-nav__link[aria-expanded="true"] .nav-toggle-icon {
   border-top: 1px solid var(--rh-color-border);
 }
 
-.arcade-embed__caption a {
+.arcade-embed__hint {
+  flex: 1;
+  text-align: center;
+  font-size: .8125rem;
+  color: var(--rh-color-text-secondary);
+  min-width: 5rem;
+}
+
+.arcade-embed__fs {
+  appearance: none;
+  border: 1px solid var(--rh-color-border);
+  background: var(--rh-color-surface);
+  color: var(--rh-color-text-primary);
+  font-family: var(--rh-font-text);
+  font-size: .8125rem;
+  font-weight: 600;
+  padding: .4rem .85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.arcade-embed__fs:hover,
+.arcade-embed__fs[aria-pressed="true"] {
+  background: #fff;
+  border-color: var(--rh-color-brand-red);
+  color: var(--rh-color-brand-red);
+}
+
+.arcade-embed__open {
   color: var(--rh-color-brand-red);
   font-weight: 500;
+  text-decoration: none;
+}
+
+.arcade-embed__open:hover {
+  text-decoration: underline;
+}
+
+.arcade-embed.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.arcade-embed.is-fullscreen .arcade-embed__frame {
+  flex: 1;
+  min-height: 0;
+}
+
+.arcade-embed.is-fullscreen iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+}
+
+body.arcade-fs-open {
+  overflow: hidden;
 }
 
 /* --- Hero Section (home layout) --- */

@@ -12,7 +12,7 @@
   </div>
   <main class="pf-v6-c-page__main" id="main-content">
     <section class="pf-v6-c-page__main-section">
-      <div class="pf-v6-c-content">
+      <div class="pf-v6-c-content{% if page.content_class %} {{ page.content_class }}{% endif %}">
         {{ content }}
       </div>
     </section>
@@ -21,6 +21,9 @@
   <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   {% if page.carousel %}
   <script src="{{ '/assets/js/carousel.js' | relative_url }}"></script>
+  {% endif %}
+  {% if page.arcade %}
+  <script src="{{ '/assets/js/arcade-embed.js' | relative_url }}"></script>
   {% endif %}
 </body>
 </html>

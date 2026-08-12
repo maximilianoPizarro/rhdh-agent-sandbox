@@ -35,11 +35,18 @@ for md in index.md quickstart.md architecture.md golden-paths.md demo-script.md;
   if [[ "${md}" == "index.md" ]]; then
     layout="home"
   fi
+  extra_front=""
+  if [[ "${md}" == "demo-script.md" ]]; then
+    extra_front=$'arcade: true\ncontent_class: content--wide\n'
+  fi
   {
     echo "---"
     echo "layout: ${layout}"
     echo "title: ${title}"
     echo "permalink: ${permalink}"
+    if [[ -n "${extra_front}" ]]; then
+      printf '%s' "${extra_front}"
+    fi
     echo "---"
     echo
     # Strip first heading if present (Jekyll title comes from front matter).
