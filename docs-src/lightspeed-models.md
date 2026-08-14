@@ -49,11 +49,11 @@ Shared Granite/Qwen reject `tool_choice=auto` (they are not started with `--enab
 
 Without that, Lightspeed returns HTTP 200 with an empty stream and `Error while obtaining answer` in `lightspeed-core` logs.
 
-For **tool calling** in Hub Lightspeed / MCP Chat, use **`litemaas-qwen`**. Create Secret `litemaas-credentials` with key `api-key` (LiteMaaS bearer). The chart mounts it as `LITEMAAS_API_KEY` into LiteLLM — never commit the key to git.
+For **tool calling** in Hub Lightspeed / MCP Chat, use **`litemaas-qwen`**. On the OpenShift Console Helm form, paste the LiteMaaS bearer into **LiteMaaS API key (tool calling)** (`secrets.litemaasApiKey`). The chart stores it in Secret `litemaas-credentials` (key `api-key`) and mounts it as `LITEMAAS_API_KEY` into LiteLLM — never commit the key to git. Upgrades with an empty form field keep the live Secret.
 
 ## DevSpaces Continue
 
-The chart creates Secret **`rhdh-agent-sandbox-continue`** with `LITELLM_API_BASE` (LiteLLM Route) and `LITELLM_API_KEY` (`litellm-master-key`). Devfile `wire-continue` reads that Secret (or env) and writes `.continue/config.json` for models `granite` / `qwen3`. See [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
+The chart creates Secret **`rhdh-agent-sandbox-continue`** with `LITELLM_API_BASE`, `LITELLM_API_KEY`, and `HUB_MCP_URL`. Devfile `wire-continue` writes Continue **2.x** `~/.continue/config.yaml` (models `granite` / `qwen3` / `litemaas-qwen`, plus `red-hat-security` and `hub-mcp-actions`). See [DevSpaces AI]({{ '/devspaces-ai/' | relative_url }}).
 
 ## Refresh model token (~24h)
 

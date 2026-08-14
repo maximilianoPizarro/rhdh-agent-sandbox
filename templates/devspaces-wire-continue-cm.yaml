@@ -1,0 +1,22 @@
+{{- if and .Values.litellm.enabled .Values.litellm.route.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullname }}-wire-continue
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: continue
+    controller.devfile.io/mount-to-devworkspace: "true"
+    controller.devfile.io/watch-configmap: "true"
+  annotations:
+    controller.devfile.io/mount-as: file
+    controller.devfile.io/mount-path: /opt/rhdh-agent-sandbox
+    rhdh-agent-sandbox/purpose: "Continue 2.x wire-continue.py for every DevWorkspace"
+data:
+  wire-continue.py: |
+{{ .Files.Get "files/devfiles/wire-continue.py" | indent 4 }}
+  rh-security-oauth.py: |
+{{ .Files.Get "files/devfiles/rh-security-oauth.py" | indent 4 }}
+{{- end }}

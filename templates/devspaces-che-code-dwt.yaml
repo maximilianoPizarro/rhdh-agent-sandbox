@@ -1,0 +1,126 @@
+{{- if and .Values.agents.enabled .Values.agents.applier.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
+{{- $router := .Values.rhdh.global.clusterRouterBase | default "apps.example.com" }}
+{{- $che := index (.Values.agents.devspaces | default dict) "cheCode" | default dict }}
+{{- $injector := $che.injectorImage | default "registry.redhat.io/devspaces/code-rhel9@sha256:0969d1f90608227c0aa6ec3a85b31bde966a5d73db1ef8af620ebc39ef1da82b" }}
+{{- $runtime := $che.runtimeImage | default "registry.redhat.io/devspaces/udi-rhel9@sha256:2708a8082c9c0aa569e31c79695483311cae3533e42b950fd02384b0def75415" }}
+{{/*
+  Shared Che Code editor for Golden Path DevWorkspaces. The dashboard injects
+  spec.contributions when you start from the UI; agent-applier POSTs a raw
+  DevWorkspace, so the editor must live in-namespace and be referenced explicitly.
+*/}}
+apiVersion: workspace.devfile.io/v1alpha2
+kind: DevWorkspaceTemplate
+metadata:
+  name: {{ $fullname }}-che-code
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: che-code
+  annotations:
+    che.eclipse.org/components-update-policy: managed
+    rhdh-agent-sandbox.io/golden-path: devspaces
+spec:
+  commands:
+    - id: init-container-command
+      apply:
+        component: che-code-injector
+    - id: init-che-code-command
+      exec:
+        component: che-code-runtime-description
+        commandLine: nohup /checode/entrypoint-volume.sh > /checode/entrypoint-logs.txt 2>&1 &
+  components:
+    - name: che-code-injector
+      container:
+        image: {{ $injector | quote }}
+        command:
+          - /entrypoint-init-container.sh
+        cpuRequest: 30m
+        cpuLimit: 500m
+        memoryRequest: 32Mi
+        memoryLimit: 256Mi
+        sourceMapping: /projects
+        volumeMounts:
+          - name: checode
+            path: /checode
+        env:
+          - name: CHE_DASHBOARD_URL
+            value: https://devspaces.{{ $router }}
+          - name: CHE_PLUGIN_REGISTRY_URL
+            value: ""
+          - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
+            value: ""
+          - name: CLUSTER_CONSOLE_URL
+            value: https://console-openshift-console.{{ $router }}
+          - name: CLUSTER_CONSOLE_TITLE
+            value: OpenShift console
+          - name: OPENVSX_REGISTRY_URL
+            value: https://open-vsx.org
+    - name: che-code-runtime-description
+      attributes:
+        app.kubernetes.io/component: che-code-runtime
+        app.kubernetes.io/part-of: che-code.eclipse.org
+        controller.devfile.io/container-contribution: true
+      container:
+        image: {{ $runtime | quote }}
+        cpuRequest: 30m
+        cpuLimit: 500m
+        memoryRequest: 256Mi
+        memoryLimit: 1024Mi
+        sourceMapping: /projects
+        volumeMounts:
+          - name: checode
+            path: /checode
+        env:
+          - name: CHE_DASHBOARD_URL
+            value: https://devspaces.{{ $router }}
+          - name: CHE_PLUGIN_REGISTRY_URL
+            value: ""
+          - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
+            value: ""
+          - name: CLUSTER_CONSOLE_URL
+            value: https://console-openshift-console.{{ $router }}
+          - name: CLUSTER_CONSOLE_TITLE
+            value: OpenShift console
+          - name: OPENVSX_REGISTRY_URL
+            value: https://open-vsx.org
+        endpoints:
+          - name: che-code
+            exposure: public
+            protocol: https
+            secure: true
+            targetPort: 3100
+            attributes:
+              cookiesAuthEnabled: true
+              discoverable: false
+              type: main
+              urlRewriteSupported: true
+          - name: code-redirect-1
+            exposure: public
+            protocol: https
+            targetPort: 13131
+            attributes:
+              discoverable: false
+              urlRewriteSupported: false
+          - name: code-redirect-2
+            exposure: public
+            protocol: https
+            targetPort: 13132
+            attributes:
+              discoverable: false
+              urlRewriteSupported: false
+          - name: code-redirect-3
+            exposure: public
+            protocol: https
+            targetPort: 13133
+            attributes:
+              discoverable: false
+              urlRewriteSupported: false
+    - name: checode
+      volume: {}
+  events:
+    preStart:
+      - init-container-command
+    postStart:
+      - init-che-code-command
+{{- end }}

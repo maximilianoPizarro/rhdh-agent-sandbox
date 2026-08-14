@@ -8,6 +8,7 @@ import uuid
 from typing import Annotated, Any, TypedDict
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
@@ -107,6 +108,12 @@ def build_graph():
 
 GRAPH = build_graph()
 app = FastAPI(title=config.NAME)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")

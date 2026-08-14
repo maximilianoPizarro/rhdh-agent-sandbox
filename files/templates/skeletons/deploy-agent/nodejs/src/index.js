@@ -20,9 +20,21 @@ function log(level, msg, fields = {}) {
   console.log(`${new Date().toISOString()} ${level} ${msg}${extra ? " " + extra : ""}`);
 }
 
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  };
+}
+
 function json(res, code, obj, requestId) {
   const body = JSON.stringify(obj);
-  const headers = { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) };
+  const headers = {
+    "Content-Type": "application/json",
+    "Content-Length": Buffer.byteLength(body),
+    ...corsHeaders(),
+  };
   if (requestId) headers["X-Request-Id"] = requestId;
   res.writeHead(code, headers);
   res.end(body);
@@ -64,6 +76,12 @@ const agent = buildAgent();
 const server = http.createServer(async (req, res) => {
   const rid = req.headers["x-request-id"] || Math.random().toString(16).slice(2, 14);
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, corsHeaders());
+    res.end();
+    return;
+  }
 
   if (req.method === "GET" && (url.pathname === "/health" || url.pathname === "/healthz")) {
     return json(res, 200, { status: "ok", framework: config.FRAMEWORK, language: config.LANGUAGE }, rid);

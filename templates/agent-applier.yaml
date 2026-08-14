@@ -40,6 +40,9 @@ rules:
   - apiGroups: ["workspace.devfile.io"]
     resources: ["devworkspaces", "devworkspacetemplates"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -107,6 +110,7 @@ data:
         "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git",
     )
     GIT_REVISION = os.environ.get("GIT_REVISION", "main")
+    ROUTER_BASE = os.environ.get("CLUSTER_ROUTER_BASE", "").strip()
 
     def log(level, msg, **fields):
         lvl = level.upper()
@@ -116,6 +120,50 @@ data:
         parts = [f"{k}={v}" for k, v in fields.items() if v is not None and v != ""]
         extra = (" " + " ".join(parts)) if parts else ""
         print(f"{ts} {lvl} {msg}{extra}", flush=True)
+
+    def agent_base_url(name):
+        if ROUTER_BASE:
+            return f"https://{name}-{NS}.{ROUTER_BASE}"
+        return f"http://{name}:8080"
+
+    def service_name_for_entity(kind, name):
+        if kind == "api":
+            for suffix in ("-agent", "-http"):
+                if name.endswith(suffix):
+                    return name[: -len(suffix)]
+        return name
+
+    def ensure_route(name):
+        path = f"/apis/route.openshift.io/v1/namespaces/{NS}/routes/{name}"
+        body = {
+            "apiVersion": "route.openshift.io/v1",
+            "kind": "Route",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/part-of": FULLNAME,
+                },
+            },
+            "spec": {
+                "to": {"kind": "Service", "name": name, "weight": 100},
+                "port": {"targetPort": "http"},
+                "tls": {
+                    "termination": "edge",
+                    "insecureEdgeTerminationPolicy": "Redirect",
+                },
+            },
+        }
+        code, _existing = k8s("GET", path)
+        if code == 404:
+            c, resp = k8s("POST", f"/apis/route.openshift.io/v1/namespaces/{NS}/routes", body)
+            if 200 <= c < 300:
+                log("INFO", "route_created", name=name, url=agent_base_url(name))
+            else:
+                log("ERROR", "route_create_failed", name=name, status=c, error=_k8s_err(resp))
+        elif code not in (200, 201):
+            log("WARN", "route_get_failed", name=name, status=code)
 
     def k8s(method, path, body=None, raw=None, content_type="application/json"):
         data = raw
@@ -251,6 +299,10 @@ data:
                 ent_name = name_m.group(1)
                 ent_kind = kind_m.group(1).lower()
                 doc = doc.replace("__RELEASE_NAMESPACE__", NS)
+                doc = doc.replace(
+                    "__AGENT_BASE_URL__",
+                    agent_base_url(service_name_for_entity(ent_kind, ent_name)),
+                )
                 if "backstage.io/kubernetes-namespace:" not in doc:
                     if "      annotations:\n" in doc:
                         doc = doc.replace(
@@ -724,6 +776,8 @@ data:
                                 {"name": "NAMESPACE", "value": NS},
                                 {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
                                 {"name": "LITELLM_API_KEY", "valueFrom": {"secretKeyRef": {"name": SECRETS, "key": "litellm-master-key"}}},
+                                {"name": "QUARKUS_HTTP_CORS_ENABLED", "value": "true"},
+                                {"name": "QUARKUS_HTTP_CORS_ORIGINS", "value": "*"},
                             ],
                             "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 10, "periodSeconds": 10},
                             "livenessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 30, "periodSeconds": 20},
@@ -778,6 +832,7 @@ data:
                 action = "error"
             else:
                 log("INFO", "service_created", name=name)
+        ensure_route(name)
         return action
 
     def ensure_stub(agent, name, language, framework, model, spec):
@@ -884,6 +939,7 @@ data:
             c, body = k8s("POST", f"/api/v1/namespaces/{NS}/services", svc)
             if not (200 <= c < 300):
                 action = "error"
+        ensure_route(name)
         return action
 
     def ensure_ai_service(entity):
@@ -893,7 +949,7 @@ data:
         if not name:
             return "skip"
         model = ann.get("rhdh-agent-sandbox.io/model", "granite")
-        desired_hash = hashlib.sha256(f"ai-service|{model}|v3|{FULLNAME}".encode()).hexdigest()[:16]
+        desired_hash = hashlib.sha256(f"ai-service|{model}|v4|{FULLNAME}".encode()).hexdigest()[:16]
         runtime_cm = f"{FULLNAME}-ai-service-runtime"
 
         deploy = {
@@ -934,6 +990,7 @@ data:
                                 {"name": "K8S_MCP_URL", "value": f"http://{FULLNAME}-k8s-mcp:8085/mcp"},
                                 {"name": "OCP_MCP_URL", "value": f"http://{FULLNAME}-mcp:8080/mcp"},
                                 {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
+                                {"name": "PYTHONUNBUFFERED", "value": "1"},
                             ],
                             "volumeMounts": [{"name": "app", "mountPath": "/app"}],
                             "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 3, "periodSeconds": 10},
@@ -988,6 +1045,7 @@ data:
             if not (200 <= c < 300):
                 log("ERROR", "ai_service_svc_failed", name=name, status=c, error=_k8s_err(body))
                 return "error"
+        ensure_route(name)
         return action
 
     def ensure_devworkspace(entity):
@@ -1002,7 +1060,8 @@ data:
             language = "python"
         framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
         model = ann.get("rhdh-agent-sandbox.io/model", "granite")
-        desired_hash = hashlib.sha256(f"{language}|{framework}|{model}|{GIT_REPO}|{GIT_REVISION}".encode()).hexdigest()[:16]
+        che_code_dwt = os.environ.get("CHE_CODE_DWT", f"{FULLNAME}-che-code")
+        desired_hash = hashlib.sha256(f"{language}|{framework}|{model}|{GIT_REPO}|{GIT_REVISION}|editor:{che_code_dwt}".encode()).hexdigest()[:16]
 
         path = f"/apis/workspace.devfile.io/v1alpha2/namespaces/{NS}/devworkspaces/{name}"
         code, existing = k8s("GET", path)
@@ -1046,28 +1105,28 @@ data:
         )
         wire_cmd = (
             "set -euo pipefail\n"
-            'if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then\n'
-            "  if oc get secret rhdh-agent-sandbox-continue >/dev/null 2>&1; then\n"
-            "    export LITELLM_API_BASE=\"$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)\"\n"
-            "    export LITELLM_API_KEY=\"$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)\"\n"
-            "  fi\n"
+            "SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py\n"
+            "for _ in $(seq 1 15); do\n"
+            '  [[ -f "${SCRIPT}" ]] && break\n'
+            "  sleep 2\n"
+            "done\n"
+            'if [[ ! -f "${SCRIPT}" ]]; then\n'
+            '  echo "wire-continue.py not mounted; ensure ConfigMap ' + FULLNAME + '-wire-continue exists"\n'
+            "  exit 0\n"
             "fi\n"
-            'MODEL="${CONTINUE_DEFAULT_MODEL:-granite}"\n'
-            'LANG_DIR="${AGENT_LANGUAGE:-python}"\n'
-            "mkdir -p .continue\n"
-            'SRC="files/templates/skeletons/${LANG_DIR}"\n'
-            'if [[ -d "${SRC}" ]]; then cp -a "${SRC}/." .; fi\n'
-            "cat > .continue/config.json <<EOF\n"
-            "{\n"
-            '  "models": [\n'
-            '    {"title": "Granite (LiteLLM)", "provider": "openai", "model": "granite", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"},\n'
-            '    {"title": "Qwen3 (LiteLLM)", "provider": "openai", "model": "qwen3", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"},\n'
-            '    {"title": "LiteMaaS Qwen (LiteLLM)", "provider": "openai", "model": "litemaas-qwen", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"}\n'
-            "  ],\n"
-            '  "tabAutocompleteModel": {"title": "Autocomplete", "provider": "openai", "model": "${MODEL}", "apiBase": "${LITELLM_API_BASE}", "apiKey": "${LITELLM_API_KEY}"}\n'
-            "}\n"
-            "EOF\n"
-            'echo "Continue configured model=${MODEL} language=${LANG_DIR} base=${LITELLM_API_BASE:-unset}"\n'
+            'python3 "${SCRIPT}"\n'
+        )
+        auth_cmd = (
+            "set -euo pipefail\n"
+            "for CAND in "
+            '"$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" '
+            "/opt/rhdh-agent-sandbox/wire-continue.py; do\n"
+            '  if [[ -f "${CAND}" ]] && grep -q -- \'--auth-rh-security\' "${CAND}"; then\n'
+            '    exec python3 "${CAND}" --auth-rh-security\n'
+            "  fi\n"
+            "done\n"
+            'echo "wire-continue.py --auth-rh-security not found. Run Devfile command wire-continue first."\n'
+            "exit 1\n"
         )
 
         dw = {
@@ -1093,6 +1152,9 @@ data:
             "spec": {
                 "started": True,
                 "routingClass": "che",
+                "contributions": [
+                    {"name": "editor", "kubernetes": {"name": che_code_dwt}},
+                ],
                 "template": {
                     "attributes": {"controller.devfile.io/storage-type": "per-user"},
                     "projects": [{
@@ -1112,7 +1174,7 @@ data:
                             "cpuRequest": "200m",
                             "mountSources": True,
                             "endpoints": [
-                                {"name": "http-8080", "targetPort": 8080, "exposure": "public", "protocol": "http"},
+                                {"name": "http-8080", "targetPort": 8080, "exposure": "public", "protocol": "http", "secure": True},
                             ],
                             "env": [
                                 {"name": "DEFAULT_EXTENSIONS", "value": "/tmp/continue.vsix"},
@@ -1128,6 +1190,7 @@ data:
                         {"id": "download-continue-extension", "exec": {"component": "tools", "commandLine": download_cmd}},
                         {"id": "ensure-continue-extension", "exec": {"component": "tools", "commandLine": ensure_cmd}},
                         {"id": "wire-continue", "exec": {"component": "tools", "workingDir": "${PROJECT_SOURCE}", "commandLine": wire_cmd}},
+                        {"id": "auth-rh-security-mcp", "exec": {"component": "tools", "commandLine": auth_cmd}},
                     ],
                     "events": {
                         "postStart": [
@@ -1335,7 +1398,7 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: agent-applier
     app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-    app.openshift.io/runtime: python
+    app.openshift.io/runtime: helm
   annotations:
     app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ .Release.Name }}-developer-hub"}]'
 spec:
@@ -1349,7 +1412,7 @@ spec:
         app.kubernetes.io/name: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
         app.kubernetes.io/component: agent-applier
         app.kubernetes.io/part-of: {{ include "rhdh-agent-sandbox.fullname" . }}
-        app.openshift.io/runtime: python
+        app.openshift.io/runtime: helm
     spec:
       serviceAccountName: {{ include "rhdh-agent-sandbox.fullname" . }}-agent-applier
       containers:
@@ -1392,6 +1455,10 @@ spec:
               value: {{ .Values.agents.devspaces.gitRepo | default "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git" | quote }}
             - name: GIT_REVISION
               value: {{ .Values.agents.devspaces.gitRevision | default "main" | quote }}
+            - name: CHE_CODE_DWT
+              value: {{ printf "%s-che-code" (include "rhdh-agent-sandbox.fullname" .) | quote }}
+            - name: CLUSTER_ROUTER_BASE
+              value: {{ .Values.rhdh.global.clusterRouterBase | quote }}
             - name: REGISTERED_CATALOG_CM
               value: {{ include "rhdh-agent-sandbox.fullname" . }}-registered-catalog
           volumeMounts:

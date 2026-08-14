@@ -30,13 +30,46 @@ data:
           title: ${{ values.name }} Agent
           version: "1.0"
           description: ${{ values.description }}
+        servers:
+          - url: __AGENT_BASE_URL__
+            description: OpenShift Route for this agent
         paths:
+          /:
+            get:
+              summary: Service info
+              responses:
+                "200":
+                  description: Agent metadata
+                  content:
+                    application/json:
+                      schema:
+                        type: object
           /health:
             get:
               summary: Liveness / readiness
-          /invoke:
+              responses:
+                "200":
+                  description: Health status
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                          framework:
+                            type: string
+                          language:
+                            type: string
+          /v1/runtime:
+            get:
+              summary: Runtime details
+              responses:
+                "200":
+                  description: Language runtime
+          /v1/chat:
             post:
-              summary: Invoke the agent with a prompt (MCP-backed tools)
+              summary: Chat with the agent
               requestBody:
                 required: true
                 content:
@@ -44,11 +77,15 @@ data:
                     schema:
                       type: object
                       properties:
-                        input:
+                        message:
                           type: string
-          /mcp/tools:
-            get:
-              summary: List MCP tools available to this agent
+                        prompt:
+                          type: string
+              responses:
+                "200":
+                  description: Agent reply
+                "502":
+                  description: Upstream model error
     ---
     apiVersion: backstage.io/v1alpha1
     kind: Component

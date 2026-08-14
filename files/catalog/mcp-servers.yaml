@@ -72,6 +72,7 @@ spec:
     notes: >
       Tools (after SSO): get_cve_by_id, list_advisories_by_cve, get_errata_by_id,
       list_advisory_packages, and related security data APIs.
+      DevSpaces Continue: open the workspace public http-8080 SSO helper in Simple Browser (not code-redirect).
       Cursor: ensure .mcp.json has red-hat-security → reload MCP → complete browser login.
 ---
 apiVersion: backstage.io/v1alpha1

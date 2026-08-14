@@ -1,8 +1,5 @@
 {
   "continue.enableTabAutocomplete": true,
-  "files.exclude": {
-    "**/.continue/**/__pycache__": true
-  },
   "remote.portsAttributes": {
     "3334": {
       "label": "mcp-remote OAuth callback",

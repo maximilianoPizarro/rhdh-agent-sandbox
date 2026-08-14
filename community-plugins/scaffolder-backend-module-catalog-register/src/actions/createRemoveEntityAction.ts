@@ -313,6 +313,9 @@ export function createRemoveEntityAction() {
       );
       await deleteIfExists(`/api/v1/namespaces/${namespace}/services/${name}`);
       await deleteIfExists(
+        `/apis/route.openshift.io/v1/namespaces/${namespace}/routes/${name}`,
+      );
+      await deleteIfExists(
         `/apis/build.openshift.io/v1/namespaces/${namespace}/buildconfigs/${name}`,
       );
       await deleteIfExists(

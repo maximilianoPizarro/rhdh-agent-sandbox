@@ -28,3 +28,15 @@ Open the Developer Hub route and sign in as **Guest**.
 
 - Hub → **Create** → **Deploy Agent (Golden Path)**
 - Open the new Component → **Topology** and **Documentation** tabs
+
+## Reinstall from zero
+
+```bash
+helm uninstall rhdh-agent -n "$(oc project -q)"
+oc delete pvc data-rhdh-agent-postgresql-0 --ignore-not-found
+helm dependency update
+helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.rm2.thpm.p1.openshiftapps.com \
+  --timeout 20m --wait=false
+```

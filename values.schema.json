@@ -47,12 +47,20 @@
         "mcpToken": {
           "type": "string",
           "title": "MCP Token",
-          "description": "Static token for MCP external access (auto-generated if empty)"
+          "description": "Static token for MCP external access (auto-generated if empty)",
+          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
         },
         "modelApiKey": {
           "type": "string",
-          "title": "Model API Key",
-          "description": "OpenShift user token for sandbox-shared-models oauth-proxy (oc whoami -t). Required; ~24h TTL."
+          "title": "OpenShift token (shared models)",
+          "description": "Paste `oc whoami -t`. Stored in Secret rhdh-agent-sandbox-secrets (model-api-key). ~24h TTL.",
+          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
+        },
+        "litemaasApiKey": {
+          "type": "string",
+          "title": "LiteMaaS API key (tool calling)",
+          "description": "Bearer for Hub Lightspeed / MCP Chat tool calling (model litemaas-qwen). Stored in Secret litemaas-credentials. Leave empty to keep an existing Secret.",
+          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
         }
       }
     },
@@ -132,6 +140,15 @@
           "title": "Default Model",
           "default": "granite"
         },
+        "litemaasSecret": {
+          "type": "object",
+          "title": "LiteMaaS Secret",
+          "description": "Kubernetes Secret holding the LiteMaaS bearer (created by the chart from secrets.litemaasApiKey)",
+          "properties": {
+            "name": { "type": "string", "title": "Secret name", "default": "litemaas-credentials" },
+            "key": { "type": "string", "title": "Secret key", "default": "api-key" }
+          }
+        },
         "resources": {
           "type": "object",
           "title": "Resource Requests/Limits",
@@ -151,6 +168,23 @@
               }
             }
           }
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "title": "OpenShift API (Hub Kubernetes plugin)",
+      "description": "Public API URL is derived from Cluster Router Base. Token comes from ServiceAccount rhdh-agent-sandbox-hub-k8s-reader — do not paste a user token here.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Cluster name in Hub",
+          "default": "sandbox"
+        },
+        "apiUrl": {
+          "type": "string",
+          "title": "Kubernetes API URL (optional)",
+          "description": "Leave empty to derive https://api.<domain>:6443 from Cluster Router Base (strip leading apps.)."
         }
       }
     },
@@ -281,6 +315,24 @@
             }
           }
         },
+        "devspaces": {
+          "type": "object",
+          "title": "DevSpaces Golden Path",
+          "description": "Git cloned into Golden Path DevWorkspaces. Continue + Red Hat Security MCP SSO helper are mounted from the chart (no extra form fields).",
+          "properties": {
+            "gitRepo": {
+              "type": "string",
+              "title": "Workspace Git URL",
+              "default": "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git"
+            },
+            "gitRevision": {
+              "type": "string",
+              "title": "Git revision",
+              "description": "Pin to this chart git tag so DevWorkspaces match the Helm release (default v0.1.3).",
+              "default": "v0.1.3"
+            }
+          }
+        },
         "samples": {
           "type": "array",
           "title": "Sample Agents",
@@ -305,7 +357,7 @@
         "enabled": { "type": "boolean", "default": true },
         "registry": { "type": "string", "default": "quay.io" },
         "repository": { "type": "string", "default": "maximilianopizarro/rhdh-agent-sandbox" },
-        "tag": { "type": "string", "default": "0.1.0" }
+        "tag": { "type": "string", "default": "0.1.3" }
       }
     },
     "rhdh": {
@@ -326,7 +378,8 @@
             "clusterRouterBase": {
               "type": "string",
               "title": "Cluster Router Base",
-              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required for Route generation."
+              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required. Also used to derive the Kubernetes API URL for the Hub plugin.",
+              "default": "apps.rm2.thpm.p1.openshiftapps.com"
             }
           }
         }

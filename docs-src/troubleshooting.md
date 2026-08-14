@@ -111,6 +111,10 @@ If empty, check ConfigMap `rhdh-agent-sandbox-catalog` and Hub volume mount `rhd
 
 ## DevSpaces Continue cannot reach models
 
+If the picker says **No models configured**, Continue 2 is reading an empty `~/.continue/config.yaml` — see [Continue shows no models](#devspaces-continue-shows-no-models--no-mcp-servers).
+
+Otherwise:
+
 1. LiteLLM **Route** up?  
 2. Continue `apiBase` ends with `/v1`?  
 3. API key = `litellm-master-key` (not OpenShift token)?  
@@ -160,3 +164,118 @@ oc get secret rhdh-agent-sandbox-secrets -o json | python -c "import json,sys; p
 ```
 
 You should **not** see `ENABLE_OPENAI` / `OPENAI_API_KEY`. Then restart Hub so `lightspeed-core` reloads envFrom.
+
+## DevSpaces: “has not received an IDE URL”
+
+The dashboard can show **Running** while **Open IDE** fails with *The workspace has not received an IDE URL in the last 20 seconds*.
+
+Golden Path workspaces are created by **agent-applier**, not the Dev Spaces dashboard. The `che.eclipse.org/che-editor` annotation does not inject Che Code. The DevWorkspace needs `spec.contributions` pointing at the chart DevWorkspaceTemplate `rhdh-agent-sandbox-che-code` (endpoint 3100 → `status.mainUrl`).
+
+New workspaces get this after a chart upgrade. For an existing workspace:
+
+```bash
+DWT=$(oc get dwt -o name | grep che-code | head -1 | sed 's|.*/||')
+oc patch dw <workspace> --type=merge \
+  -p "{\"spec\":{\"contributions\":[{\"name\":\"editor\",\"kubernetes\":{\"name\":\"${DWT}\"}}]}}"
+oc patch dw <workspace> --type=merge -p '{"spec":{"started":false}}'
+oc patch dw <workspace> --type=merge -p '{"spec":{"started":true}}'
+oc get dw <workspace> -o jsonpath='{.status.phase} {.status.mainUrl}{"\n"}'
+```
+
+Then reopen the workspace from the Dev Spaces dashboard.
+
+## DevSpaces: Continue shows no models / no MCP servers
+
+Continue **2.x** reads **`~/.continue/config.yaml`** (home directory), not project `.continue/config.json`. The left CHAT panel is Continue — keep the extension.
+
+```bash
+POD=$(oc get pod -l controller.devfile.io/devworkspace_name=<workspace> -o jsonpath='{.items[0].metadata.name}')
+oc exec "$POD" -c tools -- python3 /opt/rhdh-agent-sandbox/wire-continue.py
+```
+
+Reload the Che Code window. You should see Granite / Qwen3 / LiteMaaS Qwen and MCP server `hub-mcp-actions` (4 catalog/TechDocs tools).
+
+**“New MCP server” / Connection closed:** Continue 2 writes `.continue/mcpServers/new-mcp-server.yaml` with a placeholder `npx -y <your-mcp-server>`. Toggle it **off** or delete that file — `wire-continue` now removes it. It is not a Hub or Red Hat server.
+
+**Chat vs Agent:** Continue disables tools in Chat. Switch to **Agent** or **Plan** (`Ctrl+Alt+I` then the mode picker) before asking for MCP.
+
+**Red Hat Security MCP:** Continue 2 cannot complete Customer Portal SSO against `127.0.0.1:3334` from Che Simple Browser (`code-redirect-*` → Express `Cannot GET /`). That is **not** a missing git push or a workspace regenerate.
+
+`wire-continue` starts an SSO helper UI on a public HTTPS Route. Red Hat `mcp-client` only allows `http://127.0.0.1:3334/oauth/callback` (DCR echoes other URIs but authorize returns `redirect_uri not allowed`). Open the helper, click **Conectar con Red Hat**, then **paste** the failed `127.0.0.1:3334` URL back into the helper.
+
+Do this:
+
+1. Close any Simple Browser tab that shows `Cannot GET /` (that is `code-redirect`, not the helper).
+2. Open the **HTTPS** helper URL printed by `auth-rh-security-mcp` (or the dedicated `*-rh-oauth` Route). Do not use Che `code-redirect` or `http://` on the default `http-8080` endpoint — that Route is not TLS unless the Devfile sets `secure: true`.
+3. Click **Conectar con Red Hat**, grant access on Customer Portal, wait to land back on the helper.
+4. Continue Tools → **red-hat-security** off/on, **Agent** or **Plan** mode.
+
+Until the official MCP accepts the token (`initialize` 200, scope `api.graphql`), Continue may show one setup tool (`redhat_security_connect`) instead of `Connection closed`. Cursor still uses repo `.mcp.json` (`type: http`).
+
+No Helm upgrade is required for an already-running workspace: copy/start the helper in the tools container. Do **not** change ConfigMap `*-wire-continue` just to pick this up — that ConfigMap is watched and restarts DevWorkspaces.
+
+## Topology tab is empty after Deploy Agent
+
+No git push is required. Golden Path registers a catalog ConfigMap; `agent-applier` binary-builds from the chart skeleton and creates the Deployment.
+
+Topology stays empty until that Deployment exists. Quarkus images often take 2–4 minutes. Refresh the Component page after:
+
+```bash
+oc get build,deploy,svc <name>
+```
+
+`Complete` + `deploy/<name> 1/1` means Topology should show the workload (`app.kubernetes.io/name=<name>` in this namespace).
+
+## API Definition / Swagger Execute shows no response
+
+The catalog OpenAPI used to list `/invoke` and `/mcp/tools`, which the agent does not implement. Try-it-out also had no `servers` URL, so Execute called the **Hub** origin and hung (Cancel, empty Responses).
+
+Real endpoints: `GET /`, `GET /health`, `GET /v1/runtime`, `POST /v1/chat`. The applier now creates a Route and CORS so Swagger can call the agent. Recreate the Component or refresh the API entity after upgrade.
+
+Until then:
+
+```bash
+oc create route edge <name> --service=<name> --insecure-policy=Redirect
+oc exec deploy/<name> -- curl -sS http://127.0.0.1:8080/health
+```
+
+## Scaffolder Verify step shows “Network error”
+
+The verify action (`catalog:wait-for-entity`) often keeps running in Hub after the browser drops the task event-stream. OpenShift Routes default to a **30s** timeout; catalog ingest via ConfigMap mount can take ~60–90s.
+
+The chart sets `haproxy.router.openshift.io/timeout: 5m` on the Hub Route. Confirm:
+
+```bash
+oc annotate route rhdh-agent-developer-hub \
+  haproxy.router.openshift.io/timeout=5m --overwrite
+```
+
+Then open **Catalog** and search for the Component name. If it is there, the task actually succeeded — reload the task page. Plugin 0.1.2+ ingests the entity immediately (no ConfigMap-mount wait) and polls the in-process catalog client instead of `localhost:7007`.
+
+## Reinstall (Helm only)
+
+Prefer `helm upgrade --install` with a fresh `oc whoami -t`. That preserves chart secrets and the Postgres PVC.
+
+To uninstall and install again:
+
+```bash
+helm uninstall rhdh-agent -n "$(oc project -q)"
+oc delete pvc data-rhdh-agent-postgresql-0 --ignore-not-found
+export MODEL_API_KEY=$(oc whoami -t)
+helm dependency update
+helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+  --set secrets.modelApiKey="$MODEL_API_KEY" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m --wait=false
+```
+
+Then [Verify the install]({{ '/verify/' | relative_url }}).
+
+`helm uninstall` does not always remove everything in the namespace:
+
+| Left after uninstall | Symptom on next install |
+|---|---|
+| PVC `rhdh-agent-postgresql` | Hub 503 — new password vs old volume |
+| Golden Path Deploy/BC/IS | Pods Pending (quota) |
+| DevWorkspaces | Same quota; Continue Secret is gone |
+| Pending catalog ConfigMaps | agent-applier may recreate old agents |

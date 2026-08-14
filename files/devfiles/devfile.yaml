@@ -28,6 +28,7 @@ components:
           targetPort: 8080
           exposure: public
           protocol: http
+          secure: true
       env:
         - name: SHELL
           value: /bin/bash
@@ -99,97 +100,44 @@ commands:
         cat <<'EOF'
         DevSpaces AI workspace
         ----------------------
-        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS). Open it in the Che Code sidebar.
-        2) Env LITELLM_API_BASE / LITELLM_API_KEY come from Secret
-           rhdh-agent-sandbox-continue (created by the Helm chart), or set them
-           manually then run wire-continue.
-             oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d
-        3) Models: granite | qwen3 (chat). Tool calling demos use Hub Lightspeed/MCP Chat
-           with litemaas-qwen or OpenClaw + LiteMaaS.
-        4) Optional: wire-continue also adds Hub mcp-actions (catalog/TechDocs) via Hub Route
-           + mcp-token. ClusterIP OpenShift/K8s MCP is not reachable from the IDE.
-        5) Skills live under .continue/skills/ — prompts under docs/prompts/
-        6) Hub Lightspeed + Cluster MCP stay in Developer Hub (guest login).
+        1) Continue is preinstalled. The left CHAT / Agent panel IS Continue 2 — you need it.
+        2) postStart runs wire-continue → ~/.continue/config.yaml (models + MCP). Reload the window if empty.
+        3) Models: granite | qwen3 | litemaas-qwen via LiteLLM.
+        4) MCP: red-hat-security — open the public http-8080 SSO helper in Simple Browser (not code-redirect) + hub-mcp-actions.
+        5) Cluster OpenShift/K8s MCP stays in Hub Lightspeed / MCP Chat (Guest).
+        6) Skills live under .continue/skills/ — prompts under docs/prompts/
         EOF
   - id: wire-continue
     exec:
       component: tools
+      workingDir: ${PROJECT_SOURCE}
       commandLine: |
         set -euo pipefail
-        if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
-          if oc get secret rhdh-agent-sandbox-continue >/dev/null 2>&1; then
-            export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)"
-            export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)"
-          fi
-        fi
-        if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
-          echo "Set LITELLM_API_BASE and LITELLM_API_KEY (or mount rhdh-agent-sandbox-continue), then re-run wire-continue."
+        SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py
+        for _ in $(seq 1 15); do
+          [[ -f "${SCRIPT}" ]] && break
+          sleep 2
+        done
+        if [[ ! -f "${SCRIPT}" ]]; then
+          echo "wire-continue.py not mounted; ensure Helm ConfigMap rhdh-agent-sandbox-wire-continue exists."
           exit 0
         fi
-        export HUB_ROUTE="$(oc get route -l app.kubernetes.io/name=developer-hub -o jsonpath='{.items[0].spec.host}' 2>/dev/null || true)"
-        export MCP_TOKEN=""
-        if oc get secret rhdh-agent-sandbox-secrets >/dev/null 2>&1; then
-          export MCP_TOKEN="$(oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.mcp-token}' | base64 -d)"
-        fi
-        mkdir -p "${HOME}/.continue" .continue
-        sed 's/^        //' <<'PY' | python3
-        import os
-        from pathlib import Path
-        base = os.environ["LITELLM_API_BASE"]
-        key = os.environ["LITELLM_API_KEY"]
-        hub = os.environ.get("HUB_ROUTE") or ""
-        mcp = os.environ.get("MCP_TOKEN") or ""
-        lines = [
-            "name: Main Config",
-            "version: 1.0.0",
-            "schema: v1",
-            "models:",
-            "  - name: Granite (LiteLLM)",
-            "    provider: openai",
-            "    model: granite",
-            f"    apiBase: {base}",
-            f"    apiKey: {key}",
-            "    roles: [chat, edit, apply, autocomplete]",
-            "  - name: Qwen3 (LiteLLM)",
-            "    provider: openai",
-            "    model: qwen3",
-            f"    apiBase: {base}",
-            f"    apiKey: {key}",
-            "    roles: [chat, edit, apply]",
-        ]
-        if hub and mcp:
-            lines += [
-                "mcpServers:",
-                "  - name: hub-mcp-actions",
-                "    type: sse",
-                f"    url: https://{hub}/api/mcp-actions/v1",
-                "    requestOptions:",
-                "      headers:",
-                f"        Authorization: Bearer {mcp}",
-            ]
-        Path(os.path.expanduser("~/.continue/config.yaml")).write_text("\n".join(lines) + "\n")
-        Path(".continue/config.json").write_text(
-            '{\n'
-            '  "models": [\n'
-            '    {\n'
-            '      "title": "Granite (LiteLLM)",\n'
-            '      "provider": "openai",\n'
-            '      "model": "granite",\n'
-            '      "apiBase": "${LITELLM_API_BASE}",\n'
-            '      "apiKey": "${LITELLM_API_KEY}"\n'
-            '    },\n'
-            '    {\n'
-            '      "title": "Qwen3 (LiteLLM)",\n'
-            '      "provider": "openai",\n'
-            '      "model": "qwen3",\n'
-            '      "apiBase": "${LITELLM_API_BASE}",\n'
-            '      "apiKey": "${LITELLM_API_KEY}"\n'
-            '    }\n'
-            '  ]\n'
-            '}\n'
-        )
-        print("Wrote ~/.continue/config.yaml and .continue/config.json (placeholders)")
-        PY
+        python3 "${SCRIPT}"
+  - id: auth-rh-security-mcp
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        for CAND in \
+          "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" \
+          /opt/rhdh-agent-sandbox/wire-continue.py
+        do
+          if [[ -f "${CAND}" ]] && grep -q -- '--auth-rh-security' "${CAND}"; then
+            exec python3 "${CAND}" --auth-rh-security
+          fi
+        done
+        echo "wire-continue.py --auth-rh-security not found. Run Devfile command wire-continue first."
+        exit 1
 events:
   postStart:
     - download-continue-extension

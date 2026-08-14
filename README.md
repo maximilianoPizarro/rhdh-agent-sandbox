@@ -59,6 +59,16 @@ helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox \
   --timeout 20m --wait=false
 ```
 
+### From OpenShift Console (Helm form)
+
+Developer Sandbox → **Helm** → install **rhdh-agent-sandbox**. Fill:
+
+1. **Cluster Router Base** — `apps.<your-sandbox>.openshiftapps.com`
+2. **OpenShift token (shared models)** — `oc whoami -t` (password field → Secret `rhdh-agent-sandbox-secrets`)
+3. **LiteMaaS API key (tool calling)** — LiteMaaS bearer (password field → Secret `litemaas-credentials`)
+
+Leave the Kubernetes API URL empty. Leave **Git revision** at `v0.1.3` so Golden Path DevWorkspaces clone this release (Continue + Red Hat Security MCP helper come from the chart ConfigMap; no extra form fields). Backend, LiteLLM master, and MCP tokens are auto-generated.
+
 ### From Artifact Hub
 
 Search for **rhdh-agent-sandbox** on [artifacthub.io](https://artifacthub.io/packages/helm/rhdh-agent-sandbox/rhdh-agent-sandbox).
@@ -71,6 +81,8 @@ Search for **rhdh-agent-sandbox** on [artifacthub.io](https://artifacthub.io/pac
 |---|---|
 | `secrets.modelApiKey` | OpenShift token for sandbox-shared-models oauth-proxy. Run `oc whoami -t`. Refreshes every ~24h. |
 | `rhdh.global.clusterRouterBase` | Cluster apps domain (e.g. `apps.rm2.thpm.p1.openshiftapps.com`) |
+| `secrets.litemaasApiKey` | LiteMaaS bearer for Hub tool calling (`litemaas-qwen`). Stored in Secret `litemaas-credentials`. Recommended for the video / MCP Chat demos. |
+| `agents.devspaces.gitRevision` | Git pin for Golden Path workspaces. Default `v0.1.3` (this chart tag). |
 
 ### Key optional parameters
 
@@ -139,11 +151,31 @@ Source for Pages is **`docs-src/`** (Jekyll + PatternFly). CI builds into `docs/
 
 OpenClaw is **not** a Developer Hub plugin. Wire Hub MCP from the Claw custom resource (`spec.mcpServers` + `credentialRef`, transport `streamable-http`). See [OpenClaw docs page](https://maximilianopizarro.github.io/rhdh-agent-sandbox/openclaw/).
 
-## Uninstall
+## Uninstall / reinstall
+
+Prefer **upgrade in place** (preserves secrets and Postgres data):
+
+```bash
+helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m --wait=false
+```
+
+To uninstall and install **from zero**:
 
 ```bash
 helm uninstall rhdh-agent -n "$(oc project -q)"
+# Postgres PVC is kept by the RHDH subchart; delete it or Hub 503s on a new password
+oc delete pvc data-rhdh-agent-postgresql-0 --ignore-not-found
+helm dependency update
+helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+  --set secrets.modelApiKey="$(oc whoami -t)" \
+  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --timeout 20m --wait=false
 ```
+
+Golden Path Deployments and DevWorkspaces are not in the Helm release. If pods stay Pending, see [Troubleshooting](https://maximilianopizarro.github.io/rhdh-agent-sandbox/troubleshooting/).
 
 ## License
 

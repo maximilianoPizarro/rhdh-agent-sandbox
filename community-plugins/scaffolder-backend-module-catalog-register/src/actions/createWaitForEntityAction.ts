@@ -1,71 +1,27 @@
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import http from 'node:http';
-import https from 'node:https';
-import { URL } from 'node:url';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 
 const ACTION_ID = 'catalog:wait-for-entity';
-
-type HttpResponse = { status: number; body: string };
+const DEFAULT_LOCATION_REF = 'location:default/registered-catalog-entities';
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function httpRequest(
-  url: string,
-  token: string,
-  options: { method?: string; body?: unknown } = {},
-): Promise<HttpResponse> {
-  const { method = 'GET', body } = options;
-  const parsed = new URL(url);
-  const client = parsed.protocol === 'https:' ? https : http;
-  const payload = body === undefined ? undefined : JSON.stringify(body);
-
-  return new Promise((resolve, reject) => {
-    const req = client.request(
-      {
-        protocol: parsed.protocol,
-        hostname: parsed.hostname,
-        port: parsed.port,
-        path: `${parsed.pathname}${parsed.search}`,
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          ...(payload
-            ? {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payload),
-              }
-            : {}),
-        },
-      },
-      res => {
-        const chunks: Buffer[] = [];
-        res.on('data', chunk => {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-        });
-        res.on('end', () => {
-          resolve({
-            status: res.statusCode ?? 0,
-            body: Buffer.concat(chunks).toString('utf8'),
-          });
-        });
-      },
-    );
-    req.on('error', reject);
-    if (payload) {
-      req.write(payload);
-    }
-    req.end();
-  });
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }
 
-export function createWaitForEntityAction() {
+export function createWaitForEntityAction(options: { catalog: CatalogService }) {
+  const { catalog } = options;
+
   return createTemplateAction({
     id: ACTION_ID,
     description:
-      'Waits until a catalog entity is visible via the Backstage catalog API.',
+      'Waits until a catalog entity is visible via the in-process catalog client.',
     schema: {
       input: {
         name: z => z.string().describe('Entity name'),
@@ -95,59 +51,53 @@ export function createWaitForEntityAction() {
       },
     },
     async handler(ctx) {
-      const token = process.env.MCP_TOKEN?.trim();
-      if (!token) {
-        throw new Error(
-          'MCP_TOKEN env var is required for catalog:wait-for-entity',
-        );
-      }
-
-      const baseUrl = (
-        process.env.BACKSTAGE_BACKEND_URL ?? 'http://localhost:7007'
-      ).replace(/\/+$/, '');
       const name = ctx.input.name;
       const kind = (ctx.input.kind ?? 'component').toLowerCase();
       const namespace = ctx.input.namespace ?? 'default';
-      const timeoutMs = (ctx.input.timeoutSeconds ?? 120) * 1000;
+      const timeoutSeconds = ctx.input.timeoutSeconds ?? 120;
+      const timeoutMs = timeoutSeconds * 1000;
       const pollMs = (ctx.input.pollIntervalSeconds ?? 5) * 1000;
       const entityRef = `${kind}:${namespace}/${name}`;
-      const url = `${baseUrl}/api/catalog/entities/by-name/${encodeURIComponent(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
-
-      const refreshUrl = `${baseUrl}/api/catalog/refresh`;
-      const catalogLocationRef = 'location:default/rhdh-agent-sandbox-catalog';
+      const credentials = await ctx.getInitiatorCredentials();
       const start = Date.now();
-      let notFoundCount = 0;
+      let attempts = 0;
+
+      ctx.logger.info(
+        `Waiting for ${entityRef} via catalog client (timeout ${timeoutSeconds}s)`,
+      );
 
       while (Date.now() - start < timeoutMs) {
-        const response = await httpRequest(url, token);
+        attempts += 1;
+        const elapsedSeconds = Math.round((Date.now() - start) / 1000);
 
-        if (response.status === 200) {
-          ctx.logger.info(`Entity became visible in catalog: ${entityRef}`);
-          ctx.output('entityRef', entityRef);
-          return;
-        }
-
-        if (response.status !== 404) {
-          throw new Error(
-            `Failed while waiting for ${entityRef}: HTTP ${response.status} ${response.body}`,
+        try {
+          const entity = await catalog.getEntityByRef(entityRef, {
+            credentials,
+          });
+          if (entity) {
+            ctx.logger.info(
+              `Entity became visible in catalog: ${entityRef} after ${elapsedSeconds}s`,
+            );
+            ctx.output('entityRef', entityRef);
+            return;
+          }
+        } catch (error) {
+          ctx.logger.warn(
+            `Catalog lookup for ${entityRef} failed (will retry): ${errorMessage(error)}`,
           );
         }
 
-        notFoundCount += 1;
-        if (notFoundCount % 3 === 0) {
+        // Heartbeat keeps the scaffolder event stream from looking idle.
+        ctx.logger.info(
+          `Still waiting for ${entityRef} (${elapsedSeconds}s, attempt ${attempts})`,
+        );
+
+        if (attempts % 2 === 0) {
           try {
-            const refresh = await httpRequest(refreshUrl, token, {
-              method: 'POST',
-              body: { entityRef: catalogLocationRef },
-            });
-            if (![200, 202].includes(refresh.status)) {
-              ctx.logger.warn(
-                `Catalog refresh failed while waiting for ${entityRef}: HTTP ${refresh.status} ${refresh.body}`,
-              );
-            }
+            await catalog.refreshEntity(DEFAULT_LOCATION_REF, { credentials });
           } catch (error) {
             ctx.logger.warn(
-              `Catalog refresh failed while waiting for ${entityRef}: ${error}`,
+              `Catalog refresh of ${DEFAULT_LOCATION_REF} failed: ${errorMessage(error)}`,
             );
           }
         }
@@ -156,7 +106,7 @@ export function createWaitForEntityAction() {
       }
 
       throw new Error(
-        `Timed out waiting for catalog entity ${entityRef} after ${ctx.input.timeoutSeconds ?? 120}s`,
+        `Timed out waiting for catalog entity ${entityRef} after ${timeoutSeconds}s`,
       );
     },
   });

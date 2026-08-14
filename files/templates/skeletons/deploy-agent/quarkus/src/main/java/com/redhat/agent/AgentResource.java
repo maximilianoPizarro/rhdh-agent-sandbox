@@ -48,6 +48,12 @@ public class AgentResource {
         return health();
     }
 
+    @jakarta.ws.rs.OPTIONS
+    @Path("{path:.*}")
+    public Response options() {
+        return Response.ok().build();
+    }
+
     @GET
     public Map<String, Object> root() {
         return Map.of(

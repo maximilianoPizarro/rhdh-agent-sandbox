@@ -28,6 +28,7 @@ components:
           targetPort: 8080
           exposure: public
           protocol: http
+          secure: true
       env:
         - name: SHELL
           value: /bin/bash
@@ -99,58 +100,43 @@ commands:
         cat <<'EOF'
         DevSpaces AI workspace
         ----------------------
-        1) Continue is preinstalled (OpenVSX → DEFAULT_EXTENSIONS). Open it in the Che Code sidebar.
-        2) Env LITELLM_API_* from Secret rhdh-agent-sandbox-continue (chart), or set manually then wire-continue.
-             oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d
-        3) Models: granite | qwen3
-        4) Skills live under .continue/skills/ — prompts under docs/prompts/
-        5) Hub Lightspeed + MCP stay in Developer Hub (guest login). This IDE talks to LiteLLM Route only.
+        1) Continue is preinstalled. The left CHAT / Agent panel IS Continue 2 — you need it.
+        2) postStart runs wire-continue → ~/.continue/config.yaml (models + MCP). Reload the window if empty.
+        3) Models: granite | qwen3 | litemaas-qwen via LiteLLM.
+        4) MCP: red-hat-security — public http-8080 SSO helper in Simple Browser (not code-redirect) + hub-mcp-actions.
+        5) Hub Lightspeed + cluster MCP stay in Developer Hub (guest login).
         EOF
   - id: wire-continue
     exec:
       component: tools
+      workingDir: ${PROJECT_SOURCE}
       commandLine: |
         set -euo pipefail
-        CFG=".continue/config.json"
-        if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
-          if oc get secret rhdh-agent-sandbox-continue >/dev/null 2>&1; then
-            export LITELLM_API_BASE="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_BASE}' | base64 -d)"
-            export LITELLM_API_KEY="$(oc get secret rhdh-agent-sandbox-continue -o jsonpath='{.data.LITELLM_API_KEY}' | base64 -d)"
-          fi
-        fi
-        if [[ -z "${LITELLM_API_BASE:-}" || -z "${LITELLM_API_KEY:-}" ]]; then
-          echo "Set LITELLM_API_BASE and LITELLM_API_KEY (or mount rhdh-agent-sandbox-continue), then re-run wire-continue."
+        SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py
+        for _ in $(seq 1 15); do
+          [[ -f "${SCRIPT}" ]] && break
+          sleep 2
+        done
+        if [[ ! -f "${SCRIPT}" ]]; then
+          echo "wire-continue.py not mounted; ensure Helm ConfigMap rhdh-agent-sandbox-wire-continue exists."
           exit 0
         fi
-        mkdir -p .continue
-        cat > "${CFG}" <<EOF
-        {
-          "models": [
-            {
-              "title": "Granite (LiteLLM)",
-              "provider": "openai",
-              "model": "granite",
-              "apiBase": "${LITELLM_API_BASE}",
-              "apiKey": "${LITELLM_API_KEY}"
-            },
-            {
-              "title": "Qwen3 (LiteLLM)",
-              "provider": "openai",
-              "model": "qwen3",
-              "apiBase": "${LITELLM_API_BASE}",
-              "apiKey": "${LITELLM_API_KEY}"
-            }
-          ],
-          "tabAutocompleteModel": {
-            "title": "Granite autocomplete",
-            "provider": "openai",
-            "model": "granite",
-            "apiBase": "${LITELLM_API_BASE}",
-            "apiKey": "${LITELLM_API_KEY}"
-          }
-        }
-        EOF
-        echo "Wrote ${CFG}"
+        python3 "${SCRIPT}"
+  - id: auth-rh-security-mcp
+    exec:
+      component: tools
+      commandLine: |
+        set -euo pipefail
+        for CAND in \
+          "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" \
+          /opt/rhdh-agent-sandbox/wire-continue.py
+        do
+          if [[ -f "${CAND}" ]] && grep -q -- '--auth-rh-security' "${CAND}"; then
+            exec python3 "${CAND}" --auth-rh-security
+          fi
+        done
+        echo "wire-continue.py --auth-rh-security not found. Run Devfile command wire-continue first."
+        exit 1
 events:
   postStart:
     - download-continue-extension

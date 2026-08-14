@@ -17,8 +17,8 @@ export const catalogRegisterEntityModule = createBackendModule({
       },
       async init({ scaffolder, catalog }) {
         scaffolder.addActions(
-          createApplyPendingConfigMapAction(),
-          createWaitForEntityAction(),
+          createApplyPendingConfigMapAction({ catalog }),
+          createWaitForEntityAction({ catalog }),
           createRemoveEntityAction(),
           createCatalogRegisterEntityAction({
             catalog,

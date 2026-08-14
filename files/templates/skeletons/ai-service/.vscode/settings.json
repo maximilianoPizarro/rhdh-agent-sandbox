@@ -2,5 +2,17 @@
   "continue.enableTabAutocomplete": true,
   "files.exclude": {
     "**/.continue/**/__pycache__": true
+  },
+  "remote.portsAttributes": {
+    "3334": {
+      "label": "mcp-remote OAuth callback",
+      "onAutoForward": "ignore",
+      "protocol": "http"
+    },
+    "8080": {
+      "label": "Red Hat Security SSO helper",
+      "onAutoForward": "ignore",
+      "protocol": "https"
+    }
   }
 }

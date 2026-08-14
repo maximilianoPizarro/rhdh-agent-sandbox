@@ -73,8 +73,12 @@ The Helm chart creates Secret **`rhdh-agent-sandbox-continue`** with:
 |---|---|
 | `LITELLM_API_BASE` | LiteLLM Route URL (`…/v1`) |
 | `LITELLM_API_KEY` | `litellm-master-key` from `rhdh-agent-sandbox-secrets` |
+| `HUB_MCP_URL` | Hub Route `/api/mcp-actions/v1` |
+| `MCP_TOKEN` | `mcp-token` (when the chart Secret already exists) |
 
-Inside the workspace terminal, run Devfile command **`wire-continue`**. It prefers env vars if set; otherwise it loads that Secret via `oc` and writes `.continue/config.json` (models `granite` / `qwen3`).
+The left **CHAT / Agent** panel **is Continue 2**. Keep it. postStart runs Devfile **`wire-continue`**, which writes **`~/.continue/config.yaml`** (Continue 2.x live config: models + `red-hat-security` + `hub-mcp-actions`). Project `.continue/config.json` is placeholders only.
+
+If the model picker says **No models configured**, reload the Che Code window (or re-run `wire-continue`). Continue 2 ignores project `config.json`.
 
 Manual fallback:
 
@@ -102,12 +106,13 @@ Continue is **preinstalled** on workspace start (`DEFAULT_EXTENSIONS` + OpenVSX 
 
 ## AI and MCP from the IDE (two paths)
 
-Continue is one sidebar, two network paths:
+Continue is one sidebar (CHAT / Agent **is** Continue 2), three network paths:
 
 | Path | Flow | Secret |
 |---|---|---|
-| **AI chat** | Continue → LiteLLM Route `/v1` → Granite/Qwen | `rhdh-agent-sandbox-continue` |
-| **Hub MCP** | Continue → Hub Route `/api/mcp-actions/v1` → catalog/TechDocs tools | `mcp-token` (written by `wire-continue` into `mcpServers`) |
+| **AI chat** | Continue → LiteLLM Route `/v1` → Granite/Qwen/LiteMaaS | `rhdh-agent-sandbox-continue` |
+| **Hub MCP** | Continue → Hub Route `/api/mcp-actions/v1` → catalog/TechDocs | `mcp-token` |
+| **Red Hat Security MCP** | Continue → `security-mcp.api.redhat.com` → CVEs/advisories | Customer Portal SSO (no Secret) |
 
 OpenShift/Kubernetes MCP remain **ClusterIP** and are consumed from **Hub Lightspeed / MCP Chat**, not from the IDE. Screenshots and prompts: [DevSpaces journey]({{ '/devspaces-journey/' | relative_url }}).
 

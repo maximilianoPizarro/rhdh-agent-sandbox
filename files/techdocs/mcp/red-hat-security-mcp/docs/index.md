@@ -5,9 +5,9 @@ Official Red Hat Security MCP for CVEs, advisories, and errata.
 | Property | Value |
 |----------|-------|
 | Endpoint | `https://security-mcp.api.redhat.com/mcp` |
-| Auth | Customer Portal OAuth (use from Cursor via `.mcp.json`) |
+| Auth | Customer Portal OAuth (Continue in DevSpaces: `wire-continue` writes `red-hat-security`; or Cursor via `.mcp.json`) |
 
-Hub MCP Chat cannot complete browser SSO — use Cursor for live CVE tools.
+Hub MCP Chat cannot complete browser SSO — use **DevSpaces Continue** (Path C) or Cursor for live CVE tools.
 
 ## Skills
 

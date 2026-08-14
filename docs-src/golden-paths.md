@@ -14,6 +14,7 @@ Generate a real LangGraph / LangChain.js / LangChain4j agent, BuildConfig-compil
 - Registers a catalog Component with `managed-agent=true` and `build=true`
 - agent-applier builds from chart skeleton sources
 - Component page: **Topology** + per-agent **Documentation**
+- Topology is empty until the BuildConfig finishes and the Deployment exists (no git push)
 
 ## DevSpaces AI Workspace
 

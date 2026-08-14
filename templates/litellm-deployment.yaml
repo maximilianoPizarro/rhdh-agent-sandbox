@@ -52,6 +52,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.litellm.litemaasSecret.name }}
                   key: {{ .Values.litellm.litemaasSecret.key }}
+                  optional: true
 {{- end }}
             - name: SSL_VERIFY
               value: "False"

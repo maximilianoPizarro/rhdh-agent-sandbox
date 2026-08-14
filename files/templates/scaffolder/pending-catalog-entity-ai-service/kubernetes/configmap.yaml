@@ -26,13 +26,22 @@ data:
         info:
           title: ${{ values.name }}
           version: "1.0"
+        servers:
+          - url: __AGENT_BASE_URL__
+            description: OpenShift Route for this service
         paths:
           /:
             get:
               summary: Service info and LiteLLM model
+              responses:
+                "200":
+                  description: Service metadata
           /mcp/smoke:
             get:
               summary: Live MCP smoke test (pods_list_in_namespace + monitorDeployments)
+              responses:
+                "200":
+                  description: MCP smoke results
     ---
     apiVersion: backstage.io/v1alpha1
     kind: Component

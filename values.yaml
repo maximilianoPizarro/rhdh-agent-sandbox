@@ -10,6 +10,11 @@ nameOverride: ""
 # Keep service DNS short and stable: <fullname>-mcp / <fullname>-litellm
 fullnameOverride: "rhdh-agent-sandbox"
 
+# Hub Kubernetes plugin API (derived from rhdh.global.clusterRouterBase when apiUrl is empty).
+cluster:
+  name: sandbox
+  apiUrl: ""
+
 # Bootstrap secrets (generated if create=true and keys empty)
 secrets:
   create: true
@@ -19,6 +24,8 @@ secrets:
   mcpToken: ""
   # OpenShift user token for sandbox-shared-models oauth-proxy (~24h TTL)
   modelApiKey: ""  # override: --set secrets.modelApiKey=$(oc whoami -t)
+  # LiteMaaS bearer for Hub / LiteLLM tool calling (litemaas-qwen). Stored in Secret litemaas-credentials.
+  litemaasApiKey: ""
 
 litellm:
   enabled: true
@@ -137,7 +144,11 @@ agents:
   # DevSpaces golden path: agent-applier creates DevWorkspaces from catalog Components
   devspaces:
     gitRepo: https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
-    gitRevision: main
+    gitRevision: "v0.1.3"
+    # In-namespace Che Code editor (required; che-editor annotation is not enough)
+    cheCode:
+      injectorImage: registry.redhat.io/devspaces/code-rhel9@sha256:0969d1f90608227c0aa6ec3a85b31bde966a5d73db1ef8af620ebc39ef1da82b
+      runtimeImage: registry.redhat.io/devspaces/udi-rhel9@sha256:2708a8082c9c0aa569e31c79695483311cae3533e42b950fd02384b0def75415
   # Pre-installed demo stubs removed — use Deploy Agent golden path (build=true).
   samples: []
 
@@ -146,7 +157,7 @@ communityPlugins:
   enabled: true
   registry: quay.io
   repository: maximilianopizarro/rhdh-agent-sandbox
-  tag: "0.1.0"
+  tag: "0.1.3"
   packages:
     - name: ai-skills-pack
       disabled: false
@@ -159,6 +170,10 @@ communityPlugins:
 rhdh:
   enabled: true
   nameOverride: developer-hub
+  # Scaffolder task event-stream can run longer than the OpenShift default 30s.
+  route:
+    annotations:
+      haproxy.router.openshift.io/timeout: 5m
   global:
     # REQUIRED: your sandbox apps domain, e.g. apps.rm2.thpm.p1.openshiftapps.com
     clusterRouterBase: apps.rm2.thpm.p1.openshiftapps.com
@@ -242,7 +257,7 @@ rhdh:
         - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
           disabled: false
         # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
-        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.1!plugin
+        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.3!plugin
           disabled: false
     # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:
@@ -251,6 +266,9 @@ rhdh:
     backstage:
       image:
         pullPolicy: IfNotPresent
+      annotations:
+        # OpenShift Topology: Developer Hub favicon (tpl runs in the Backstage subchart).
+        app.openshift.io/custom-icon: "https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.apps.rm2.thpm.p1.openshiftapps.com/favicon-192x192.png"
       resources:
         requests:
           cpu: 250m
@@ -332,7 +350,7 @@ rhdh:
             # complete browser login — use Cursor/.mcp.json for live CVE tools.
             - id: redhat-security-mcp
               name: Red Hat Security MCP (requires SSO)
-              url: https://access.redhat.com/hydra/mcp/v1
+              url: https://security-mcp.api.redhat.com/mcp
               enabled: false
           systemPrompt: >-
             You are the agent-friendly Developer Hub assistant on OpenShift Developer Sandbox.
@@ -430,11 +448,19 @@ rhdh:
               key: postgres-password
         - name: NODE_OPTIONS
           value: "--no-node-snapshot"
+        - name: CLUSTER_ROUTER_BASE
+          value: apps.rm2.thpm.p1.openshiftapps.com
         # Kubernetes / Tekton plugin — public API + dedicated reader SA token
         - name: K8S_CLUSTER_NAME
-          value: sandbox
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-cluster
+              key: cluster-name
         - name: K8S_CLUSTER_URL
-          value: https://api.rm2.thpm.p1.openshiftapps.com:6443
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-cluster
+              key: api-url
         - name: K8S_CLUSTER_TOKEN
           valueFrom:
             secretKeyRef:

@@ -2,7 +2,7 @@ apiVersion: v2
 name: rhdh-agent-sandbox
 description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
 type: application
-version: 0.1.2
+version: 0.1.3
 appVersion: "1.10.3"
 kubeVersion: ">=1.25.0-0"
 icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
@@ -27,12 +27,12 @@ annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/prerelease: "true"
   artifacthub.io/changes: |
+    - kind: added
+      description: DevSpaces Continue Red Hat Security MCP SSO helper (http-8080) without extra Helm form fields
+    - kind: added
+      description: Golden Path DevWorkspaces pin gitRevision to the chart tag for reproducible installs
     - kind: fixed
-      description: Include chart README.md in the packaged .tgz so Artifact Hub can render docs
-    - kind: added
-      description: LiteMaaS Qwen (litemaas-qwen) with function calling for Lightspeed and MCP Chat
-    - kind: added
-      description: Chart-managed DevSpaces Continue Secret (rhdh-agent-sandbox-continue)
+      description: Catalog-register scaffolder wait/apply and Hub Route 5m timeout for long Verify steps
   artifacthub.io/links: |
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox

@@ -1,4 +1,5 @@
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import fs from 'fs-extra';
 import https from 'node:https';
 import path from 'node:path';
@@ -73,7 +74,13 @@ function readNamespace(explicit?: string): string {
   );
 }
 
-export function createApplyPendingConfigMapAction() {
+const IMMEDIATE_INGEST_DIR = '/tmp/scaffolder-immediate';
+
+export function createApplyPendingConfigMapAction(options: {
+  catalog: CatalogService;
+}) {
+  const { catalog } = options;
+
   return createTemplateAction({
     id: ACTION_ID,
     description:
@@ -170,6 +177,50 @@ export function createApplyPendingConfigMapAction() {
 
       ctx.logger.info(`Applied pending catalog ConfigMap ${namespace}/${name}`);
       ctx.output('configMapName', name);
+
+      const pendingName = name.replace(/^pending-entity-/, '');
+      const router = (process.env.CLUSTER_ROUTER_BASE ?? '').trim();
+      const agentBase = router
+        ? `https://${pendingName}-${namespace}.${router}`
+        : `http://${pendingName}:8080`;
+      const entityYaml = (payload.data?.['entity.yaml'] ?? '')
+        .replaceAll('__RELEASE_NAMESPACE__', namespace)
+        .replaceAll('__AGENT_BASE_URL__', agentBase);
+      if (!entityYaml.trim()) {
+        ctx.logger.warn(
+          `ConfigMap ${name} has no entity.yaml; skipping immediate catalog ingest`,
+        );
+        return;
+      }
+
+      try {
+        await fs.ensureDir(IMMEDIATE_INGEST_DIR);
+        const ingestPath = path.join(IMMEDIATE_INGEST_DIR, `${name}.yaml`);
+        await fs.writeFile(ingestPath, entityYaml);
+        const location = await catalog.addLocation(
+          {
+            type: 'file',
+            target: ingestPath,
+            onConflict: 'refresh',
+          },
+          { credentials: await ctx.getInitiatorCredentials() },
+        );
+        const ingested = (location.entities ?? [])
+          .map(
+            entity =>
+              `${entity.kind}:${entity.metadata?.namespace ?? 'default'}/${entity.metadata?.name}`,
+          )
+          .join(', ');
+        ctx.logger.info(
+          `Ingested pending entities immediately (${ingested || 'none returned'}) from ${ingestPath}`,
+        );
+      } catch (error) {
+        ctx.logger.warn(
+          `Immediate catalog ingest failed; wait-for-entity will poll the registered ConfigMap: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
     },
   });
 }

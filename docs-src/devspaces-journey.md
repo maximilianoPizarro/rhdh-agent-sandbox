@@ -9,7 +9,7 @@ carousel: true
 
 ## Mental model: AI chat ≠ MCP tools
 
-Continue does **not** send chat messages through MCP. Chat and tools use different endpoints and secrets:
+Continue does **not** send chat messages through MCP. Chat and tools use different endpoints and secrets. The left **CHAT / Agent** panel in Che Code **is Continue 2** — keep the extension; do not skip it for a second client.
 
 ```text
 Che Code + Continue (DevSpaces workspace)
@@ -30,6 +30,13 @@ Che Code + Continue (DevSpaces workspace)
 | **Auth** | Secret `rhdh-agent-sandbox-continue` (`LITELLM_API_*`) | `mcp-token` from `rhdh-agent-sandbox-secrets` |
 | **Wired by** | `wire-continue` → `models:` in `~/.continue/config.yaml` | Same command → `mcpServers: hub-mcp-actions` when Hub Route + token exist |
 | **Not available** | Native function-calling on shared Granite/Qwen | OpenShift/Kubernetes MCP (ClusterIP only — Step 09) |
+
+| | Path C — Red Hat Security MCP |
+|---|---|
+| **What you prove** | Live CVE / advisory tools from the official Red Hat Security MCP |
+| **Endpoint** | `https://security-mcp.api.redhat.com/mcp` |
+| **Auth** | Customer Portal SSO via the public `http-8080` helper (Simple Browser or laptop) |
+| **Wired by** | `wire-continue` → `mcpServers: red-hat-security` in `~/.continue/config.yaml` |
 
 **How it feels in the IDE:** you type in Continue. Path A always answers as a model. Path B only runs when you ask for catalog/TechDocs and Continue invokes an MCP tool (you should see a tool name such as `query-catalog-entities`, then a reaction with entity names).
 
@@ -168,11 +175,19 @@ oc get secret rhdh-agent-sandbox-secrets -o jsonpath='{.data.mcp-token}' | base6
 
 > Reply with exactly: DevSpaces Continue OK
 
-**Path B — Hub MCP (Step 08):**
+**Path B — Hub MCP (Step 08), Continue Agent or Plan mode (not Chat):**
 
 > Use Hub MCP to list sample agent Components tagged agent.
 
-Expected reaction names: `sample-python-agent`, `sample-nodejs-agent`, `sample-quarkus-agent`.
+Expected reaction names: `sample-python-agent`, `sample-nodejs-agent`, `sample-quarkus-agent`. Continue Chat has tools disabled by design.
+
+**Path C — Red Hat Security MCP (browser SSO):**
+
+Continue lists `red-hat-security` via `mcp-remote` after SSO. Open the workspace **public** `http-8080` helper (not `code-redirect` / `Cannot GET /`) in Simple Browser or the laptop browser, grant Customer Portal access, then toggle **red-hat-security** in **Agent** or **Plan** mode.
+
+> Explain CVE-2024-3094 using Red Hat's severity rating.
+
+Use **Agent** or **Plan** mode. Hub catalog MCP remains Path B; cluster MCP remains Step 09.
 
 ## Stop when done
 

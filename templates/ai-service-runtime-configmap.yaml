@@ -126,8 +126,12 @@ data:
             self.send_response(404)
             self.end_headers()
 
-        def log_message(self, *_a):
-            return
+        def log_message(self, fmt, *args):
+            print("%s - %s" % (self.address_string(), fmt % args), flush=True)
 
+    print(
+        f"ai-service {NAME} listening on :8080 model={MODEL} namespace={NS}",
+        flush=True,
+    )
     HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 {{- end }}
