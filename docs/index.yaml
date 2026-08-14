@@ -5,11 +5,13 @@ entries:
       artifacthub.io/category: ai-machine-learning
       artifacthub.io/changes: |
         - kind: added
-          description: DevSpaces Continue Red Hat Security MCP SSO helper (http-8080) without extra Helm form fields
+          description: Helm pre-delete hook cleans Golden Path leftovers, pending catalog CMs, and chart PVCs on uninstall
         - kind: added
-          description: Golden Path DevWorkspaces pin gitRevision to the chart tag for reproducible installs
+          description: DevWorkspace quota gate, startOnCreate=false, and Che Code DWT guard in agent-applier
         - kind: fixed
-          description: Catalog-register scaffolder wait/apply and Hub Route 5m timeout for long Verify steps
+          description: Preserve registered-catalog ConfigMap on upgrade; Tekton Failed backoff; Hub route delete RBAC
+        - kind: fixed
+          description: LiteLLM/k8s-mcp health probes; clusterRouterBase from cluster-info Secret; Pages waits for Quay
       artifacthub.io/images: |
         - name: litellm
           image: litellm/litellm-non_root:v1.82.3-stable
@@ -27,7 +29,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-14T19:49:09.565110874Z"
+    created: "2026-08-14T20:29:16.32311704Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -36,7 +38,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: c10b3fd0d26285f91a995da5a6bb569eefe4cd7eadf3fc841d30110ecf558cee
+    digest: 080dacbc4189d7e3f5626a7c900364c4bbc5085441dcf4a627fcaced2bff7934
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -58,6 +60,6 @@ entries:
     - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
-    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.3.tgz
-    version: 0.1.3
-generated: "2026-08-14T19:49:09.542801578Z"
+    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.4.tgz
+    version: 0.1.4
+generated: "2026-08-14T20:29:16.300792311Z"

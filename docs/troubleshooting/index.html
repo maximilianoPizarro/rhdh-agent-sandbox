@@ -466,7 +466,7 @@ oc rollout status deploy/rhdh-agent-developer-hub
 
 <h2 id="mcp-chat-loads-but-tools-never-fire">MCP Chat loads but tools never fire</h2>
 
-<p>Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set <code class="language-plaintext highlighter-rouge">mcpChat.providers</code> to openai/claude/gemini with your own API key (Secret + env). See <a href="/rhdh-agent-sandbox/ai-capabilities/">AI capabilities</a>.</p>
+<p>Default MCP Chat provider is LiteLLM → <strong>litemaas-qwen</strong> (tool calling). Shared Granite/Qwen models do not support function calling. Browse tools in the MCP Chat sidebar to confirm servers are connected. Set <code class="language-plaintext highlighter-rouge">secrets.litemaasApiKey</code> on install (or Secret <code class="language-plaintext highlighter-rouge">litemaas-credentials</code>) for agentic tool calls. For chat-only demos you can switch the provider to granite in Hub config.</p>
 
 <p>If <strong>Backstage MCP Actions</strong> shows disconnected at startup, that is an init race (mcp-chat connects before <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with <code class="language-plaintext highlighter-rouge">mcp-token</code>.</p>
 
@@ -529,7 +529,7 @@ oc <span class="nb">exec</span> <span class="s2">"</span><span class="nv">$POD</
 
 <ol>
   <li>Close any Simple Browser tab that shows <code class="language-plaintext highlighter-rouge">Cannot GET /</code> (that is <code class="language-plaintext highlighter-rouge">code-redirect</code>, not the helper).</li>
-  <li>Open the <strong>HTTPS</strong> helper URL printed by <code class="language-plaintext highlighter-rouge">auth-rh-security-mcp</code> (or the dedicated <code class="language-plaintext highlighter-rouge">*-rh-oauth</code> Route). Do not use Che <code class="language-plaintext highlighter-rouge">code-redirect</code> or <code class="language-plaintext highlighter-rouge">http://</code> on the default <code class="language-plaintext highlighter-rouge">http-8080</code> endpoint — that Route is not TLS unless the Devfile sets <code class="language-plaintext highlighter-rouge">secure: true</code>.</li>
+  <li>Open the <strong>HTTPS</strong> helper URL printed by <code class="language-plaintext highlighter-rouge">auth-rh-security-mcp</code> (Devfile endpoint <code class="language-plaintext highlighter-rouge">http-8080</code> with <code class="language-plaintext highlighter-rouge">secure: true</code>). Do not use Che <code class="language-plaintext highlighter-rouge">code-redirect</code> or plain <code class="language-plaintext highlighter-rouge">http://</code> on the default endpoint.</li>
   <li>Click <strong>Conectar con Red Hat</strong>, grant access on Customer Portal, wait to land back on the helper.</li>
   <li>Continue Tools → <strong>red-hat-security</strong> off/on, <strong>Agent</strong> or <strong>Plan</strong> mode.</li>
 </ol>
@@ -577,13 +577,13 @@ oc <span class="nb">exec </span>deploy/&lt;name&gt; <span class="nt">--</span> c
 
 <p>Prefer <code class="language-plaintext highlighter-rouge">helm upgrade --install</code> with a fresh <code class="language-plaintext highlighter-rouge">oc whoami -t</code>. That preserves chart secrets and the Postgres PVC.</p>
 
-<p>To uninstall and install again:</p>
+<p>To uninstall and install again from the <strong>published Helm repo</strong> (chart 0.1.4+ runs a pre-delete cleanup hook):</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
-oc delete pvc data-rhdh-agent-postgresql-0 <span class="nt">--ignore-not-found</span>
 <span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
-helm dependency update
-helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+helm repo update
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.4 <span class="se">\</span>
+  <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
   <span class="nt">--timeout</span> 20m <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
@@ -591,7 +591,7 @@ helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</sp
 
 <p>Then <a href="/rhdh-agent-sandbox/verify/">Verify the install</a>.</p>
 
-<p><code class="language-plaintext highlighter-rouge">helm uninstall</code> does not always remove everything in the namespace:</p>
+<p><code class="language-plaintext highlighter-rouge">helm uninstall</code> (0.1.4+) removes most chart leftovers via the pre-delete hook. If you upgraded from an older chart without the hook, manual cleanup may still be needed:</p>
 
 <table>
   <thead>

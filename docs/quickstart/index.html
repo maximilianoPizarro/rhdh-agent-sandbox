@@ -279,21 +279,27 @@
 <ul>
   <li><code class="language-plaintext highlighter-rouge">oc login</code> to Developer Sandbox</li>
   <li>Helm 3.14+</li>
-  <li>~1.5 CPU / 3 Gi quota free</li>
+  <li><strong>Quota budget:</strong> ~525m CPU / ~2.2Gi memory requests plus 6Gi PVC before Golden Path agents or DevSpaces</li>
 </ul>
 
 <h2 id="install">Install</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
-helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+<p>From the Helm repo:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add rhdh-agent https://maximilianopizarro.github.io/rhdh-agent-sandbox
+helm repo update
+<span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.4 <span class="se">\</span>
+  <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.rm2.thpm.p1.openshiftapps.com
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com
 </code></pre></div></div>
 
 <h2 id="verify">Verify</h2>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get pods <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
 oc get route <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
+oc <span class="nb">wait</span> <span class="nt">--for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available deploy/rhdh-agent-developer-hub <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="nt">--timeout</span><span class="o">=</span>600s
 </code></pre></div></div>
 
 <p>Open the Developer Hub route and sign in as <strong>Guest</strong>.</p>
@@ -302,18 +308,19 @@ oc get route <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o"
 
 <ul>
   <li>Hub → <strong>Create</strong> → <strong>Deploy Agent (Golden Path)</strong></li>
-  <li>Open the new Component → <strong>Topology</strong> and <strong>Documentation</strong> tabs</li>
+  <li>DevSpaces workspaces start <strong>stopped</strong> — open from Dev Spaces after Create</li>
 </ul>
 
 <h2 id="reinstall-from-zero">Reinstall from zero</h2>
 
+<p><code class="language-plaintext highlighter-rouge">helm uninstall</code> runs a pre-delete hook (0.1.4+) that cleans Golden Path leftovers and chart PVCs.</p>
+
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
-oc delete pvc data-rhdh-agent-postgresql-0 <span class="nt">--ignore-not-found</span>
-helm dependency update
-helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+helm repo update
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.4 <span class="se">\</span>
+  <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.rm2.thpm.p1.openshiftapps.com <span class="se">\</span>
-  <span class="nt">--timeout</span> 20m <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com
 </code></pre></div></div>
 
       </div>
