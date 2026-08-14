@@ -4,14 +4,10 @@ entries:
   - annotations:
       artifacthub.io/category: ai-machine-learning
       artifacthub.io/changes: |
-        - kind: added
-          description: Helm pre-delete hook cleans Golden Path leftovers, pending catalog CMs, and chart PVCs on uninstall
-        - kind: added
-          description: DevWorkspace quota gate, startOnCreate=false, and Che Code DWT guard in agent-applier
         - kind: fixed
-          description: Preserve registered-catalog ConfigMap on upgrade; Tekton Failed backoff; Hub route delete RBAC
+          description: Agent-applier RBAC uses read-only resourcequotas/limitranges (Developer Sandbox cannot grant write)
         - kind: fixed
-          description: LiteLLM/k8s-mcp health probes; clusterRouterBase from cluster-info Secret; Pages waits for Quay
+          description: Topology Hub icon uses a static GitHub URL instead of the Hub route favicon
       artifacthub.io/images: |
         - name: litellm
           image: litellm/litellm-non_root:v1.82.3-stable
@@ -29,7 +25,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-14T20:35:01.484699429Z"
+    created: "2026-08-14T20:42:46.358785291Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -38,7 +34,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: 3602b945e4a0e04efb19eb937e3ea66a504c182a3d1a9fd7677ae62cb2bea4b8
+    digest: b3cfcd37d9fd3041cad6dfcf0287e7996e75301c8e2831f3945c8bdd7f79a58b
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -60,6 +56,6 @@ entries:
     - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
-    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.4.tgz
-    version: 0.1.4
-generated: "2026-08-14T20:35:01.462708358Z"
+    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.5.tgz
+    version: 0.1.5
+generated: "2026-08-14T20:42:46.336420372Z"
