@@ -262,7 +262,7 @@ To uninstall and install again from the **published Helm repo** (chart 0.1.4+ ru
 helm uninstall rhdh-agent -n "$(oc project -q)"
 export MODEL_API_KEY=$(oc whoami -t)
 helm repo update
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.4 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.5 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \

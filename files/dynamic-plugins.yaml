@@ -42,5 +42,5 @@ plugins:
   - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
     disabled: false
   # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
-        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.4!plugin
+        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.5!plugin
     disabled: false
