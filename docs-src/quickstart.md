@@ -19,7 +19,7 @@ From the Helm repo (reproducible chart tag):
 helm repo add rhdh-agent https://maximilianopizarro.github.io/rhdh-agent-sandbox
 helm repo update
 export MODEL_API_KEY=$(oc whoami -t)
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.7 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.8 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
@@ -43,7 +43,7 @@ helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
   --timeout 20m --wait=false
 ```
 
-OpenShift Console **Helm** form: set **Cluster Router Base** (required), OpenShift token, and LiteMaaS key. Leave Git revision empty to pin `v` + chart version (e.g. `v0.1.7`).
+OpenShift Console **Helm** form: set **Cluster Router Base** (required), OpenShift token, and LiteMaaS key. Leave Git revision empty to pin `v` + chart version (e.g. `v0.1.8`).
 
 ## Verify
 
@@ -76,7 +76,7 @@ oc rollout restart deploy/rhdh-agent-sandbox-litellm
 helm uninstall rhdh-agent -n "$(oc project -q)"
 helm repo update
 export MODEL_API_KEY=$(oc whoami -t)
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.7 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.8 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \

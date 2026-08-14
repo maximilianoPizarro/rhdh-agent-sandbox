@@ -5,7 +5,8 @@
 # Helm dependency packages (redhat-developer-hub) — helm dependency update only
 /charts/
 .idea/
-.vscode/
+.vscode/*
+!.vscode/tasks.json
 # Ship Continue recommendation into DevSpaces scaffolds
 !files/**/.vscode/
 !files/**/.vscode/extensions.json

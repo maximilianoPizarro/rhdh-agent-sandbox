@@ -111,52 +111,11 @@ commands:
   - id: wire-continue
     exec:
       component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: |
-        set -euo pipefail
-        SCRIPT=""
-        for CAND in \
-          /opt/rhdh-agent-sandbox/wire-continue.py \
-          "${PROJECT_SOURCE}/files/devfiles/wire-continue.py" \
-          /projects/agent-sandbox/files/devfiles/wire-continue.py \
-          "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py"
-        do
-          if [[ -f "${CAND}" ]]; then
-            SCRIPT="${CAND}"
-            break
-          fi
-        done
-        if [[ -z "${SCRIPT}" ]]; then
-          for _ in $(seq 1 15); do
-            if [[ -f /opt/rhdh-agent-sandbox/wire-continue.py ]]; then
-              SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py
-              break
-            fi
-            sleep 2
-          done
-        fi
-        if [[ -z "${SCRIPT}" || ! -f "${SCRIPT}" ]]; then
-          echo "wire-continue.py not found (ConfigMap /opt/rhdh-agent-sandbox or git files/devfiles/)."
-          exit 0
-        fi
-        python3 "${SCRIPT}"
+      commandLine: python3 /opt/rhdh-agent-sandbox/wire-continue.py || python3 /projects/agent-sandbox/files/devfiles/wire-continue.py
   - id: auth-rh-security-mcp
     exec:
       component: tools
-      commandLine: |
-        set -euo pipefail
-        for CAND in \
-          "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" \
-          /opt/rhdh-agent-sandbox/wire-continue.py \
-          "${PROJECT_SOURCE}/files/devfiles/wire-continue.py" \
-          /projects/agent-sandbox/files/devfiles/wire-continue.py
-        do
-          if [[ -f "${CAND}" ]] && grep -q -- '--auth-rh-security' "${CAND}"; then
-            exec python3 "${CAND}" --auth-rh-security
-          fi
-        done
-        echo "wire-continue.py --auth-rh-security not found. Run Devfile command wire-continue first."
-        exit 1
+      commandLine: python3 /opt/rhdh-agent-sandbox/wire-continue.py --auth-rh-security || python3 /projects/agent-sandbox/files/devfiles/wire-continue.py --auth-rh-security
 events:
   postStart:
     - download-continue-extension

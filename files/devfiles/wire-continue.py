@@ -88,7 +88,8 @@ def _prewarm_mcp_remote() -> None:
             [
                 "bash",
                 "-lc",
-                'source "$HOME/.nvm/nvm.sh" 2>/dev/null; npx -y mcp-remote@latest --help >/dev/null',
+                # Download the package without invoking its CLI (--help is parsed as a URL).
+                'source "$HOME/.nvm/nvm.sh" 2>/dev/null; npx -y -p mcp-remote@latest node -e "process.exit(0)"',
             ],
             timeout=90,
             check=False,

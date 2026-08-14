@@ -1232,42 +1232,8 @@ data:
             "\"${CODE}\" --list-extensions 2>/dev/null | grep -qi '^continue.continue' && exit 0\n"
             "\"${CODE}\" --install-extension \"${OUT}\" || true\n"
         )
-        wire_cmd = (
-            "set -euo pipefail\n"
-            "SCRIPT=\"\"\n"
-            "for CAND in "
-            "/opt/rhdh-agent-sandbox/wire-continue.py "
-            '"${PROJECT_SOURCE}/files/devfiles/wire-continue.py" '
-            "/projects/agent-sandbox/files/devfiles/wire-continue.py "
-            '"$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py"; do\n'
-            '  if [[ -f "${CAND}" ]]; then SCRIPT="${CAND}"; break; fi\n'
-            "done\n"
-            'if [[ -z "${SCRIPT}" ]]; then\n'
-            "  for _ in $(seq 1 15); do\n"
-            '    [[ -f /opt/rhdh-agent-sandbox/wire-continue.py ]] && SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py && break\n'
-            "    sleep 2\n"
-            "  done\n"
-            "fi\n"
-            'if [[ -z "${SCRIPT}" || ! -f "${SCRIPT}" ]]; then\n'
-            '  echo "wire-continue.py not found (ConfigMap mount or git files/devfiles/)"\n'
-            "  exit 0\n"
-            "fi\n"
-            'python3 "${SCRIPT}"\n'
-        )
-        auth_cmd = (
-            "set -euo pipefail\n"
-            "for CAND in "
-            '"$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" '
-            "/opt/rhdh-agent-sandbox/wire-continue.py "
-            '"${PROJECT_SOURCE}/files/devfiles/wire-continue.py" '
-            "/projects/agent-sandbox/files/devfiles/wire-continue.py; do\n"
-            '  if [[ -f "${CAND}" ]] && grep -q -- \'--auth-rh-security\' "${CAND}"; then\n'
-            '    exec python3 "${CAND}" --auth-rh-security\n'
-            "  fi\n"
-            "done\n"
-            'echo "wire-continue.py --auth-rh-security not found. Run Devfile command wire-continue first."\n'
-            "exit 1\n"
-        )
+        wire_cmd = "python3 /opt/rhdh-agent-sandbox/wire-continue.py || python3 /projects/agent-sandbox/files/devfiles/wire-continue.py"
+        auth_cmd = "python3 /opt/rhdh-agent-sandbox/wire-continue.py --auth-rh-security || python3 /projects/agent-sandbox/files/devfiles/wire-continue.py --auth-rh-security"
 
         dw = {
             "apiVersion": "workspace.devfile.io/v1alpha2",
@@ -1329,7 +1295,7 @@ data:
                     "commands": [
                         {"id": "download-continue-extension", "exec": {"component": "tools", "commandLine": download_cmd}},
                         {"id": "ensure-continue-extension", "exec": {"component": "tools", "commandLine": ensure_cmd}},
-                        {"id": "wire-continue", "exec": {"component": "tools", "workingDir": "${PROJECT_SOURCE}", "commandLine": wire_cmd}},
+                        {"id": "wire-continue", "exec": {"component": "tools", "commandLine": wire_cmd}},
                         {"id": "auth-rh-security-mcp", "exec": {"component": "tools", "commandLine": auth_cmd}},
                     ],
                     "events": {

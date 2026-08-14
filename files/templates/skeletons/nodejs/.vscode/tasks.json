@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "wire-continue",
+      "type": "shell",
+      "command": "python3 /opt/rhdh-agent-sandbox/wire-continue.py",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "auth-rh-security-mcp",
+      "type": "shell",
+      "command": "python3 /opt/rhdh-agent-sandbox/wire-continue.py --auth-rh-security",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

@@ -2,7 +2,7 @@ apiVersion: v2
 name: rhdh-agent-sandbox
 description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
 type: application
-version: 0.1.7
+version: 0.1.8
 appVersion: "1.10.3"
 kubeVersion: ">=1.25.0-0"
 icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
@@ -28,7 +28,7 @@ annotations:
   artifacthub.io/prerelease: "true"
   artifacthub.io/changes: |
     - kind: fixed
-      description: DevSpaces wire-continue ConfigMap is discovered by DWO (watch-configmap required) and commands fall back to the cloned git project
+      description: Che Code shell tasks and one-line Devfile commands so Continue wiring works without the Devfile task provider; mcp-remote prewarm no longer treats --help as a URL
   artifacthub.io/links: |
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox
