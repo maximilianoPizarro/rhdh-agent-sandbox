@@ -11,7 +11,8 @@ data:
     metadata:
       name: ${{ values.name }}-http
       title: ${{ values.name }} HTTP
-      description: ${{ values.description }}
+      description: >-
+        ${{ values.description }}
       tags:
         - ai
         - mcp
@@ -48,7 +49,8 @@ data:
     metadata:
       name: ${{ values.name }}
       title: ${{ values.name }}
-      description: ${{ values.description }}
+      description: >-
+        ${{ values.description }}
       tags:
         - ai
         - mcp

@@ -29,7 +29,8 @@ data:
         info:
           title: ${{ values.name }} Agent
           version: "1.0"
-          description: ${{ values.description }}
+          description: >-
+            ${{ values.description }}
         servers:
           - url: __AGENT_BASE_URL__
             description: OpenShift Route for this agent
@@ -92,7 +93,8 @@ data:
     metadata:
       name: ${{ values.name }}
       title: ${{ values.name }}
-      description: ${{ values.description }}
+      description: >-
+        ${{ values.description }}
       tags:
         - agent
         - golden-path
@@ -105,7 +107,8 @@ data:
         rhdh-agent-sandbox.io/framework: ${{ values.framework }}
         rhdh-agent-sandbox.io/model: ${{ values.model }}
         rhdh-agent-sandbox.io/agent-type: ${{ values.agentType }}
-        rhdh-agent-sandbox.io/agent-spec: ${{ values.agentSpec }}
+        rhdh-agent-sandbox.io/agent-spec: >-
+          ${{ values.agentSpec }}
         rhdh-agent-sandbox.io/image-stream: "${{ values.name }}:latest"
         rhdh-agent-sandbox.io/build-source: ${{ values.language }}
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"

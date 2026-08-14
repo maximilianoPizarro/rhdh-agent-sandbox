@@ -347,6 +347,29 @@ data:
         except Exception as exc:
             return 0, str(exc)
 
+    def quote_unquoted_yaml_scalars(text):
+        # agentSpec/description often contain ": " (e.g. "Example questions: ...")
+        # which YAML treats as nested compact mappings if left unquoted.
+        keys = (
+            "description",
+            "rhdh-agent-sandbox.io/agent-spec",
+        )
+        key_re = "|".join(re.escape(k) for k in keys)
+
+        def repl(m):
+            indent, key, val = m.group(1), m.group(2), m.group(3)
+            stripped = val.strip()
+            if not stripped or stripped[0] in ("\"", "'", "|", ">"):
+                return m.group(0)
+            return f"{indent}{key}: {json.dumps(stripped)}"
+
+        return re.sub(
+            rf"^([ \t]*)({key_re}): ([^\n]+)$",
+            repl,
+            text,
+            flags=re.MULTILINE,
+        )
+
     def process_pending_catalog_entities():
         path = f"/api/v1/namespaces/{NS}/configmaps?labelSelector={PENDING_LABEL}=true"
         status, body = k8s("GET", path)
@@ -366,7 +389,6 @@ data:
                 log("WARN", "pending_catalog_empty", configmap=cm_name)
                 errors += 1
                 continue
-            import re
             # Support multi-doc entity.yaml (e.g. API + Component) as separate registered keys.
             docs = [d.strip() for d in re.split(r"\n---\n", entity_yaml) if d.strip()]
             if not docs:
@@ -398,6 +420,7 @@ data:
                     "__AGENT_BASE_URL__",
                     agent_base_url(service_name_for_entity(ent_kind, ent_name)),
                 )
+                doc = quote_unquoted_yaml_scalars(doc)
                 if "backstage.io/kubernetes-namespace:" not in doc:
                     if "      annotations:\n" in doc:
                         doc = doc.replace(

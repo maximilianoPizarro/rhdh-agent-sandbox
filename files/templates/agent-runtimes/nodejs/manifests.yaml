@@ -33,7 +33,8 @@ spec:
             - name: MODEL
               value: ${{ values.model }}
             - name: AGENT_SPEC
-              value: ${{ values.agentSpec }}
+              value: >-
+                ${{ values.agentSpec }}
             - name: LITELLM_API_BASE
               value: http://rhdh-agent-sandbox-litellm:4000/v1
             - name: LITELLM_API_KEY

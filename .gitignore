@@ -26,6 +26,8 @@ __pycache__/
 *.pyc
 secrets.env
 *.pem
+# Presenter-only demo script (local, do not publish)
+/guion.md
 # Continue local configs may contain API keys — never commit
 .continue/
 **/.continue/config.yaml

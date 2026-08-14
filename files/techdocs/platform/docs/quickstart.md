@@ -14,7 +14,7 @@ From the Helm repo:
 helm repo add rhdh-agent https://maximilianopizarro.github.io/rhdh-agent-sandbox
 helm repo update
 export MODEL_API_KEY=$(oc whoami -t)
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.4 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com
@@ -42,7 +42,7 @@ Open the Developer Hub route and sign in as **Guest**.
 ```bash
 helm uninstall rhdh-agent -n "$(oc project -q)"
 helm repo update
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.4 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com

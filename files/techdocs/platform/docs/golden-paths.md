@@ -7,6 +7,7 @@ Three self-service templates ship with this chart:
 Generate a real LangGraph / LangChain.js / LangChain4j agent, BuildConfig-compile, and deploy without git push.
 
 - Registers a catalog Component with `managed-agent=true` and `build=true`
+- agentSpec may include colons (chart 0.1.11 quotes catalog YAML so Verify does not time out)
 - agent-applier builds from chart skeleton sources
 - Component page: **Topology** + per-agent **Documentation**
 

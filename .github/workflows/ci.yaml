@@ -30,6 +30,8 @@ jobs:
             --set rhdh.global.clusterRouterBase=apps.example.openshiftapps.com \
             > /tmp/render.yaml
           test -s /tmp/render.yaml
+          python3 scripts/test-quote-unquoted-yaml-scalars.py
+          grep -q 'def quote_unquoted_yaml_scalars' /tmp/render.yaml
 
   quay:
     if: github.event_name != 'pull_request'

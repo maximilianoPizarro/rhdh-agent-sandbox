@@ -252,6 +252,20 @@ oc annotate route rhdh-agent-developer-hub \
 
 Then open **Catalog** and search for the Component name. If it is there, the task actually succeeded — reload the task page. Plugin 0.1.2+ ingests the entity immediately (no ConfigMap-mount wait) and polls the in-process catalog client instead of `localhost:7007`.
 
+## Scaffolder Verify times out (`Timed out waiting for catalog entity`)
+
+If Hub logs `YAMLParseError: Nested mappings are not allowed in compact mappings`, the Component YAML is invalid. That happens when `agentSpec` contains `: ` (for example `Example questions:`) and is injected unquoted into `description:` / `rhdh-agent-sandbox.io/agent-spec:`.
+
+Chart **0.1.11** quotes those fields in the pending-entity template, the apply-pending plugin, and the agent-applier. After upgrade (and a merge to `main`, because `fetch:template` reads GitHub), re-run **Deploy Agent**.
+
+On an existing install without upgrade, quote the registered catalog YAML and refresh:
+
+```bash
+oc get cm rhdh-agent-sandbox-registered-catalog -o yaml
+# quote description and agent-spec, then:
+oc rollout restart deploy/rhdh-agent-sandbox-developer-hub
+```
+
 ## Reinstall (Helm only)
 
 Prefer `helm upgrade --install` with a fresh `oc whoami -t`. That preserves chart secrets and the Postgres PVC.
@@ -262,7 +276,7 @@ To uninstall and install again from the **published Helm repo** (chart 0.1.4+ ru
 helm uninstall rhdh-agent -n "$(oc project -q)"
 export MODEL_API_KEY=$(oc whoami -t)
 helm repo update
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.10 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \

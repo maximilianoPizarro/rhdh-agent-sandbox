@@ -4,6 +4,7 @@ import fs from 'fs-extra';
 import https from 'node:https';
 import path from 'node:path';
 import yaml from 'yaml';
+import { quoteUnquotedYamlScalars } from './quoteUnquotedYamlScalars';
 
 const ACTION_ID = 'catalog:apply-pending-configmap';
 const SA_TOKEN = '/var/run/secrets/kubernetes.io/serviceaccount/token';
@@ -135,6 +136,19 @@ export function createApplyPendingConfigMapAction(options: {
         doc.metadata?.namespace ?? ctx.input.namespace,
       );
 
+      const data = { ...(doc.data ?? {}) };
+      if (data['entity.yaml']) {
+        data['entity.yaml'] = quoteUnquotedYamlScalars(data['entity.yaml']);
+        const yamlErrors = yaml
+          .parseAllDocuments(data['entity.yaml'])
+          .flatMap(entityDoc => entityDoc.errors ?? []);
+        if (yamlErrors.length) {
+          throw new Error(
+            `Pending catalog entity.yaml is invalid YAML: ${yamlErrors[0].message}`,
+          );
+        }
+      }
+
       const payload = {
         apiVersion: 'v1',
         kind: 'ConfigMap',
@@ -143,7 +157,7 @@ export function createApplyPendingConfigMapAction(options: {
           namespace,
           labels: doc.metadata?.labels ?? doc.labels,
         },
-        data: doc.data ?? {},
+        data,
       };
 
       const getPath = `/api/v1/namespaces/${namespace}/configmaps/${name}`;

@@ -3,7 +3,8 @@ kind: Component
 metadata:
   name: ${{ values.name }}
   title: ${{ values.name }}
-  description: ${{ values.agentSpec }}
+  description: >-
+    ${{ values.agentSpec }}
   tags:
     - agent
     - golden-path
@@ -14,7 +15,8 @@ metadata:
     rhdh-agent-sandbox.io/framework: ${{ values.framework }}
     rhdh-agent-sandbox.io/model: ${{ values.model }}
     rhdh-agent-sandbox.io/agent-type: ${{ values.agentType }}
-    rhdh-agent-sandbox.io/agent-spec: ${{ values.agentSpec }}
+    rhdh-agent-sandbox.io/agent-spec: >-
+      ${{ values.agentSpec }}
   links:
     - url: https://workspaces.openshift.com/#https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/${{ values.language }}
       title: Open in DevSpaces

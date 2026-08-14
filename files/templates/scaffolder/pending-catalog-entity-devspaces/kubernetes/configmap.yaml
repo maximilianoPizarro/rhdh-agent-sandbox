@@ -11,7 +11,8 @@ data:
     metadata:
       name: ${{ values.name }}
       title: ${{ values.name }}
-      description: ${{ values.description }}
+      description: >-
+        ${{ values.description }}
       tags:
         - agent
         - golden-path

@@ -58,7 +58,9 @@ spec:
             - "rag-agent — docs search + lifecycle"
         agentSpec:
           title: Agent specification
-          description: Natural-language spec injected as the agent system prompt / behaviour
+          description: >
+            Natural-language system prompt. Colons, lists, and quotes are allowed;
+            the template stores the value as a YAML block scalar.
           type: string
           ui:widget: textarea
         model:

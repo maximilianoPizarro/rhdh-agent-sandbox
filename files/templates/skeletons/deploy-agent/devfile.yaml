@@ -3,7 +3,8 @@ metadata:
   name: ${{ values.name }}
   version: 0.1.0
   displayName: Agent (${{ values.language }} / ${{ values.framework }})
-  description: ${{ values.agentSpec }}
+  description: >-
+    ${{ values.agentSpec }}
   tags: [agent, ${{ values.language }}, ai]
 components:
   - name: tools
