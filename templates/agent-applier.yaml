@@ -1234,13 +1234,22 @@ data:
         )
         wire_cmd = (
             "set -euo pipefail\n"
-            "SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py\n"
-            "for _ in $(seq 1 15); do\n"
-            '  [[ -f "${SCRIPT}" ]] && break\n'
-            "  sleep 2\n"
+            "SCRIPT=\"\"\n"
+            "for CAND in "
+            "/opt/rhdh-agent-sandbox/wire-continue.py "
+            '"${PROJECT_SOURCE}/files/devfiles/wire-continue.py" '
+            "/projects/agent-sandbox/files/devfiles/wire-continue.py "
+            '"$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py"; do\n'
+            '  if [[ -f "${CAND}" ]]; then SCRIPT="${CAND}"; break; fi\n'
             "done\n"
-            'if [[ ! -f "${SCRIPT}" ]]; then\n'
-            '  echo "wire-continue.py not mounted; ensure ConfigMap ' + FULLNAME + '-wire-continue exists"\n'
+            'if [[ -z "${SCRIPT}" ]]; then\n'
+            "  for _ in $(seq 1 15); do\n"
+            '    [[ -f /opt/rhdh-agent-sandbox/wire-continue.py ]] && SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py && break\n'
+            "    sleep 2\n"
+            "  done\n"
+            "fi\n"
+            'if [[ -z "${SCRIPT}" || ! -f "${SCRIPT}" ]]; then\n'
+            '  echo "wire-continue.py not found (ConfigMap mount or git files/devfiles/)"\n'
             "  exit 0\n"
             "fi\n"
             'python3 "${SCRIPT}"\n'
@@ -1249,7 +1258,9 @@ data:
             "set -euo pipefail\n"
             "for CAND in "
             '"$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" '
-            "/opt/rhdh-agent-sandbox/wire-continue.py; do\n"
+            "/opt/rhdh-agent-sandbox/wire-continue.py "
+            '"${PROJECT_SOURCE}/files/devfiles/wire-continue.py" '
+            "/projects/agent-sandbox/files/devfiles/wire-continue.py; do\n"
             '  if [[ -f "${CAND}" ]] && grep -q -- \'--auth-rh-security\' "${CAND}"; then\n'
             '    exec python3 "${CAND}" --auth-rh-security\n'
             "  fi\n"

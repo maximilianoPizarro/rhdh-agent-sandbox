@@ -9,12 +9,15 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: continue
     controller.devfile.io/mount-to-devworkspace: "true"
-{{- if .Values.agents.devspaces.restartOnHelperChange }}
+    # Required for DWO to discover the ConfigMap (not optional "watch for changes").
     controller.devfile.io/watch-configmap: "true"
-{{- end }}
   annotations:
     controller.devfile.io/mount-as: file
     controller.devfile.io/mount-path: /opt/rhdh-agent-sandbox
+{{- if not .Values.agents.devspaces.restartOnHelperChange }}
+    # Mount on next start instead of restarting every running workspace on helm upgrade.
+    controller.devfile.io/mount-on-start: "true"
+{{- end }}
     rhdh-agent-sandbox/purpose: "Continue 2.x wire-continue.py for every DevWorkspace"
 data:
   wire-continue.py: |

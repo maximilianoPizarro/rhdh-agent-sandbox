@@ -156,7 +156,8 @@ agents:
     startOnCreate: false
     memoryRequest: 512Mi
     memoryLimit: 3Gi
-    # When false, helper ConfigMap updates do not restart all DevWorkspaces on helm upgrade.
+    # When false, helper ConfigMap still mounts (watch-configmap is required for DWO
+    # discovery) but uses mount-on-start so helm upgrades do not restart workspaces.
     restartOnHelperChange: false
     # In-namespace Che Code editor (required; che-editor annotation is not enough)
     cheCode:

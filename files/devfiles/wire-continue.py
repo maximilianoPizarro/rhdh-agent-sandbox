@@ -250,6 +250,7 @@ def _persist_oauth_helper() -> Path:
     candidates = [
         Path(__file__).resolve().parent / "rh-security-oauth.py",
         Path("/opt/rhdh-agent-sandbox/rh-security-oauth.py"),
+        Path("/projects/agent-sandbox/files/devfiles/rh-security-oauth.py"),
     ]
     for src in candidates:
         try:

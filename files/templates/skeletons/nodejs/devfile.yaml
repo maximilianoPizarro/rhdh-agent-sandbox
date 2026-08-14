@@ -114,13 +114,29 @@ commands:
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
         set -euo pipefail
-        SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py
-        for _ in $(seq 1 15); do
-          [[ -f "${SCRIPT}" ]] && break
-          sleep 2
+        SCRIPT=""
+        for CAND in \
+          /opt/rhdh-agent-sandbox/wire-continue.py \
+          "${PROJECT_SOURCE}/files/devfiles/wire-continue.py" \
+          /projects/agent-sandbox/files/devfiles/wire-continue.py \
+          "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py"
+        do
+          if [[ -f "${CAND}" ]]; then
+            SCRIPT="${CAND}"
+            break
+          fi
         done
-        if [[ ! -f "${SCRIPT}" ]]; then
-          echo "wire-continue.py not mounted; ensure Helm ConfigMap rhdh-agent-sandbox-wire-continue exists."
+        if [[ -z "${SCRIPT}" ]]; then
+          for _ in $(seq 1 15); do
+            if [[ -f /opt/rhdh-agent-sandbox/wire-continue.py ]]; then
+              SCRIPT=/opt/rhdh-agent-sandbox/wire-continue.py
+              break
+            fi
+            sleep 2
+          done
+        fi
+        if [[ -z "${SCRIPT}" || ! -f "${SCRIPT}" ]]; then
+          echo "wire-continue.py not found (ConfigMap /opt/rhdh-agent-sandbox or git files/devfiles/)."
           exit 0
         fi
         python3 "${SCRIPT}"
@@ -131,7 +147,9 @@ commands:
         set -euo pipefail
         for CAND in \
           "$HOME/.local/share/rhdh-agent-sandbox/wire-continue.py" \
-          /opt/rhdh-agent-sandbox/wire-continue.py
+          /opt/rhdh-agent-sandbox/wire-continue.py \
+          "${PROJECT_SOURCE}/files/devfiles/wire-continue.py" \
+          /projects/agent-sandbox/files/devfiles/wire-continue.py
         do
           if [[ -f "${CAND}" ]] && grep -q -- '--auth-rh-security' "${CAND}"; then
             exec python3 "${CAND}" --auth-rh-security
