@@ -305,6 +305,17 @@ oc get route <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o"
   <li>Open the new Component → <strong>Topology</strong> and <strong>Documentation</strong> tabs</li>
 </ul>
 
+<h2 id="reinstall-from-zero">Reinstall from zero</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
+oc delete pvc data-rhdh-agent-postgresql-0 <span class="nt">--ignore-not-found</span>
+helm dependency update
+helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.rm2.thpm.p1.openshiftapps.com <span class="se">\</span>
+  <span class="nt">--timeout</span> 20m <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
       </div>
     </section>
   </main>

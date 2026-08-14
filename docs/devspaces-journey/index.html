@@ -280,7 +280,7 @@
 
 <h2 id="mental-model-ai-chat--mcp-tools">Mental model: AI chat ≠ MCP tools</h2>
 
-<p>Continue does <strong>not</strong> send chat messages through MCP. Chat and tools use different endpoints and secrets:</p>
+<p>Continue does <strong>not</strong> send chat messages through MCP. Chat and tools use different endpoints and secrets. The left <strong>CHAT / Agent</strong> panel in Che Code <strong>is Continue 2</strong> — keep the extension; do not skip it for a second client.</p>
 
 <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Che Code + Continue (DevSpaces workspace)
  │
@@ -326,6 +326,33 @@
       <td><strong>Not available</strong></td>
       <td>Native function-calling on shared Granite/Qwen</td>
       <td>OpenShift/Kubernetes MCP (ClusterIP only — Step 09)</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Path C — Red Hat Security MCP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>What you prove</strong></td>
+      <td>Live CVE / advisory tools from the official Red Hat Security MCP</td>
+    </tr>
+    <tr>
+      <td><strong>Endpoint</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">https://security-mcp.api.redhat.com/mcp</code></td>
+    </tr>
+    <tr>
+      <td><strong>Auth</strong></td>
+      <td>Customer Portal SSO via the public <code class="language-plaintext highlighter-rouge">http-8080</code> helper (Simple Browser or laptop)</td>
+    </tr>
+    <tr>
+      <td><strong>Wired by</strong></td>
+      <td><code class="language-plaintext highlighter-rouge">wire-continue</code> → <code class="language-plaintext highlighter-rouge">mcpServers: red-hat-security</code> in <code class="language-plaintext highlighter-rouge">~/.continue/config.yaml</code></td>
     </tr>
   </tbody>
 </table>
@@ -494,13 +521,23 @@
   <p>Reply with exactly: DevSpaces Continue OK</p>
 </blockquote>
 
-<p><strong>Path B — Hub MCP (Step 08):</strong></p>
+<p><strong>Path B — Hub MCP (Step 08), Continue Agent or Plan mode (not Chat):</strong></p>
 
 <blockquote>
   <p>Use Hub MCP to list sample agent Components tagged agent.</p>
 </blockquote>
 
-<p>Expected reaction names: <code class="language-plaintext highlighter-rouge">sample-python-agent</code>, <code class="language-plaintext highlighter-rouge">sample-nodejs-agent</code>, <code class="language-plaintext highlighter-rouge">sample-quarkus-agent</code>.</p>
+<p>Expected reaction names: <code class="language-plaintext highlighter-rouge">sample-python-agent</code>, <code class="language-plaintext highlighter-rouge">sample-nodejs-agent</code>, <code class="language-plaintext highlighter-rouge">sample-quarkus-agent</code>. Continue Chat has tools disabled by design.</p>
+
+<p><strong>Path C — Red Hat Security MCP (browser SSO):</strong></p>
+
+<p>Continue lists <code class="language-plaintext highlighter-rouge">red-hat-security</code> via <code class="language-plaintext highlighter-rouge">mcp-remote</code> after SSO. Open the workspace <strong>public</strong> <code class="language-plaintext highlighter-rouge">http-8080</code> helper (not <code class="language-plaintext highlighter-rouge">code-redirect</code> / <code class="language-plaintext highlighter-rouge">Cannot GET /</code>) in Simple Browser or the laptop browser, grant Customer Portal access, then toggle <strong>red-hat-security</strong> in <strong>Agent</strong> or <strong>Plan</strong> mode.</p>
+
+<blockquote>
+  <p>Explain CVE-2024-3094 using Red Hat’s severity rating.</p>
+</blockquote>
+
+<p>Use <strong>Agent</strong> or <strong>Plan</strong> mode. Hub catalog MCP remains Path B; cluster MCP remains Step 09.</p>
 
 <h2 id="stop-when-done">Stop when done</h2>
 

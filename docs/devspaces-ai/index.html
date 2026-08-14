@@ -364,10 +364,20 @@ spec:
       <td><code class="language-plaintext highlighter-rouge">LITELLM_API_KEY</code></td>
       <td><code class="language-plaintext highlighter-rouge">litellm-master-key</code> from <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-secrets</code></td>
     </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">HUB_MCP_URL</code></td>
+      <td>Hub Route <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MCP_TOKEN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">mcp-token</code> (when the chart Secret already exists)</td>
+    </tr>
   </tbody>
 </table>
 
-<p>Inside the workspace terminal, run Devfile command <strong><code class="language-plaintext highlighter-rouge">wire-continue</code></strong>. It prefers env vars if set; otherwise it loads that Secret via <code class="language-plaintext highlighter-rouge">oc</code> and writes <code class="language-plaintext highlighter-rouge">.continue/config.json</code> (models <code class="language-plaintext highlighter-rouge">granite</code> / <code class="language-plaintext highlighter-rouge">qwen3</code>).</p>
+<p>The left <strong>CHAT / Agent</strong> panel <strong>is Continue 2</strong>. Keep it. postStart runs Devfile <strong><code class="language-plaintext highlighter-rouge">wire-continue</code></strong>, which writes <strong><code class="language-plaintext highlighter-rouge">~/.continue/config.yaml</code></strong> (Continue 2.x live config: models + <code class="language-plaintext highlighter-rouge">red-hat-security</code> + <code class="language-plaintext highlighter-rouge">hub-mcp-actions</code>). Project <code class="language-plaintext highlighter-rouge">.continue/config.json</code> is placeholders only.</p>
+
+<p>If the model picker says <strong>No models configured</strong>, reload the Che Code window (or re-run <code class="language-plaintext highlighter-rouge">wire-continue</code>). Continue 2 ignores project <code class="language-plaintext highlighter-rouge">config.json</code>.</p>
 
 <p>Manual fallback:</p>
 
@@ -422,7 +432,7 @@ spec:
 
 <h2 id="ai-and-mcp-from-the-ide-two-paths">AI and MCP from the IDE (two paths)</h2>
 
-<p>Continue is one sidebar, two network paths:</p>
+<p>Continue is one sidebar (CHAT / Agent <strong>is</strong> Continue 2), three network paths:</p>
 
 <table>
   <thead>
@@ -435,13 +445,18 @@ spec:
   <tbody>
     <tr>
       <td><strong>AI chat</strong></td>
-      <td>Continue → LiteLLM Route <code class="language-plaintext highlighter-rouge">/v1</code> → Granite/Qwen</td>
+      <td>Continue → LiteLLM Route <code class="language-plaintext highlighter-rouge">/v1</code> → Granite/Qwen/LiteMaaS</td>
       <td><code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-continue</code></td>
     </tr>
     <tr>
       <td><strong>Hub MCP</strong></td>
-      <td>Continue → Hub Route <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> → catalog/TechDocs tools</td>
-      <td><code class="language-plaintext highlighter-rouge">mcp-token</code> (written by <code class="language-plaintext highlighter-rouge">wire-continue</code> into <code class="language-plaintext highlighter-rouge">mcpServers</code>)</td>
+      <td>Continue → Hub Route <code class="language-plaintext highlighter-rouge">/api/mcp-actions/v1</code> → catalog/TechDocs</td>
+      <td><code class="language-plaintext highlighter-rouge">mcp-token</code></td>
+    </tr>
+    <tr>
+      <td><strong>Red Hat Security MCP</strong></td>
+      <td>Continue → <code class="language-plaintext highlighter-rouge">security-mcp.api.redhat.com</code> → CVEs/advisories</td>
+      <td>Customer Portal SSO (no Secret)</td>
     </tr>
   </tbody>
 </table>

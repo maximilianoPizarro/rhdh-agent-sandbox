@@ -414,6 +414,10 @@ oc rollout status deploy/rhdh-agent-developer-hub
 
 <h2 id="devspaces-continue-cannot-reach-models">DevSpaces Continue cannot reach models</h2>
 
+<p>If the picker says <strong>No models configured</strong>, Continue 2 is reading an empty <code class="language-plaintext highlighter-rouge">~/.continue/config.yaml</code> — see <a href="#devspaces-continue-shows-no-models--no-mcp-servers">Continue shows no models</a>.</p>
+
+<p>Otherwise:</p>
+
 <ol>
   <li>LiteLLM <strong>Route</strong> up?</li>
   <li>Continue <code class="language-plaintext highlighter-rouge">apiBase</code> ends with <code class="language-plaintext highlighter-rouge">/v1</code>?</li>
@@ -484,6 +488,137 @@ oc get secret rhdh-agent-sandbox-secrets <span class="nt">-o</span> json | pytho
 </code></pre></div></div>
 
 <p>You should <strong>not</strong> see <code class="language-plaintext highlighter-rouge">ENABLE_OPENAI</code> / <code class="language-plaintext highlighter-rouge">OPENAI_API_KEY</code>. Then restart Hub so <code class="language-plaintext highlighter-rouge">lightspeed-core</code> reloads envFrom.</p>
+
+<h2 id="devspaces-has-not-received-an-ide-url">DevSpaces: “has not received an IDE URL”</h2>
+
+<p>The dashboard can show <strong>Running</strong> while <strong>Open IDE</strong> fails with <em>The workspace has not received an IDE URL in the last 20 seconds</em>.</p>
+
+<p>Golden Path workspaces are created by <strong>agent-applier</strong>, not the Dev Spaces dashboard. The <code class="language-plaintext highlighter-rouge">che.eclipse.org/che-editor</code> annotation does not inject Che Code. The DevWorkspace needs <code class="language-plaintext highlighter-rouge">spec.contributions</code> pointing at the chart DevWorkspaceTemplate <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox-che-code</code> (endpoint 3100 → <code class="language-plaintext highlighter-rouge">status.mainUrl</code>).</p>
+
+<p>New workspaces get this after a chart upgrade. For an existing workspace:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">DWT</span><span class="o">=</span><span class="si">$(</span>oc get dwt <span class="nt">-o</span> name | <span class="nb">grep </span>che-code | <span class="nb">head</span> <span class="nt">-1</span> | <span class="nb">sed</span> <span class="s1">'s|.*/||'</span><span class="si">)</span>
+oc patch dw &lt;workspace&gt; <span class="nt">--type</span><span class="o">=</span>merge <span class="se">\</span>
+  <span class="nt">-p</span> <span class="s2">"{</span><span class="se">\"</span><span class="s2">spec</span><span class="se">\"</span><span class="s2">:{</span><span class="se">\"</span><span class="s2">contributions</span><span class="se">\"</span><span class="s2">:[{</span><span class="se">\"</span><span class="s2">name</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">editor</span><span class="se">\"</span><span class="s2">,</span><span class="se">\"</span><span class="s2">kubernetes</span><span class="se">\"</span><span class="s2">:{</span><span class="se">\"</span><span class="s2">name</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="k">${</span><span class="nv">DWT</span><span class="k">}</span><span class="se">\"</span><span class="s2">}}]}}"</span>
+oc patch dw &lt;workspace&gt; <span class="nt">--type</span><span class="o">=</span>merge <span class="nt">-p</span> <span class="s1">'{"spec":{"started":false}}'</span>
+oc patch dw &lt;workspace&gt; <span class="nt">--type</span><span class="o">=</span>merge <span class="nt">-p</span> <span class="s1">'{"spec":{"started":true}}'</span>
+oc get dw &lt;workspace&gt; <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.status.phase} {.status.mainUrl}{"\n"}'</span>
+</code></pre></div></div>
+
+<p>Then reopen the workspace from the Dev Spaces dashboard.</p>
+
+<h2 id="devspaces-continue-shows-no-models--no-mcp-servers">DevSpaces: Continue shows no models / no MCP servers</h2>
+
+<p>Continue <strong>2.x</strong> reads <strong><code class="language-plaintext highlighter-rouge">~/.continue/config.yaml</code></strong> (home directory), not project <code class="language-plaintext highlighter-rouge">.continue/config.json</code>. The left CHAT panel is Continue — keep the extension.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">POD</span><span class="o">=</span><span class="si">$(</span>oc get pod <span class="nt">-l</span> controller.devfile.io/devworkspace_name<span class="o">=</span>&lt;workspace&gt; <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.items[0].metadata.name}'</span><span class="si">)</span>
+oc <span class="nb">exec</span> <span class="s2">"</span><span class="nv">$POD</span><span class="s2">"</span> <span class="nt">-c</span> tools <span class="nt">--</span> python3 /opt/rhdh-agent-sandbox/wire-continue.py
+</code></pre></div></div>
+
+<p>Reload the Che Code window. You should see Granite / Qwen3 / LiteMaaS Qwen and MCP server <code class="language-plaintext highlighter-rouge">hub-mcp-actions</code> (4 catalog/TechDocs tools).</p>
+
+<p><strong>“New MCP server” / Connection closed:</strong> Continue 2 writes <code class="language-plaintext highlighter-rouge">.continue/mcpServers/new-mcp-server.yaml</code> with a placeholder <code class="language-plaintext highlighter-rouge">npx -y &lt;your-mcp-server&gt;</code>. Toggle it <strong>off</strong> or delete that file — <code class="language-plaintext highlighter-rouge">wire-continue</code> now removes it. It is not a Hub or Red Hat server.</p>
+
+<p><strong>Chat vs Agent:</strong> Continue disables tools in Chat. Switch to <strong>Agent</strong> or <strong>Plan</strong> (<code class="language-plaintext highlighter-rouge">Ctrl+Alt+I</code> then the mode picker) before asking for MCP.</p>
+
+<p><strong>Red Hat Security MCP:</strong> Continue 2 cannot complete Customer Portal SSO against <code class="language-plaintext highlighter-rouge">127.0.0.1:3334</code> from Che Simple Browser (<code class="language-plaintext highlighter-rouge">code-redirect-*</code> → Express <code class="language-plaintext highlighter-rouge">Cannot GET /</code>). That is <strong>not</strong> a missing git push or a workspace regenerate.</p>
+
+<p><code class="language-plaintext highlighter-rouge">wire-continue</code> starts an SSO helper UI on a public HTTPS Route. Red Hat <code class="language-plaintext highlighter-rouge">mcp-client</code> only allows <code class="language-plaintext highlighter-rouge">http://127.0.0.1:3334/oauth/callback</code> (DCR echoes other URIs but authorize returns <code class="language-plaintext highlighter-rouge">redirect_uri not allowed</code>). Open the helper, click <strong>Conectar con Red Hat</strong>, then <strong>paste</strong> the failed <code class="language-plaintext highlighter-rouge">127.0.0.1:3334</code> URL back into the helper.</p>
+
+<p>Do this:</p>
+
+<ol>
+  <li>Close any Simple Browser tab that shows <code class="language-plaintext highlighter-rouge">Cannot GET /</code> (that is <code class="language-plaintext highlighter-rouge">code-redirect</code>, not the helper).</li>
+  <li>Open the <strong>HTTPS</strong> helper URL printed by <code class="language-plaintext highlighter-rouge">auth-rh-security-mcp</code> (or the dedicated <code class="language-plaintext highlighter-rouge">*-rh-oauth</code> Route). Do not use Che <code class="language-plaintext highlighter-rouge">code-redirect</code> or <code class="language-plaintext highlighter-rouge">http://</code> on the default <code class="language-plaintext highlighter-rouge">http-8080</code> endpoint — that Route is not TLS unless the Devfile sets <code class="language-plaintext highlighter-rouge">secure: true</code>.</li>
+  <li>Click <strong>Conectar con Red Hat</strong>, grant access on Customer Portal, wait to land back on the helper.</li>
+  <li>Continue Tools → <strong>red-hat-security</strong> off/on, <strong>Agent</strong> or <strong>Plan</strong> mode.</li>
+</ol>
+
+<p>Until the official MCP accepts the token (<code class="language-plaintext highlighter-rouge">initialize</code> 200, scope <code class="language-plaintext highlighter-rouge">api.graphql</code>), Continue may show one setup tool (<code class="language-plaintext highlighter-rouge">redhat_security_connect</code>) instead of <code class="language-plaintext highlighter-rouge">Connection closed</code>. Cursor still uses repo <code class="language-plaintext highlighter-rouge">.mcp.json</code> (<code class="language-plaintext highlighter-rouge">type: http</code>).</p>
+
+<p>No Helm upgrade is required for an already-running workspace: copy/start the helper in the tools container. Do <strong>not</strong> change ConfigMap <code class="language-plaintext highlighter-rouge">*-wire-continue</code> just to pick this up — that ConfigMap is watched and restarts DevWorkspaces.</p>
+
+<h2 id="topology-tab-is-empty-after-deploy-agent">Topology tab is empty after Deploy Agent</h2>
+
+<p>No git push is required. Golden Path registers a catalog ConfigMap; <code class="language-plaintext highlighter-rouge">agent-applier</code> binary-builds from the chart skeleton and creates the Deployment.</p>
+
+<p>Topology stays empty until that Deployment exists. Quarkus images often take 2–4 minutes. Refresh the Component page after:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get build,deploy,svc &lt;name&gt;
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Complete</code> + <code class="language-plaintext highlighter-rouge">deploy/&lt;name&gt; 1/1</code> means Topology should show the workload (<code class="language-plaintext highlighter-rouge">app.kubernetes.io/name=&lt;name&gt;</code> in this namespace).</p>
+
+<h2 id="api-definition--swagger-execute-shows-no-response">API Definition / Swagger Execute shows no response</h2>
+
+<p>The catalog OpenAPI used to list <code class="language-plaintext highlighter-rouge">/invoke</code> and <code class="language-plaintext highlighter-rouge">/mcp/tools</code>, which the agent does not implement. Try-it-out also had no <code class="language-plaintext highlighter-rouge">servers</code> URL, so Execute called the <strong>Hub</strong> origin and hung (Cancel, empty Responses).</p>
+
+<p>Real endpoints: <code class="language-plaintext highlighter-rouge">GET /</code>, <code class="language-plaintext highlighter-rouge">GET /health</code>, <code class="language-plaintext highlighter-rouge">GET /v1/runtime</code>, <code class="language-plaintext highlighter-rouge">POST /v1/chat</code>. The applier now creates a Route and CORS so Swagger can call the agent. Recreate the Component or refresh the API entity after upgrade.</p>
+
+<p>Until then:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create route edge &lt;name&gt; <span class="nt">--service</span><span class="o">=</span>&lt;name&gt; <span class="nt">--insecure-policy</span><span class="o">=</span>Redirect
+oc <span class="nb">exec </span>deploy/&lt;name&gt; <span class="nt">--</span> curl <span class="nt">-sS</span> http://127.0.0.1:8080/health
+</code></pre></div></div>
+
+<h2 id="scaffolder-verify-step-shows-network-error">Scaffolder Verify step shows “Network error”</h2>
+
+<p>The verify action (<code class="language-plaintext highlighter-rouge">catalog:wait-for-entity</code>) often keeps running in Hub after the browser drops the task event-stream. OpenShift Routes default to a <strong>30s</strong> timeout; catalog ingest via ConfigMap mount can take ~60–90s.</p>
+
+<p>The chart sets <code class="language-plaintext highlighter-rouge">haproxy.router.openshift.io/timeout: 5m</code> on the Hub Route. Confirm:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc annotate route rhdh-agent-developer-hub <span class="se">\</span>
+  haproxy.router.openshift.io/timeout<span class="o">=</span>5m <span class="nt">--overwrite</span>
+</code></pre></div></div>
+
+<p>Then open <strong>Catalog</strong> and search for the Component name. If it is there, the task actually succeeded — reload the task page. Plugin 0.1.2+ ingests the entity immediately (no ConfigMap-mount wait) and polls the in-process catalog client instead of <code class="language-plaintext highlighter-rouge">localhost:7007</code>.</p>
+
+<h2 id="reinstall-helm-only">Reinstall (Helm only)</h2>
+
+<p>Prefer <code class="language-plaintext highlighter-rouge">helm upgrade --install</code> with a fresh <code class="language-plaintext highlighter-rouge">oc whoami -t</code>. That preserves chart secrets and the Postgres PVC.</p>
+
+<p>To uninstall and install again:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
+oc delete pvc data-rhdh-agent-postgresql-0 <span class="nt">--ignore-not-found</span>
+<span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
+helm dependency update
+helm upgrade <span class="nt">--install</span> rhdh-agent <span class="nb">.</span> <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
+  <span class="nt">--timeout</span> 20m <span class="nt">--wait</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
+<p>Then <a href="/rhdh-agent-sandbox/verify/">Verify the install</a>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">helm uninstall</code> does not always remove everything in the namespace:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Left after uninstall</th>
+      <th>Symptom on next install</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PVC <code class="language-plaintext highlighter-rouge">rhdh-agent-postgresql</code></td>
+      <td>Hub 503 — new password vs old volume</td>
+    </tr>
+    <tr>
+      <td>Golden Path Deploy/BC/IS</td>
+      <td>Pods Pending (quota)</td>
+    </tr>
+    <tr>
+      <td>DevWorkspaces</td>
+      <td>Same quota; Continue Secret is gone</td>
+    </tr>
+    <tr>
+      <td>Pending catalog ConfigMaps</td>
+      <td>agent-applier may recreate old agents</td>
+    </tr>
+  </tbody>
+</table>
 
       </div>
     </section>
