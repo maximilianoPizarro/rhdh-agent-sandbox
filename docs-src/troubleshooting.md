@@ -90,7 +90,7 @@ Helm **replaces** `extraEnvVars` arrays. Keep:
 |---|---|
 | `BACKEND_SECRET` | `rhdh-agent-sandbox-secrets` / `backend-secret` |
 | `MCP_TOKEN` | `rhdh-agent-sandbox-secrets` / `mcp-token` |
-| `POSTGRESQL_ADMIN_PASSWORD` | `rhdh-agent-postgresql` / `postgres-password` |
+| `POSTGRESQL_ADMIN_PASSWORD` | `rhdh-agent-sandbox-postgresql` / `postgres-password` |
 
 Same for `extraVolumes` / `extraVolumeMounts`: keep RHDH dynamic-plugins defaults **plus** the catalog ConfigMap mount.
 
@@ -262,7 +262,7 @@ To uninstall and install again from the **published Helm repo** (chart 0.1.4+ ru
 helm uninstall rhdh-agent -n "$(oc project -q)"
 export MODEL_API_KEY=$(oc whoami -t)
 helm repo update
-helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.9 \
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.10 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
@@ -275,7 +275,7 @@ Then [Verify the install]({{ '/verify/' | relative_url }}).
 
 | Left after uninstall | Symptom on next install |
 |---|---|
-| PVC `rhdh-agent-postgresql` | Hub 503 — new password vs old volume |
+| PVC `rhdh-agent-sandbox-postgresql` | Hub 503 — new password vs old volume |
 | Golden Path Deploy/BC/IS | Pods Pending (quota) |
 | DevWorkspaces | Same quota; Continue Secret is gone |
 | Pending catalog ConfigMaps | agent-applier may recreate old agents |

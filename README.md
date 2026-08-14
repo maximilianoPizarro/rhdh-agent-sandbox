@@ -167,7 +167,7 @@ To uninstall and install **from zero**:
 ```bash
 helm uninstall rhdh-agent -n "$(oc project -q)"
 # Postgres PVC is kept by the RHDH subchart; delete it or Hub 503s on a new password
-oc delete pvc data-rhdh-agent-postgresql-0 --ignore-not-found
+oc delete pvc data-rhdh-agent-sandbox-postgresql-0 --ignore-not-found
 helm dependency update
 helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \

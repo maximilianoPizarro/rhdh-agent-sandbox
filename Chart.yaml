@@ -2,7 +2,7 @@ apiVersion: v2
 name: rhdh-agent-sandbox
 description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
 type: application
-version: 0.1.9
+version: 0.1.10
 appVersion: "1.10.3"
 kubeVersion: ">=1.25.0-0"
 icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
@@ -28,7 +28,7 @@ annotations:
   artifacthub.io/prerelease: "true"
   artifacthub.io/changes: |
     - kind: fixed
-      description: Helm Console form masks secret fields via JSON Schema format password (same pattern as demo-lightwell)
+      description: Hub extraEnvVars now references Secret rhdh-agent-sandbox-postgresql so Console installs with fullnameOverride do not stay in CreateContainerConfigError
   artifacthub.io/links: |
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox

@@ -458,7 +458,7 @@ rhdh:
         - name: POSTGRESQL_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: rhdh-agent-postgresql
+              name: rhdh-agent-sandbox-postgresql
               key: postgres-password
         - name: NODE_OPTIONS
           value: "--no-node-snapshot"
