@@ -289,7 +289,7 @@
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm repo add rhdh-agent https://maximilianopizarro.github.io/rhdh-agent-sandbox
 helm repo update
 <span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
-helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.4 <span class="se">\</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.11 <span class="se">\</span>
   <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com
@@ -317,7 +317,7 @@ oc <span class="nb">wait</span> <span class="nt">--for</span><span class="o">=</
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
 helm repo update
-helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.4 <span class="se">\</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.11 <span class="se">\</span>
   <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com

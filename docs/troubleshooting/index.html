@@ -573,6 +573,19 @@ oc <span class="nb">exec </span>deploy/&lt;name&gt; <span class="nt">--</span> c
 
 <p>Then open <strong>Catalog</strong> and search for the Component name. If it is there, the task actually succeeded — reload the task page. Plugin 0.1.2+ ingests the entity immediately (no ConfigMap-mount wait) and polls the in-process catalog client instead of <code class="language-plaintext highlighter-rouge">localhost:7007</code>.</p>
 
+<h2 id="scaffolder-verify-times-out-timed-out-waiting-for-catalog-entity">Scaffolder Verify times out (<code class="language-plaintext highlighter-rouge">Timed out waiting for catalog entity</code>)</h2>
+
+<p>If Hub logs <code class="language-plaintext highlighter-rouge">YAMLParseError: Nested mappings are not allowed in compact mappings</code>, the Component YAML is invalid. That happens when <code class="language-plaintext highlighter-rouge">agentSpec</code> contains <code class="language-plaintext highlighter-rouge">: </code> (for example <code class="language-plaintext highlighter-rouge">Example questions:</code>) and is injected unquoted into <code class="language-plaintext highlighter-rouge">description:</code> / <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox.io/agent-spec:</code>.</p>
+
+<p>Chart <strong>0.1.11</strong> quotes those fields in the pending-entity template, the apply-pending plugin, and the agent-applier. After upgrade (and a merge to <code class="language-plaintext highlighter-rouge">main</code>, because <code class="language-plaintext highlighter-rouge">fetch:template</code> reads GitHub), re-run <strong>Deploy Agent</strong>.</p>
+
+<p>On an existing install without upgrade, quote the registered catalog YAML and refresh:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get cm rhdh-agent-sandbox-registered-catalog <span class="nt">-o</span> yaml
+<span class="c"># quote description and agent-spec, then:</span>
+oc rollout restart deploy/rhdh-agent-sandbox-developer-hub
+</code></pre></div></div>
+
 <h2 id="reinstall-helm-only">Reinstall (Helm only)</h2>
 
 <p>Prefer <code class="language-plaintext highlighter-rouge">helm upgrade --install</code> with a fresh <code class="language-plaintext highlighter-rouge">oc whoami -t</code>. That preserves chart secrets and the Postgres PVC.</p>
@@ -582,7 +595,7 @@ oc <span class="nb">exec </span>deploy/&lt;name&gt; <span class="nt">--</span> c
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
 <span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
 helm repo update
-helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.10 <span class="se">\</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.11 <span class="se">\</span>
   <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
