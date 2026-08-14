@@ -280,8 +280,8 @@ rhdh:
       image:
         pullPolicy: IfNotPresent
       annotations:
-        # OpenShift Topology: Developer Hub favicon (tpl runs in the Backstage subchart).
-        app.openshift.io/custom-icon: "https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.{{ .Values.global.clusterRouterBase }}/favicon-192x192.png"
+        # OpenShift Topology: Developer Hub favicon (tpl runs in the RHDH/Backstage subchart).
+        app.openshift.io/custom-icon: "https://{{- include \"rhdh.hostname\" . -}}/favicon-192x192.png"
       resources:
         requests:
           cpu: 250m

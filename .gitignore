@@ -20,6 +20,9 @@ site/
 .sass-cache/
 node_modules/
 .helm/
+# Python bytecode (e.g. from running wire-continue.py locally)
+__pycache__/
+*.pyc
 secrets.env
 *.pem
 # Continue local configs may contain API keys — never commit
