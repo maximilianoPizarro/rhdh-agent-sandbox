@@ -582,7 +582,7 @@ oc <span class="nb">exec </span>deploy/&lt;name&gt; <span class="nt">--</span> c
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm uninstall rhdh-agent <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span>
 <span class="nb">export </span><span class="nv">MODEL_API_KEY</span><span class="o">=</span><span class="si">$(</span>oc <span class="nb">whoami</span> <span class="nt">-t</span><span class="si">)</span>
 helm repo update
-helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.5 <span class="se">\</span>
+helm upgrade <span class="nt">--install</span> rhdh-agent rhdh-agent/rhdh-agent-sandbox <span class="nt">--version</span> 0.1.6 <span class="se">\</span>
   <span class="nt">-n</span> <span class="s2">"</span><span class="si">$(</span>oc project <span class="nt">-q</span><span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> secrets.modelApiKey<span class="o">=</span><span class="s2">"</span><span class="nv">$MODEL_API_KEY</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--set</span> rhdh.global.clusterRouterBase<span class="o">=</span>apps.&lt;your-sandbox&gt;.openshiftapps.com <span class="se">\</span>
