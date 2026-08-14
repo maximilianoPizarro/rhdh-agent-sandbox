@@ -5,7 +5,7 @@ entries:
       artifacthub.io/category: ai-machine-learning
       artifacthub.io/changes: |
         - kind: fixed
-          description: Che Code shell tasks and one-line Devfile commands so Continue wiring works without the Devfile task provider; mcp-remote prewarm no longer treats --help as a URL
+          description: Helm Console form masks secret fields via JSON Schema format password (same pattern as demo-lightwell)
       artifacthub.io/images: |
         - name: litellm
           image: litellm/litellm-non_root:v1.82.3-stable
@@ -23,7 +23,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-14T22:44:51.469030031Z"
+    created: "2026-08-14T22:56:44.343993226Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -32,7 +32,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: 2b6cee8ecfd439030a053f7330d61ec9d33086bd2ddca4541535de65e7838d36
+    digest: feebe0069b40d2223e1ea775c5bb3b71f34c4576912417e3d549f5fad24bda60
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -54,6 +54,6 @@ entries:
     - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
-    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.8.tgz
-    version: 0.1.8
-generated: "2026-08-14T22:44:51.448589459Z"
+    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.9.tgz
+    version: 0.1.9
+generated: "2026-08-14T22:56:44.32213464Z"
