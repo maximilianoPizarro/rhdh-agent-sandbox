@@ -37,30 +37,32 @@
         "backendSecret": {
           "type": "string",
           "title": "Backend Secret",
-          "description": "Backstage backend auth secret (auto-generated if empty)"
+          "description": "Backstage backend auth secret (auto-generated if empty)",
+          "format": "password"
         },
         "litellmMasterKey": {
           "type": "string",
           "title": "LiteLLM Master Key",
-          "description": "LiteLLM proxy master key (auto-generated if empty)"
+          "description": "LiteLLM proxy master key (auto-generated if empty)",
+          "format": "password"
         },
         "mcpToken": {
           "type": "string",
           "title": "MCP Token",
           "description": "Static token for MCP external access (auto-generated if empty)",
-          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
+          "format": "password"
         },
         "modelApiKey": {
           "type": "string",
           "title": "OpenShift token (shared models)",
           "description": "Paste `oc whoami -t`. Stored in Secret rhdh-agent-sandbox-secrets (model-api-key). ~24h TTL.",
-          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
+          "format": "password"
         },
         "litemaasApiKey": {
           "type": "string",
           "title": "LiteMaaS API key (tool calling)",
           "description": "Bearer for Hub Lightspeed / MCP Chat tool calling (model litemaas-qwen). Stored in Secret litemaas-credentials. Leave empty to keep an existing Secret.",
-          "x-descriptors": ["urn:alm:descriptor:com.tectonic.ui:password"]
+          "format": "password"
         }
       }
     },
