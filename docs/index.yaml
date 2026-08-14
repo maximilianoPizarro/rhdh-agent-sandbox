@@ -5,7 +5,7 @@ entries:
       artifacthub.io/category: ai-machine-learning
       artifacthub.io/changes: |
         - kind: fixed
-          description: Helm Console form masks secret fields via JSON Schema format password (same pattern as demo-lightwell)
+          description: Hub extraEnvVars now references Secret rhdh-agent-sandbox-postgresql so Console installs with fullnameOverride do not stay in CreateContainerConfigError
       artifacthub.io/images: |
         - name: litellm
           image: litellm/litellm-non_root:v1.82.3-stable
@@ -23,7 +23,7 @@ entries:
       artifacthub.io/prerelease: "true"
     apiVersion: v2
     appVersion: 1.10.3
-    created: "2026-08-14T22:56:44.343993226Z"
+    created: "2026-08-14T23:14:19.915911887Z"
     dependencies:
     - alias: rhdh
       condition: rhdh.enabled
@@ -32,7 +32,7 @@ entries:
       version: 1.10.3
     description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox
       with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
-    digest: feebe0069b40d2223e1ea775c5bb3b71f34c4576912417e3d549f5fad24bda60
+    digest: a91c17b82603886bee12c0cf4f2a7678f02de0e39e4b11b7e9585eb41c45349a
     home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
     icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
     keywords:
@@ -54,6 +54,6 @@ entries:
     - https://github.com/maximilianopizarro/rhdh-agent-sandbox
     type: application
     urls:
-    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.9.tgz
-    version: 0.1.9
-generated: "2026-08-14T22:56:44.32213464Z"
+    - https://maximilianopizarro.github.io/rhdh-agent-sandbox/rhdh-agent-sandbox-0.1.10.tgz
+    version: 0.1.10
+generated: "2026-08-14T23:14:19.89514616Z"
