@@ -12,6 +12,8 @@ metadata:
     - lightspeed
 components:
   - name: tools
+    attributes:
+      controller.devfile.io/merge-contribution: true
     container:
       image: quay.io/devfile/universal-developer-image:ubi9-latest
       memoryLimit: 3Gi
@@ -41,8 +43,6 @@ components:
           value: ""
         - name: LITELLM_API_KEY
           value: ""
-      attributes:
-        controller.devfile.io/merge-contribution: true
 commands:
   - id: download-continue-extension
     exec:

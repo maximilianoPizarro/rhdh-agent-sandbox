@@ -12,6 +12,9 @@ metadata:
     - lightspeed
 components:
   - name: tools
+    # Che Code / VS Code extensions for in-browser AI (component-level; not allowed under container in Devfile 2.2)
+    attributes:
+      controller.devfile.io/merge-contribution: true
     container:
       image: quay.io/devfile/universal-developer-image:ubi9-latest
       memoryLimit: 3Gi
@@ -40,9 +43,6 @@ components:
           value: ""
         - name: LITELLM_API_KEY
           value: ""
-      # Che Code / VS Code extensions for in-browser AI
-      attributes:
-        controller.devfile.io/merge-contribution: true
 commands:
   - id: download-continue-extension
     exec:

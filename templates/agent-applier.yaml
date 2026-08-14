@@ -1062,7 +1062,7 @@ data:
         if not name:
             return "skip"
         model = ann.get("rhdh-agent-sandbox.io/model", "granite")
-        desired_hash = hashlib.sha256(f"ai-service|{model}|v4|{FULLNAME}".encode()).hexdigest()[:16]
+        desired_hash = hashlib.sha256(f"ai-service|{model}|v6|{FULLNAME}".encode()).hexdigest()[:16]
         runtime_cm = f"{FULLNAME}-ai-service-runtime"
 
         deploy = {
@@ -1088,7 +1088,10 @@ data:
                 "replicas": 1,
                 "selector": {"matchLabels": {"app.kubernetes.io/name": name}},
                 "template": {
-                    "metadata": {"labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "ai-service"}},
+                    "metadata": {
+                        "labels": {"app.kubernetes.io/name": name, "app.kubernetes.io/component": "ai-service"},
+                        "annotations": {"rhdh-agent-sandbox.io/applier-hash": desired_hash},
+                    },
                     "spec": {
                         "containers": [{
                             "name": "ai-service",
@@ -1104,6 +1107,7 @@ data:
                                 {"name": "OCP_MCP_URL", "value": f"http://{FULLNAME}-mcp:8080/mcp"},
                                 {"name": "LITELLM_API_BASE", "value": f"http://{FULLNAME}-litellm:{LITELLM_PORT}/v1"},
                                 {"name": "PYTHONUNBUFFERED", "value": "1"},
+                                {"name": "RUNTIME_HASH", "value": desired_hash},
                             ],
                             "volumeMounts": [{"name": "app", "mountPath": "/app"}],
                             "readinessProbe": {"httpGet": {"path": "/health", "port": "http"}, "initialDelaySeconds": 3, "periodSeconds": 10},
@@ -1291,6 +1295,7 @@ data:
                     }],
                     "components": [{
                         "name": "tools",
+                        "attributes": {"controller.devfile.io/merge-contribution": True},
                         "container": {
                             "image": "quay.io/devfile/universal-developer-image:ubi9-latest",
                             "memoryLimit": DEVSPACES_MEMORY_LIMIT,
@@ -1308,7 +1313,6 @@ data:
                                 {"name": "CONTINUE_DEFAULT_MODEL", "value": model},
                                 {"name": "SHELL", "value": "/bin/bash"},
                             ],
-                            "attributes": {"controller.devfile.io/merge-contribution": True},
                         },
                     }],
                     "commands": [
