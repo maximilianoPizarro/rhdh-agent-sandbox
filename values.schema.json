@@ -328,8 +328,29 @@
             "gitRevision": {
               "type": "string",
               "title": "Git revision",
-              "description": "Pin to this chart git tag so DevWorkspaces match the Helm release (default v0.1.3).",
-              "default": "v0.1.3"
+              "description": "Pin to this chart git tag (default v + chart version, e.g. v0.1.4). Leave empty for chart default.",
+              "default": ""
+            },
+            "startOnCreate": {
+              "type": "boolean",
+              "title": "Start DevWorkspace on create",
+              "description": "When false, workspace is created stopped (recommended on Developer Sandbox quota).",
+              "default": false
+            },
+            "memoryRequest": {
+              "type": "string",
+              "title": "DevWorkspace memory request",
+              "default": "512Mi"
+            },
+            "memoryLimit": {
+              "type": "string",
+              "title": "DevWorkspace memory limit",
+              "default": "3Gi"
+            },
+            "restartOnHelperChange": {
+              "type": "boolean",
+              "title": "Restart DevWorkspaces when helper ConfigMap changes",
+              "default": false
             }
           }
         },
@@ -357,7 +378,7 @@
         "enabled": { "type": "boolean", "default": true },
         "registry": { "type": "string", "default": "quay.io" },
         "repository": { "type": "string", "default": "maximilianopizarro/rhdh-agent-sandbox" },
-        "tag": { "type": "string", "default": "0.1.3" }
+        "tag": { "type": "string", "default": "" }
       }
     },
     "rhdh": {
@@ -378,8 +399,7 @@
             "clusterRouterBase": {
               "type": "string",
               "title": "Cluster Router Base",
-              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required. Also used to derive the Kubernetes API URL for the Hub plugin.",
-              "default": "apps.rm2.thpm.p1.openshiftapps.com"
+              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required. Also used to derive the Kubernetes API URL for the Hub plugin."
             }
           }
         }

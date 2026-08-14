@@ -63,6 +63,20 @@ spec:
               mountPath: /app/config.yaml
               subPath: config.yaml
               readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.litellm.resources | nindent 12 }}
           securityContext:

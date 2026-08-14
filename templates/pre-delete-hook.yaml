@@ -1,0 +1,149 @@
+{{- if and .Values.cleanup.preDeleteHook.enabled .Values.agents.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
+{{- $release := .Release.Name }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $fullname }}-pre-delete
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pre-delete-hook
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullname }}-pre-delete
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps", "persistentvolumeclaims", "pods"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["build.openshift.io"]
+    resources: ["buildconfigs", "builds"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["image.openshift.io"]
+    resources: ["imagestreams"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["workspace.devfile.io"]
+    resources: ["devworkspaces"]
+    verbs: ["get", "list", "delete"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelineruns", "taskruns"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $fullname }}-pre-delete
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $fullname }}-pre-delete
+subjects:
+  - kind: ServiceAccount
+    name: {{ $fullname }}-pre-delete
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullname }}-pre-delete
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pre-delete-hook
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "5"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+spec:
+  activeDeadlineSeconds: {{ .Values.cleanup.preDeleteHook.timeoutSeconds | default 300 }}
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        {{- include "rhdh-agent-sandbox.labels" . | nindent 8 }}
+        app.kubernetes.io/component: pre-delete-hook
+    spec:
+      serviceAccountName: {{ $fullname }}-pre-delete
+      restartPolicy: Never
+      containers:
+        - name: cleanup
+          image: {{ .Values.cleanup.preDeleteHook.image | default "registry.redhat.io/openshift4/ose-cli:latest" | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: FULLNAME
+              value: {{ $fullname | quote }}
+            - name: RELEASE_NAME
+              value: {{ $release | quote }}
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              set -euo pipefail
+              echo "pre-delete: namespace=${NAMESPACE} fullname=${FULLNAME} release=${RELEASE_NAME}"
+
+              # Stop applier first so it does not recreate Golden Path resources during uninstall.
+              kubectl scale deployment "${FULLNAME}-agent-applier" -n "${NAMESPACE}" --replicas=0 --timeout=90s 2>/dev/null || true
+
+              echo "pre-delete: DevWorkspaces (golden-path / part-of)"
+              kubectl delete devworkspaces.workspace.devfile.io -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/part-of=${FULLNAME}" --ignore-not-found --wait=false || true
+              kubectl delete devworkspaces.workspace.devfile.io -n "${NAMESPACE}" \
+                -l "rhdh-agent-sandbox.io/golden-path" --ignore-not-found --wait=false || true
+
+              echo "pre-delete: pending catalog ConfigMaps"
+              kubectl delete configmap -n "${NAMESPACE}" \
+                -l "rhdh-agent-sandbox.io/pending-catalog-entity" --ignore-not-found || true
+
+              echo "pre-delete: Golden Path workloads (labeled only)"
+              kubectl delete deployment,service,route,buildconfig,imagestream -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/part-of=${FULLNAME}" --ignore-not-found --wait=false || true
+              kubectl delete pipelinerun,taskrun -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/part-of=${FULLNAME}" --ignore-not-found --wait=false || true
+
+              echo "pre-delete: chart PVCs (postgres + dynamic-plugins)"
+              kubectl delete pvc -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/instance=${RELEASE_NAME}" --ignore-not-found --wait=false || true
+              for pvc in $(kubectl get pvc -n "${NAMESPACE}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep -E 'postgresql|dynamic-plugins' || true); do
+                kubectl delete pvc -n "${NAMESPACE}" "${pvc}" --ignore-not-found --wait=false || true
+              done
+
+              # Tekton workspace PVCs from Golden Path PipelineRuns (1Gi each).
+              for pvc in $(kubectl get pvc -n "${NAMESPACE}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep -E '^pvc-' || true); do
+                owner="$(kubectl get pvc -n "${NAMESPACE}" "${pvc}" -o jsonpath='{.metadata.labels.tekton\.dev/pipelineRun}' 2>/dev/null || true)"
+                if [[ -n "${owner}" ]]; then
+                  kubectl delete pvc -n "${NAMESPACE}" "${pvc}" --ignore-not-found --wait=false || true
+                fi
+              done
+
+              echo "pre-delete: done (litemaas-credentials and unlabeled apps preserved)"
+{{- end }}

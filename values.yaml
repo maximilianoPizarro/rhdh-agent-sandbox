@@ -83,7 +83,7 @@ mcp:
     image:
       repository: quay.io/maximilianopizarro/openshift-mcp-server
       tag: latest
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     service:
       port: 8080
     route:
@@ -100,7 +100,7 @@ mcp:
     image:
       repository: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server
       tag: latest
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     service:
       port: 8085
     route:
@@ -129,6 +129,13 @@ catalog:
   registered:
     catalogConfigMapName: rhdh-agent-sandbox-registered-catalog
 
+# Helm pre-delete cleanup (Golden Path leftovers, PVCs, pending catalog CMs)
+cleanup:
+  preDeleteHook:
+    enabled: true
+    timeoutSeconds: 300
+    image: registry.redhat.io/openshift4/ose-cli:latest
+
 # Golden Path agent pods (samples + catalog-driven applier with BuildConfig)
 agents:
   enabled: true
@@ -144,7 +151,13 @@ agents:
   # DevSpaces golden path: agent-applier creates DevWorkspaces from catalog Components
   devspaces:
     gitRepo: https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git
-    gitRevision: "v0.1.3"
+    gitRevision: ""  # default v{{ .Chart.Version }} in agent-applier template
+    # DevWorkspace starts stopped — user starts from Dev Spaces (saves Sandbox quota).
+    startOnCreate: false
+    memoryRequest: 512Mi
+    memoryLimit: 3Gi
+    # When false, helper ConfigMap updates do not restart all DevWorkspaces on helm upgrade.
+    restartOnHelperChange: false
     # In-namespace Che Code editor (required; che-editor annotation is not enough)
     cheCode:
       injectorImage: registry.redhat.io/devspaces/code-rhel9@sha256:0969d1f90608227c0aa6ec3a85b31bde966a5d73db1ef8af620ebc39ef1da82b
@@ -157,7 +170,7 @@ communityPlugins:
   enabled: true
   registry: quay.io
   repository: maximilianopizarro/rhdh-agent-sandbox
-  tag: "0.1.3"
+  tag: ""  # default .Chart.Version in CI / OCI plugin reference below
   packages:
     - name: ai-skills-pack
       disabled: false
@@ -176,7 +189,7 @@ rhdh:
       haproxy.router.openshift.io/timeout: 5m
   global:
     # REQUIRED: your sandbox apps domain, e.g. apps.rm2.thpm.p1.openshiftapps.com
-    clusterRouterBase: apps.rm2.thpm.p1.openshiftapps.com
+    clusterRouterBase: ""
     host: ""
     auth:
       backend:
@@ -257,7 +270,7 @@ rhdh:
         - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
           disabled: false
         # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
-        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.3!plugin
+        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.4!plugin
           disabled: false
     # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
     catalogIndex:
@@ -268,7 +281,7 @@ rhdh:
         pullPolicy: IfNotPresent
       annotations:
         # OpenShift Topology: Developer Hub favicon (tpl runs in the Backstage subchart).
-        app.openshift.io/custom-icon: "https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.apps.rm2.thpm.p1.openshiftapps.com/favicon-192x192.png"
+        app.openshift.io/custom-icon: "https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.{{ .Values.global.clusterRouterBase }}/favicon-192x192.png"
       resources:
         requests:
           cpu: 250m
@@ -449,7 +462,10 @@ rhdh:
         - name: NODE_OPTIONS
           value: "--no-node-snapshot"
         - name: CLUSTER_ROUTER_BASE
-          value: apps.rm2.thpm.p1.openshiftapps.com
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-cluster
+              key: router-base
         # Kubernetes / Tekton plugin — public API + dedicated reader SA token
         - name: K8S_CLUSTER_NAME
           valueFrom:
