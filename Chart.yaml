@@ -29,6 +29,8 @@ annotations:
   artifacthub.io/changes: |
     - kind: fixed
       description: Agent-applier RBAC uses read-only resourcequotas/limitranges (Developer Sandbox cannot grant write)
+    - kind: fixed
+      description: Topology Hub icon uses a static GitHub URL instead of the Hub route favicon
   artifacthub.io/links: |
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox
