@@ -9,7 +9,9 @@ metadata:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: continue
     controller.devfile.io/mount-to-devworkspace: "true"
+{{- if .Values.agents.devspaces.restartOnHelperChange }}
     controller.devfile.io/watch-configmap: "true"
+{{- end }}
   annotations:
     controller.devfile.io/mount-as: file
     controller.devfile.io/mount-path: /opt/rhdh-agent-sandbox

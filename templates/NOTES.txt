@@ -17,18 +17,25 @@ Components:
 {{- end }}
 
 Next steps:
-  1. Refresh the model token (sandbox oauth-proxy, ~24h TTL):
+
+  1. Wait for Hub pod Ready (2/2) — first install can take 5–10 minutes:
+       kubectl wait --for=condition=available deploy/{{ .Release.Name }}-developer-hub -n {{ .Release.Namespace }} --timeout=600s
+
+  2. Open Developer Hub and sign in as Guest:
+       https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.{{ .Values.rhdh.global.clusterRouterBase }}
+
+  3. If Lightspeed or LiteLLM chat returns 401 to shared models (~24h token TTL), refresh:
        oc patch secret/{{ .Values.secrets.name }} -n {{ .Release.Namespace }} --type=merge \
          -p "{\"stringData\":{\"model-api-key\":\"$(oc whoami -t)\"}}"
        oc rollout restart deploy/{{ include "rhdh-agent-sandbox.fullname" . }}-litellm -n {{ .Release.Namespace }}
 
-  2. Open Developer Hub Route and sign in as Guest:
-       oc get route -n {{ .Release.Namespace }} | grep developer-hub
+  4. MCP Chat tool calling uses LiteMaaS Qwen. If Secret litemaas-credentials is empty, chat works but tools may not fire — paste your LiteMaaS key on Helm upgrade or create the Secret manually.
 
-  3. Open a DevSpaces AI workspace from the Devfile (Continue → LiteLLM Route).
-     See docs/devspaces-ai.md and docs/demo-script.md.
+  5. DevSpaces Golden Path workspaces start **stopped** by default (quota). Start from Dev Spaces after Create.
 
-  4. AI catalog is mounted from ConfigMap {{ .Values.catalog.configMapName }}
+  6. AI catalog is mounted from ConfigMap {{ .Values.catalog.configMapName }}
      at /opt/app-root/src/catalog (file location).
+
+Reinstall: helm uninstall {{ .Release.Name }} runs a pre-delete hook that cleans Golden Path leftovers and chart PVCs (keeps litemaas-credentials). Then install again from the Pages Helm repo.
 
 Docs: https://maximilianopizarro.github.io/rhdh-agent-sandbox

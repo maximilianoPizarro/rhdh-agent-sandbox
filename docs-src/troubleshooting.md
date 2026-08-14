@@ -140,7 +140,7 @@ Verify: `oc exec -n <claw-ns> deploy/claw -c gateway -- openclaw mcp probe` → 
 
 ## MCP Chat loads but tools never fire
 
-Default provider is LiteLLM → Granite. Shared models do not support function calling, so chat replies without tool invocations. Browse tools in the MCP Chat sidebar to confirm servers are connected. For agentic calls, set `mcpChat.providers` to openai/claude/gemini with your own API key (Secret + env). See [AI capabilities]({{ '/ai-capabilities/' | relative_url }}).
+Default MCP Chat provider is LiteLLM → **litemaas-qwen** (tool calling). Shared Granite/Qwen models do not support function calling. Browse tools in the MCP Chat sidebar to confirm servers are connected. Set `secrets.litemaasApiKey` on install (or Secret `litemaas-credentials`) for agentic tool calls. For chat-only demos you can switch the provider to granite in Hub config.
 
 If **Backstage MCP Actions** shows disconnected at startup, that is an init race (mcp-chat connects before `/api/mcp-actions/v1` is registered). OpenShift/Kubernetes MCP servers are listed first and should connect. Re-open MCP Chat or restart the Hub pod after warm-up; external clients can still call the Hub Route MCP endpoint with `mcp-token`.
 
@@ -206,7 +206,7 @@ Reload the Che Code window. You should see Granite / Qwen3 / LiteMaaS Qwen and M
 Do this:
 
 1. Close any Simple Browser tab that shows `Cannot GET /` (that is `code-redirect`, not the helper).
-2. Open the **HTTPS** helper URL printed by `auth-rh-security-mcp` (or the dedicated `*-rh-oauth` Route). Do not use Che `code-redirect` or `http://` on the default `http-8080` endpoint — that Route is not TLS unless the Devfile sets `secure: true`.
+2. Open the **HTTPS** helper URL printed by `auth-rh-security-mcp` (Devfile endpoint `http-8080` with `secure: true`). Do not use Che `code-redirect` or plain `http://` on the default endpoint.
 3. Click **Conectar con Red Hat**, grant access on Customer Portal, wait to land back on the helper.
 4. Continue Tools → **red-hat-security** off/on, **Agent** or **Plan** mode.
 
@@ -256,14 +256,14 @@ Then open **Catalog** and search for the Component name. If it is there, the tas
 
 Prefer `helm upgrade --install` with a fresh `oc whoami -t`. That preserves chart secrets and the Postgres PVC.
 
-To uninstall and install again:
+To uninstall and install again from the **published Helm repo** (chart 0.1.4+ runs a pre-delete cleanup hook):
 
 ```bash
 helm uninstall rhdh-agent -n "$(oc project -q)"
-oc delete pvc data-rhdh-agent-postgresql-0 --ignore-not-found
 export MODEL_API_KEY=$(oc whoami -t)
-helm dependency update
-helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
+helm repo update
+helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.4 \
+  -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
   --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
@@ -271,7 +271,7 @@ helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
 
 Then [Verify the install]({{ '/verify/' | relative_url }}).
 
-`helm uninstall` does not always remove everything in the namespace:
+`helm uninstall` (0.1.4+) removes most chart leftovers via the pre-delete hook. If you upgraded from an older chart without the hook, manual cleanup may still be needed:
 
 | Left after uninstall | Symptom on next install |
 |---|---|

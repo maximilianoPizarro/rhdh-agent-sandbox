@@ -18,19 +18,19 @@ metadata:
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: [""]
-    resources: ["services", "configmaps", "pods"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    resources: ["services", "configmaps", "pods", "resourcequotas", "limitranges", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["build.openshift.io"]
     resources: ["buildconfigs", "builds"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["build.openshift.io"]
     resources: ["buildconfigs/instantiate", "buildconfigs/instantiatebinary"]
     verbs: ["create"]
   - apiGroups: ["image.openshift.io"]
     resources: ["imagestreams", "imagestreamtags"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["tekton.dev"]
     resources: ["pipelineruns", "taskruns"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
@@ -39,10 +39,10 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: ["workspace.devfile.io"]
     resources: ["devworkspaces", "devworkspacetemplates"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["route.openshift.io"]
     resources: ["routes"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -111,6 +111,10 @@ data:
     )
     GIT_REVISION = os.environ.get("GIT_REVISION", "main")
     ROUTER_BASE = os.environ.get("CLUSTER_ROUTER_BASE", "").strip()
+    DEVSPACES_START_ON_CREATE = os.environ.get("DEVSPACES_START_ON_CREATE", "false").lower() in ("true", "1", "yes")
+    DEVSPACES_MEMORY_REQUEST = os.environ.get("DEVSPACES_MEMORY_REQUEST", "512Mi")
+    DEVSPACES_MEMORY_LIMIT = os.environ.get("DEVSPACES_MEMORY_LIMIT", "3Gi")
+    CHE_CODE_DWT_NAME = os.environ.get("CHE_CODE_DWT", f"{FULLNAME}-che-code")
 
     def log(level, msg, **fields):
         lvl = level.upper()
@@ -232,6 +236,91 @@ data:
         "/opt/app-root/src/scaffolder-registered/entities",
     )
     PENDING_LABEL = "rhdh-agent-sandbox.io/pending-catalog-entity"
+
+    def _parse_quantity(value, kind="memory"):
+        if value is None:
+            return 0
+        s = str(value).strip()
+        if not s:
+            return 0
+        if kind == "cpu":
+            if s.endswith("m"):
+                return int(s[:-1] or "0")
+            try:
+                return int(float(s) * 1000)
+            except ValueError:
+                return 0
+        mult = 1
+        if s.endswith("Ki"):
+            mult = 1024
+            s = s[:-2]
+        elif s.endswith("Mi"):
+            mult = 1024 ** 2
+            s = s[:-2]
+        elif s.endswith("Gi"):
+            mult = 1024 ** 3
+            s = s[:-2]
+        elif s.endswith("K"):
+            mult = 1000
+            s = s[:-1]
+        elif s.endswith("M"):
+            mult = 1000 ** 2
+            s = s[:-1]
+        elif s.endswith("G"):
+            mult = 1000 ** 3
+            s = s[:-1]
+        try:
+            return int(float(s) * mult)
+        except ValueError:
+            return 0
+
+    def quota_allows(cpu_millicores=200, memory_bytes=536870912, extra_pods=1, extra_pvcs=0):
+        """Conservative namespace quota gate before creating DW/agents."""
+        code, body = k8s("GET", f"/api/v1/namespaces/{NS}/resourcequotas")
+        if code != 200:
+            return True
+        items = body.get("items") or []
+        if not items:
+            return True
+        for rq in items:
+            hard = (rq.get("status") or {}).get("hard") or (rq.get("spec") or {}).get("hard") or {}
+            used = (rq.get("status") or {}).get("used") or {}
+            if not hard:
+                continue
+            for key, need_raw, kind in (
+                ("limits.cpu", cpu_millicores, "cpu"),
+                ("requests.cpu", cpu_millicores, "cpu"),
+                ("limits.memory", memory_bytes, "memory"),
+                ("requests.memory", memory_bytes, "memory"),
+            ):
+                if key not in hard:
+                    continue
+                cap = _parse_quantity(hard.get(key), kind)
+                cur = _parse_quantity(used.get(key), kind)
+                need = need_raw if isinstance(need_raw, int) else _parse_quantity(need_raw, kind)
+                if cap and cur + need > cap:
+                    log("WARN", "quota_blocked", resource=key, used=used.get(key), hard=hard.get(key), need=need)
+                    return False
+            if "pods" in hard:
+                cap = int(str(hard.get("pods")))
+                cur = int(str(used.get("pods", "0")))
+                if cap and cur + extra_pods > cap:
+                    log("WARN", "quota_blocked", resource="pods", used=cur, hard=cap, need=extra_pods)
+                    return False
+            if extra_pvcs and "persistentvolumeclaims" in hard:
+                cap = int(str(hard.get("persistentvolumeclaims")))
+                cur = int(str(used.get("persistentvolumeclaims", "0")))
+                if cap and cur + extra_pvcs > cap:
+                    log("WARN", "quota_blocked", resource="persistentvolumeclaims", used=cur, hard=cap, need=extra_pvcs)
+                    return False
+        return True
+
+    def devworkspace_template_ready():
+        code, _body = k8s(
+            "GET",
+            f"/apis/workspace.devfile.io/v1alpha2/namespaces/{NS}/devworkspacetemplates/{CHE_CODE_DWT_NAME}",
+        )
+        return code == 200
 
     def catalog_refresh():
         body = json.dumps(
@@ -367,8 +456,16 @@ data:
                     errors += 1
                     continue
             st_refresh, refresh_err = catalog_refresh()
-            if st_refresh not in (200, 202) and refresh_err:
-                log("WARN", "catalog_refresh_failed", status=st_refresh, error=refresh_err)
+            if st_refresh not in (200, 202):
+                log(
+                    "WARN",
+                    "pending_catalog_refresh_incomplete",
+                    configmap=cm_name,
+                    status=st_refresh,
+                    error=refresh_err,
+                )
+                errors += 1
+                continue
             label_patch = {
                 "metadata": {
                     "labels": {
@@ -659,6 +756,16 @@ data:
             if state in ("Running", "Pending"):
                 log("INFO", "pipelinerun_in_progress", name=name, pipelinerun=pr_name, reason=reason or state)
                 return "building"
+            if state == "Failed" and (not pr_hash or pr_hash == spec_hash):
+                log(
+                    "WARN",
+                    "pipelinerun_failed_blocked",
+                    name=name,
+                    pipelinerun=pr_name,
+                    reason=reason or state,
+                    spec_hash=spec_hash,
+                )
+                return "failed"
             if pr_hash == spec_hash and state == "Succeeded":
                 code, deploy = k8s("GET", f"/apis/apps/v1/namespaces/{NS}/deployments/{name}")
                 if code == 404:
@@ -1060,7 +1167,19 @@ data:
             language = "python"
         framework = ann.get("rhdh-agent-sandbox.io/framework") or FRAMEWORK.get(language, "langgraph")
         model = ann.get("rhdh-agent-sandbox.io/model", "granite")
-        che_code_dwt = os.environ.get("CHE_CODE_DWT", f"{FULLNAME}-che-code")
+        if not quota_allows(cpu_millicores=200, memory_bytes=_parse_quantity(DEVSPACES_MEMORY_REQUEST), extra_pods=1):
+            log("WARN", "devworkspace_quota_blocked", name=name)
+            return "skip"
+        if not devworkspace_template_ready():
+            log(
+                "WARN",
+                "devworkspace_template_missing",
+                name=name,
+                template=CHE_CODE_DWT_NAME,
+                hint="wait for chart install or helm upgrade to recreate DevWorkspaceTemplate",
+            )
+            return "skip"
+        che_code_dwt = CHE_CODE_DWT_NAME
         desired_hash = hashlib.sha256(f"{language}|{framework}|{model}|{GIT_REPO}|{GIT_REVISION}|editor:{che_code_dwt}".encode()).hexdigest()[:16]
 
         path = f"/apis/workspace.devfile.io/v1alpha2/namespaces/{NS}/devworkspaces/{name}"
@@ -1150,7 +1269,7 @@ data:
                 },
             },
             "spec": {
-                "started": True,
+                "started": DEVSPACES_START_ON_CREATE,
                 "routingClass": "che",
                 "contributions": [
                     {"name": "editor", "kubernetes": {"name": che_code_dwt}},
@@ -1168,8 +1287,8 @@ data:
                         "name": "tools",
                         "container": {
                             "image": "quay.io/devfile/universal-developer-image:ubi9-latest",
-                            "memoryLimit": "3Gi",
-                            "memoryRequest": "1Gi",
+                            "memoryLimit": DEVSPACES_MEMORY_LIMIT,
+                            "memoryRequest": DEVSPACES_MEMORY_REQUEST,
                             "cpuLimit": "2",
                             "cpuRequest": "200m",
                             "mountSources": True,
@@ -1226,6 +1345,10 @@ data:
 
         if not build:
             return ensure_stub(agent, name, language, framework, model, spec)
+
+        if not quota_allows(cpu_millicores=200, memory_bytes=268435456, extra_pods=1, extra_pvcs=1):
+            log("WARN", "agent_quota_blocked", name=name)
+            return "skip"
 
         if USE_TEKTON:
             # Pipeline creates BC/IS as needed; avoid blocking poll on binary builds.
@@ -1454,11 +1577,17 @@ spec:
             - name: GIT_REPO
               value: {{ .Values.agents.devspaces.gitRepo | default "https://github.com/maximilianoPizarro/rhdh-agent-sandbox.git" | quote }}
             - name: GIT_REVISION
-              value: {{ .Values.agents.devspaces.gitRevision | default "main" | quote }}
+              value: {{ .Values.agents.devspaces.gitRevision | default (printf "v%s" .Chart.Version) | quote }}
             - name: CHE_CODE_DWT
               value: {{ printf "%s-che-code" (include "rhdh-agent-sandbox.fullname" .) | quote }}
             - name: CLUSTER_ROUTER_BASE
               value: {{ .Values.rhdh.global.clusterRouterBase | quote }}
+            - name: DEVSPACES_START_ON_CREATE
+              value: {{ .Values.agents.devspaces.startOnCreate | default false | quote }}
+            - name: DEVSPACES_MEMORY_REQUEST
+              value: {{ .Values.agents.devspaces.memoryRequest | default "512Mi" | quote }}
+            - name: DEVSPACES_MEMORY_LIMIT
+              value: {{ .Values.agents.devspaces.memoryLimit | default "3Gi" | quote }}
             - name: REGISTERED_CATALOG_CM
               value: {{ include "rhdh-agent-sandbox.fullname" . }}-registered-catalog
           volumeMounts:

@@ -63,6 +63,16 @@ spec:
               mountPath: /tmp/helm/cache
             - name: helm-data
               mountPath: /tmp/helm/data
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
           resources:
             {{- toYaml .Values.mcp.kubernetes.resources | nindent 12 }}
           securityContext:

@@ -1,11 +1,23 @@
 {{- if .Values.catalog.enabled }}
+{{- $cmName := printf "%s-registered-catalog" (include "rhdh-agent-sandbox.fullname" .) }}
+{{- $existing := lookup "v1" "ConfigMap" .Release.Namespace $cmName }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "rhdh-agent-sandbox.fullname" . }}-registered-catalog
+  name: {{ $cmName }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
     app.kubernetes.io/component: registered-catalog
+  annotations:
+    rhdh-agent-sandbox/purpose: "Scaffolder-registered catalog entities (data preserved on upgrade)"
+{{- if and $existing $existing.data }}
+data:
+{{- range $key, $val := $existing.data }}
+  {{ $key }}: |
+{{ $val | indent 4 }}
+{{- end }}
+{{- else }}
 data: {}
+{{- end }}
 {{- end }}
