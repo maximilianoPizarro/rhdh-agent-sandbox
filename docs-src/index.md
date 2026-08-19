@@ -30,6 +30,6 @@ This demo deploys **Red Hat Developer Hub 1.10** with Lightspeed, LiteLLM, MCP t
 1. [Quickstart]({{ '/quickstart/' | relative_url }}) — Helm install
 2. [Golden Paths]({{ '/golden-paths/' | relative_url }}) — create an agent
 3. [Demo script]({{ '/demo-script/' | relative_url }}) — 10-minute walkthrough
-4. [Arcade demo](https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI) — click-through recording of the full Sandbox journey
+4. [Arcade demo](https://app.arcade.software/share/TpWOUs1YMUqwoA0OxnzS) — click-through recording of the full Sandbox journey
 
 See [Architecture]({{ '/architecture/' | relative_url }}) for tokens, networking, and component map.
