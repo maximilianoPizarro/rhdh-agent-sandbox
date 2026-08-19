@@ -10,6 +10,7 @@ Generate a real LangGraph / LangChain.js / LangChain4j agent, BuildConfig-compil
 - agentSpec may include colons (chart 0.1.11 quotes catalog YAML so Verify does not time out)
 - agent-applier builds from chart skeleton sources
 - Component page: **Topology** + per-agent **Documentation**
+- Topology is empty until the BuildConfig finishes and the Deployment exists (no git push)
 
 ## DevSpaces AI Workspace
 
