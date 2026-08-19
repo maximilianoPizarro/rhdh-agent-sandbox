@@ -276,43 +276,57 @@
       <div class="pf-v6-c-content content--wide">
         <div class="arcade-embed" role="region" aria-label="Interactive demo" tabindex="0">
   <div class="arcade-embed__frame">
-    <iframe src="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI?embed" title="Demo Agentic IA Developer Sandbox" loading="lazy" allow="fullscreen" allowfullscreen=""></iframe>
+    <iframe src="https://app.arcade.software/share/TpWOUs1YMUqwoA0OxnzS?embed" title="Building Agentic AI in a Developer Sandbox" loading="lazy" allow="fullscreen" allowfullscreen=""></iframe>
   </div>
   <div class="arcade-embed__toolbar">
     <button type="button" class="arcade-embed__fs" data-arcade-fs="" aria-label="Toggle fullscreen" aria-pressed="false">Fullscreen</button>
     <span class="arcade-embed__hint">Esc to exit</span>
-    <a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI" class="arcade-embed__open" target="_blank" rel="noopener">Open in Arcade</a>
+    <a href="https://app.arcade.software/share/TpWOUs1YMUqwoA0OxnzS" class="arcade-embed__open" target="_blank" rel="noopener">Open in Arcade</a>
   </div>
 </div>
 
 <p>Watch the walkthrough above without a cluster, or follow the live script below.</p>
 
-<p>Interactive recording: <strong><a href="https://app.arcade.software/share/3eNsUpTwG1SiGKP9kvgI">Demo Agentic IA Developer Sandbox</a></strong> (Arcade).</p>
+<p>Interactive recording: <strong><a href="https://app.arcade.software/share/TpWOUs1YMUqwoA0OxnzS">Building Agentic AI in a Developer Sandbox</a></strong> (Arcade).</p>
 
-<h2 id="part-a--hub-agent-loop-5-min">Part A — Hub agent loop (~5 min)</h2>
+<p>Use <strong>LiteMaaS Qwen</strong> (<code class="language-plaintext highlighter-rouge">litemaas-qwen</code>) for any tool-calling step. Shared <strong>Granite</strong> is chat-only — Lightspeed/Continue will hallucinate CVEs if you leave it selected in Agent mode.</p>
+
+<h2 id="part-a--helm-catalog-install">Part A — Helm catalog install</h2>
 
 <ol>
-  <li>Open Developer Hub → <strong>Enter as Guest</strong></li>
-  <li><strong>Catalog</strong> → filter <code class="language-plaintext highlighter-rouge">mcp</code> → browse MCP API entities and their <strong>Documentation</strong> (skills as markdown)</li>
-  <li><strong>Create</strong> → run <strong>Deploy Agent</strong> Golden Path</li>
-  <li>Open the new Component → <strong>Topology</strong> tab</li>
-  <li><strong>Lightspeed</strong> or <strong>MCP Chat</strong> → select <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> → ask to list pods in namespace</li>
+  <li>OpenShift Console → <strong>Developer</strong> perspective → your Sandbox project</li>
+  <li><strong>+Add</strong> → <strong>Helm Chart</strong> → search <code class="language-plaintext highlighter-rouge">rhdh-agent-sandbox</code> → <strong>Install Helm Chart</strong></li>
+  <li>Release name <code class="language-plaintext highlighter-rouge">rhdh-agent</code>, chart <strong>0.1.11</strong>, Form view</li>
+  <li>Set <strong>Cluster Router Base</strong> and <strong>OpenShift token (shared models)</strong> (<code class="language-plaintext highlighter-rouge">oc whoami -t</code>). Leave <strong>LiteMaaS API key</strong> empty if Secret <code class="language-plaintext highlighter-rouge">litemaas-credentials</code> already exists</li>
+  <li><strong>Create</strong> → wait until Topology group <strong>rhdh-agent</strong> is Ready (Hub 2/2, LiteLLM, MCP, applier, PostgreSQL)</li>
 </ol>
 
-<h2 id="part-b--devspaces-ai-5-min">Part B — DevSpaces AI (~5 min)</h2>
+<h2 id="part-b--hub-agent-loop-5-min">Part B — Hub agent loop (~5 min)</h2>
 
 <ol>
-  <li><strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong></li>
-  <li>Open DevSpaces dashboard → open workspace</li>
-  <li>Continue chat → LiteLLM wired via chart Secret</li>
+  <li>Open the Developer Hub Route → <strong>Enter as Guest</strong></li>
+  <li><strong>Catalog</strong> → filter <code class="language-plaintext highlighter-rouge">mcp</code> → browse MCP API entities and their <strong>Documentation</strong></li>
+  <li><strong>Create</strong> → <strong>Deploy Agent (Golden Path)</strong> (Python / LangGraph, <code class="language-plaintext highlighter-rouge">tool-agent</code>, model <code class="language-plaintext highlighter-rouge">granite</code>)</li>
+  <li>Open the new Component → <strong>Topology</strong> after the BuildConfig finishes (no git push)</li>
+  <li><strong>MCP Chat</strong> → <code class="language-plaintext highlighter-rouge">litemaas-qwen</code> → ask for <code class="language-plaintext highlighter-rouge">pods_list_in_namespace</code> in this namespace</li>
+</ol>
+
+<h2 id="part-c--devspaces--red-hat-security-mcp-5-min">Part C — DevSpaces + Red Hat Security MCP (~5 min)</h2>
+
+<ol>
+  <li><strong>Create</strong> → <strong>Agent-friendly DevSpaces AI Workspace</strong> (workspace starts <strong>stopped</strong>)</li>
+  <li><a href="https://workspaces.openshift.com/dashboard/#/workspaces">Dev Spaces dashboard</a> as the Sandbox user → <strong>Start</strong> → <strong>Trust</strong></li>
+  <li>Continue → model <strong>LiteMaaS Qwen (LiteLLM)</strong> → <strong>Agent</strong> or <strong>Plan</strong> (not Chat)</li>
+  <li>Customer Portal SSO via the public <strong>http-8080</strong> helper (not Che <code class="language-plaintext highlighter-rouge">code-redirect</code>)</li>
+  <li>Ask <code class="language-plaintext highlighter-rouge">get_cve_by_id</code> for <strong>CVE-2024-3094</strong> (xz). Expect live tool chips, Red Hat severity — not NVD folklore</li>
+  <li><strong>Stop</strong> the workspace when done to free quota</li>
 </ol>
 
 <h2 id="wrap-up">Wrap-up</h2>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get bc,deploy <span class="nt">-l</span> app.kubernetes.io/part-of<span class="o">=</span>rhdh-agent-sandbox
+oc get dw
 </code></pre></div></div>
-
-<p>Stop DevWorkspace when done to free quota.</p>
 
       </div>
     </section>
