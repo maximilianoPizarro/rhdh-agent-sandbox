@@ -1,9 +1,9 @@
 apiVersion: v2
 name: rhdh-agent-sandbox
-description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Lightspeed, LiteLLM, MCP tools, and DevSpaces AI workflows
+description: Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox with Intelligent Assistant, LiteLLM, MCP tools, CPU InferenceService, and DevSpaces AI workflows
 type: application
-version: 0.1.11
-appVersion: "1.10.3"
+version: 0.2.0
+appVersion: "2.1.0"
 kubeVersion: ">=1.25.0-0"
 icon: https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png
 home: https://maximilianopizarro.github.io/rhdh-agent-sandbox
@@ -11,9 +11,12 @@ keywords:
   - openshift
   - developer-hub
   - backstage
+  - intelligent-assistant
   - lightspeed
   - mcp
   - litellm
+  - kserve
+  - openshift-ai
   - devspaces
   - ai
 maintainers:
@@ -27,8 +30,14 @@ annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/prerelease: "true"
   artifacthub.io/changes: |
+    - kind: changed
+      description: Upgrade to Red Hat Developer Hub 2.1 (Intelligent Assistant) and Helm values remap
+    - kind: added
+      description: Chart-managed CPU InferenceService (local-cpu) wired to LiteLLM and Intelligent Assistant
+    - kind: added
+      description: Hub branding parameters (title, logo, theme colors) and Scorecard plugins
     - kind: fixed
-      description: Quote agentSpec/description in catalog YAML so Deploy Agent Verify succeeds when the spec contains colons
+      description: Kubernetes MCP uses public openshift-mcp-server image (or can be disabled)
   artifacthub.io/links: |
     - name: Documentation
       url: https://maximilianopizarro.github.io/rhdh-agent-sandbox
@@ -42,9 +51,11 @@ annotations:
       image: litellm/litellm-non_root:v1.82.3-stable
     - name: openshift-mcp-server
       image: quay.io/maximilianopizarro/openshift-mcp-server:latest
+    - name: llama-cpp-server
+      image: ghcr.io/ggml-org/llama.cpp:server
 dependencies:
   - name: redhat-developer-hub
-    version: 1.10.3
+    version: 2.1.0
     repository: https://charts.openshift.io/
     alias: rhdh
     condition: rhdh.enabled

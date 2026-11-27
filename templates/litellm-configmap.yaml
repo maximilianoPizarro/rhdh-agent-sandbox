@@ -11,15 +11,18 @@ data:
   config.yaml: |
     model_list:
 {{- range .Values.litellm.models }}
+{{- $apiBase := .apiBase }}
+{{- if and $.Values.models $.Values.models.cpu $.Values.models.cpu.enabled (eq .name ($.Values.models.cpu.name | default "local-cpu")) }}
+{{- $apiBase = include "rhdh-agent-sandbox.cpuModelApiBase" $ }}
+{{- end }}
       - model_name: {{ .name }}
         litellm_params:
           model: openai/{{ .modelId }}
-          api_base: {{ .apiBase }}
+          api_base: {{ $apiBase }}
           api_key: os.environ/{{ .apiKeyEnv | default "MODEL_API_KEY" }}
           ssl_verify: false
           drop_params: true
 {{- if .dropTools | default (not (.supportsFunctionCalling | default false)) }}
-          # Shared Sandbox Granite/Qwen reject tool_choice=auto.
           additional_drop_params: ["tool_choice", "tools", "functions", "function_call"]
 {{- end }}
         model_info:

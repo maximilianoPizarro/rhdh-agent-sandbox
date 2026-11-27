@@ -3,7 +3,10 @@
   "title": "rhdh-agent-sandbox",
   "description": "Agent-friendly Red Hat Developer Hub on OpenShift Developer Sandbox",
   "type": "object",
-  "required": ["secrets", "rhdh"],
+  "required": [
+    "secrets",
+    "rhdh"
+  ],
   "properties": {
     "nameOverride": {
       "type": "string",
@@ -21,7 +24,9 @@
       "type": "object",
       "title": "Secrets",
       "description": "Bootstrap secrets for the Hub, LiteLLM, and MCP",
-      "required": ["modelApiKey"],
+      "required": [
+        "modelApiKey"
+      ],
       "properties": {
         "create": {
           "type": "boolean",
@@ -90,7 +95,11 @@
             },
             "pullPolicy": {
               "type": "string",
-              "enum": ["Always", "IfNotPresent", "Never"],
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ],
               "default": "IfNotPresent"
             }
           }
@@ -147,8 +156,16 @@
           "title": "LiteMaaS Secret",
           "description": "Kubernetes Secret holding the LiteMaaS bearer (created by the chart from secrets.litemaasApiKey)",
           "properties": {
-            "name": { "type": "string", "title": "Secret name", "default": "litemaas-credentials" },
-            "key": { "type": "string", "title": "Secret key", "default": "api-key" }
+            "name": {
+              "type": "string",
+              "title": "Secret name",
+              "default": "litemaas-credentials"
+            },
+            "key": {
+              "type": "string",
+              "title": "Secret key",
+              "default": "api-key"
+            }
           }
         },
         "resources": {
@@ -158,15 +175,27 @@
             "requests": {
               "type": "object",
               "properties": {
-                "cpu": { "type": "string", "default": "50m" },
-                "memory": { "type": "string", "default": "512Mi" }
+                "cpu": {
+                  "type": "string",
+                  "default": "50m"
+                },
+                "memory": {
+                  "type": "string",
+                  "default": "512Mi"
+                }
               }
             },
             "limits": {
               "type": "object",
               "properties": {
-                "cpu": { "type": "string", "default": "500m" },
-                "memory": { "type": "string", "default": "1536Mi" }
+                "cpu": {
+                  "type": "string",
+                  "default": "500m"
+                },
+                "memory": {
+                  "type": "string",
+                  "default": "1536Mi"
+                }
               }
             }
           }
@@ -176,7 +205,7 @@
     "cluster": {
       "type": "object",
       "title": "OpenShift API (Hub Kubernetes plugin)",
-      "description": "Public API URL is derived from Cluster Router Base. Token comes from ServiceAccount rhdh-agent-sandbox-hub-k8s-reader — do not paste a user token here.",
+      "description": "Public API URL is derived from Cluster Router Base. Token comes from ServiceAccount rhdh-agent-sandbox-hub-k8s-reader \u2014 do not paste a user token here.",
       "properties": {
         "name": {
           "type": "string",
@@ -204,18 +233,30 @@
           "type": "object",
           "title": "OpenShift MCP (Quarkus)",
           "properties": {
-            "enabled": { "type": "boolean", "default": true },
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
             "image": {
               "type": "object",
               "properties": {
-                "repository": { "type": "string", "default": "quay.io/maximilianopizarro/openshift-mcp-server" },
-                "tag": { "type": "string", "default": "latest" }
+                "repository": {
+                  "type": "string",
+                  "default": "quay.io/maximilianopizarro/openshift-mcp-server"
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "latest"
+                }
               }
             },
             "service": {
               "type": "object",
               "properties": {
-                "port": { "type": "integer", "default": 8080 }
+                "port": {
+                  "type": "integer",
+                  "default": 8080
+                }
               }
             }
           }
@@ -224,18 +265,29 @@
           "type": "object",
           "title": "Kubernetes MCP",
           "properties": {
-            "enabled": { "type": "boolean", "default": true },
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
             "image": {
               "type": "object",
               "properties": {
-                "repository": { "type": "string" },
-                "tag": { "type": "string", "default": "latest" }
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "latest"
+                }
               }
             },
             "service": {
               "type": "object",
               "properties": {
-                "port": { "type": "integer", "default": 8085 }
+                "port": {
+                  "type": "integer",
+                  "default": 8085
+                }
               }
             }
           }
@@ -243,14 +295,23 @@
         "serviceAccount": {
           "type": "object",
           "properties": {
-            "create": { "type": "boolean", "default": true },
-            "name": { "type": "string", "default": "rhdh-agent-mcp" }
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "name": {
+              "type": "string",
+              "default": "rhdh-agent-mcp"
+            }
           }
         },
         "rbac": {
           "type": "object",
           "properties": {
-            "create": { "type": "boolean", "default": true }
+            "create": {
+              "type": "boolean",
+              "default": true
+            }
           }
         }
       }
@@ -295,7 +356,12 @@
               "title": "Applier log level",
               "description": "DEBUG | INFO | WARN | ERROR",
               "default": "INFO",
-              "enum": ["DEBUG", "INFO", "WARN", "ERROR"]
+              "enum": [
+                "DEBUG",
+                "INFO",
+                "WARN",
+                "ERROR"
+              ]
             }
           }
         },
@@ -304,7 +370,12 @@
           "title": "Sample agent log level",
           "description": "DEBUG | INFO | WARN | ERROR for shared agent stub",
           "default": "INFO",
-          "enum": ["DEBUG", "INFO", "WARN", "ERROR"]
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR"
+          ]
         },
         "hubRbac": {
           "type": "object",
@@ -363,11 +434,26 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "language": { "type": "string", "enum": ["python", "nodejs", "quarkus"] },
-              "framework": { "type": "string" },
-              "model": { "type": "string" },
-              "agentSpec": { "type": "string" }
+              "name": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string",
+                "enum": [
+                  "python",
+                  "nodejs",
+                  "quarkus"
+                ]
+              },
+              "framework": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "agentSpec": {
+                "type": "string"
+              }
             }
           }
         }
@@ -377,31 +463,179 @@
       "type": "object",
       "title": "Community Plugins (OCI Asset Packs)",
       "properties": {
-        "enabled": { "type": "boolean", "default": true },
-        "registry": { "type": "string", "default": "quay.io" },
-        "repository": { "type": "string", "default": "maximilianopizarro/rhdh-agent-sandbox" },
-        "tag": { "type": "string", "default": "" }
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "registry": {
+          "type": "string",
+          "default": "quay.io"
+        },
+        "repository": {
+          "type": "string",
+          "default": "maximilianopizarro/rhdh-agent-sandbox"
+        },
+        "tag": {
+          "type": "string",
+          "default": ""
+        }
       }
     },
     "rhdh": {
       "type": "object",
       "title": "Red Hat Developer Hub (Subchart)",
-      "description": "Official RHDH Helm subchart — configure routing, auth, plugins, and AI integrations",
+      "description": "Official RHDH Helm subchart \u2014 configure routing, auth, plugins, and AI integrations",
       "properties": {
         "enabled": {
           "type": "boolean",
           "title": "Enable Developer Hub",
           "default": true
         },
-        "global": {
+        "openshift": {
           "type": "object",
-          "title": "Global Configuration",
-          "required": ["clusterRouterBase"],
+          "title": "OpenShift",
           "properties": {
             "clusterRouterBase": {
               "type": "string",
               "title": "Cluster Router Base",
-              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required. Also used to derive the Kubernetes API URL for the Hub plugin."
+              "description": "OpenShift apps domain (e.g. apps.rm2.thpm.p1.openshiftapps.com). Required."
+            }
+          },
+          "required": [
+            "clusterRouterBase"
+          ]
+        }
+      }
+    },
+    "hub": {
+      "type": "object",
+      "title": "Hub branding",
+      "description": "Title, org, logo and theme colors mirrored into rhdh.appConfig.app (edit values.yaml hub.* / rhdh.appConfig.app together)",
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Hub title",
+          "default": "Agent-friendly Developer Hub"
+        },
+        "orgName": {
+          "type": "string",
+          "title": "Organization name",
+          "default": "Sandbox"
+        },
+        "branding": {
+          "type": "object",
+          "title": "Branding",
+          "properties": {
+            "fullLogo": {
+              "type": "string",
+              "title": "Full logo (data URI or empty)"
+            },
+            "iconLogo": {
+              "type": "string",
+              "title": "Icon logo (data URI or empty)"
+            },
+            "fullLogoWidth": {
+              "type": "integer",
+              "title": "Logo width",
+              "default": 180
+            },
+            "theme": {
+              "type": "object",
+              "properties": {
+                "light": {
+                  "type": "object",
+                  "properties": {
+                    "primaryColor": {
+                      "type": "string",
+                      "default": "#EE0000"
+                    },
+                    "headerColor1": {
+                      "type": "string",
+                      "default": "#151515"
+                    },
+                    "headerColor2": {
+                      "type": "string",
+                      "default": "#EE0000"
+                    },
+                    "navigationIndicatorColor": {
+                      "type": "string",
+                      "default": "#EE0000"
+                    }
+                  }
+                },
+                "dark": {
+                  "type": "object",
+                  "properties": {
+                    "primaryColor": {
+                      "type": "string",
+                      "default": "#FF3333"
+                    },
+                    "headerColor1": {
+                      "type": "string",
+                      "default": "#151515"
+                    },
+                    "headerColor2": {
+                      "type": "string",
+                      "default": "#FF3333"
+                    },
+                    "navigationIndicatorColor": {
+                      "type": "string",
+                      "default": "#FF3333"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "plugins": {
+          "type": "object",
+          "properties": {
+            "scorecard": {
+              "type": "boolean",
+              "title": "Enable Scorecard plugins",
+              "default": true
+            },
+            "adoptionInsights": {
+              "type": "boolean",
+              "title": "Enable Adoption Insights",
+              "default": false
+            },
+            "mcpChat": {
+              "type": "boolean",
+              "title": "Enable MCP Chat (if overlay available)",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "title": "In-cluster models",
+      "properties": {
+        "cpu": {
+          "type": "object",
+          "title": "CPU InferenceService",
+          "description": "Chart-managed llama.cpp ServingRuntime + InferenceService for Intelligent Assistant",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Deploy CPU model on install",
+              "default": true
+            },
+            "name": {
+              "type": "string",
+              "title": "InferenceService name",
+              "default": "local-cpu"
+            },
+            "modelUrl": {
+              "type": "string",
+              "title": "GGUF download URL"
+            },
+            "resources": {
+              "type": "object",
+              "title": "Resources"
             }
           }
         }

@@ -1,16 +1,74 @@
 # Default values for rhdh-agent-sandbox (OpenShift Developer Sandbox only).
 #
-# Install:
-#   export MODEL_API_KEY=$(oc whoami -t)
+# Install (fresh install required for 0.2.0 / RHDH 2.1 — PG18 cannot reuse PG15 PVC):
+#   helm uninstall rhdh-agent -n "$(oc project -q)"
+#   oc delete pvc -l app.kubernetes.io/name=developer-hub --ignore-not-found
+#   oc delete pvc data-rhdh-agent-sandbox-postgresql-0 --ignore-not-found
 #   helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
-#     --set secrets.modelApiKey="$MODEL_API_KEY" \
-#     --set rhdh.global.clusterRouterBase=apps.rm2.thpm.p1.openshiftapps.com
+#     --set secrets.modelApiKey="$(oc whoami -t)" \
+#     --set rhdh.openshift.clusterRouterBase=apps.rm2.thpm.p1.openshiftapps.com
 
 nameOverride: ""
 # Keep service DNS short and stable: <fullname>-mcp / <fullname>-litellm
 fullnameOverride: "rhdh-agent-sandbox"
 
-# Hub Kubernetes plugin API (derived from rhdh.global.clusterRouterBase when apiUrl is empty).
+# Hub branding (formulario Helm / values.schema.json)
+hub:
+  title: Agent-friendly Developer Hub
+  orgName: Sandbox
+  branding:
+    fullLogo: ""
+    iconLogo: ""
+    fullLogoWidth: 180
+    theme:
+      light:
+        primaryColor: "#EE0000"
+        headerColor1: "#151515"
+        headerColor2: "#EE0000"
+        navigationIndicatorColor: "#EE0000"
+      dark:
+        primaryColor: "#FF3333"
+        headerColor1: "#151515"
+        headerColor2: "#FF3333"
+        navigationIndicatorColor: "#FF3333"
+  plugins:
+    scorecard: true
+    adoptionInsights: false
+    # MCP Chat community overlay is not reliably published for BS 1.54.9; IA replaces it.
+    mcpChat: false
+
+# Chart-managed CPU model (ServingRuntime + InferenceService). Default ON.
+# Wired to LiteLLM alias local-cpu and Intelligent Assistant. No PVC (emptyDir download).
+models:
+  cpu:
+    enabled: true
+    name: local-cpu
+    runtime: llamacpp
+    image: ghcr.io/ggml-org/llama.cpp:server
+    imagePullPolicy: IfNotPresent
+    # Public GGUF (~0.5B Q4). Avoid storageUri — KServe storage-initializer requests ~20Gi.
+    modelUrl: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf
+    contextSize: 2048
+    maxTokens: 256
+    emptyDirSizeLimit: 1Gi
+    enableRoute: true
+    servicePort: 80
+    minReplicas: 1
+    maxReplicas: 1
+    # Sandbox default HWP (CPU/memory only). Dashboard "Hardware profile" column.
+    hardwareProfile:
+      name: default-profile
+      namespace: redhat-ods-applications
+    # Align with default-profile mins (1 CPU / 2Gi) so the UI does not show Unknown.
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "1"
+        memory: 3Gi
+
+# Hub Kubernetes plugin API (derived from rhdh.openshift.clusterRouterBase when apiUrl is empty).
 cluster:
   name: sandbox
   apiUrl: ""
@@ -22,9 +80,9 @@ secrets:
   backendSecret: ""
   litellmMasterKey: ""
   mcpToken: ""
-  # OpenShift user token for sandbox-shared-models oauth-proxy (~24h TTL)
-  modelApiKey: ""  # override: --set secrets.modelApiKey=$(oc whoami -t)
-  # LiteMaaS bearer for Hub / LiteLLM tool calling (litemaas-qwen). Stored in Secret litemaas-credentials.
+  # Optional: legacy shared-models token (unused when only local-cpu is configured)
+  modelApiKey: ""
+  # LiteMaaS bearer for optional tool-calling model (litemaas-qwen)
   litemaasApiKey: ""
 
 litellm:
@@ -39,7 +97,6 @@ litellm:
     enabled: true
     tls:
       termination: edge
-  # LiteLLM image is memory-heavy; 512Mi limit OOMs on Sandbox.
   resources:
     requests:
       cpu: 50m
@@ -48,28 +105,21 @@ litellm:
       cpu: 500m
       memory: 1536Mi
   models:
-    - name: granite
-      modelId: isvc-granite-31-8b-fp8
-      apiBase: https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
-      apiKeyEnv: MODEL_API_KEY
+    # Chart CPU InferenceService (default). apiBase rewritten in litellm-configmap when models.cpu.enabled.
+    - name: local-cpu
+      modelId: local-cpu
+      apiBase: http://local-cpu-predictor:80/v1
+      apiKeyEnv: LITELLM_MASTER_KEY
       supportsFunctionCalling: false
       dropTools: true
-    - name: qwen3
-      modelId: isvc-qwen3-8b-fp8
-      apiBase: https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1
-      apiKeyEnv: MODEL_API_KEY
-      supportsFunctionCalling: false
-      dropTools: true
-    # LiteMaaS private Qwen — tool calling ON (key from Secret litemaas-credentials, not git)
+    # Optional external tool-calling model
     - name: litemaas-qwen
       modelId: Qwen3.6-35B-A3B
       apiBase: https://litemaas.rhoai.rh-aiservices-bu.com/v1
       apiKeyEnv: LITEMAAS_API_KEY
       supportsFunctionCalling: true
       dropTools: false
-  # Prefer shared granite for default chat; tool demos use litemaas-qwen
-  defaultModel: granite
-  # Optional: Secret holding LiteMaaS bearer key (key name: api-key)
+  defaultModel: local-cpu
   litemaasSecret:
     name: litemaas-credentials
     key: api-key
@@ -96,9 +146,11 @@ mcp:
         cpu: "1"
         memory: 512Mi
   kubernetes:
-    enabled: true
+    # Default OFF: public Quarkus MCP image has /app/app.jar, not /openshift-mcp-server (Go).
+    # Enable when a public Go binary image is available, or override image + command.
+    enabled: false
     image:
-      repository: quay.io/redhat-user-workloads/crt-nshift-lightspeed-tenant/openshift-mcp-server
+      repository: quay.io/maximilianopizarro/openshift-mcp-server
       tag: latest
       pullPolicy: IfNotPresent
     service:
@@ -119,6 +171,7 @@ mcp:
     name: rhdh-agent-mcp
   rbac:
     create: true
+
 
 catalog:
   enabled: true
@@ -180,395 +233,263 @@ communityPlugins:
     - name: scaffolder-backend-module-catalog-register
       disabled: false
 
-# Subchart: official Red Hat Developer Hub
+
+# Subchart: official Red Hat Developer Hub 2.1 (alias rhdh)
+# Values are flattened vs 1.x — see Red Hat migration guide 1.x → 2.1.
 rhdh:
   enabled: true
   nameOverride: developer-hub
-  # Scaffolder task event-stream can run longer than the OpenShift default 30s.
-  route:
-    annotations:
-      haproxy.router.openshift.io/timeout: 5m
-  global:
-    # REQUIRED: your sandbox apps domain, e.g. apps.rm2.thpm.p1.openshiftapps.com
+  openshift:
+    # REQUIRED: sandbox apps domain, e.g. apps.rm2.thpm.p1.openshiftapps.com
     clusterRouterBase: ""
-    host: ""
-    auth:
-      backend:
-        enabled: true
-        existingSecret: rhdh-agent-sandbox-secrets
-    lightspeed:
+    route:
       enabled: true
-      secret:
-        create: false
-        name: rhdh-agent-sandbox-secrets
-      # Chart ConfigMap with OpenShift/k8s MCP + RHDH mcp-integration-tools.
-      configMaps:
-        - name: stack
-          create: false
-          nameOverride: rhdh-agent-sandbox-lightspeed-stack
-          mountPath: /app-root/lightspeed-stack.yaml
-          subPath: lightspeed-stack.yaml
-          sourceFile: lightspeed-stack.yaml
-          optional: false
-        - name: config
-          create: true
-          nameOverride: ""
-          mountPath: /app-root/config.yaml
-          subPath: config.yaml
-          sourceFile: config.yaml
-          optional: false
-        - name: rhdh-profile
-          create: true
-          nameOverride: ""
-          mountPath: /app-root/rhdh-profile.py
-          subPath: rhdh-profile.py
-          sourceFile: rhdh-profile.py
-          optional: false
-    dynamic:
-      includes:
-        - dynamic-plugins.default.yaml
-      plugins:
-        - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-          disabled: false
-        - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
-          disabled: false
-        - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
-          disabled: false
-        # CI tab — Tekton PipelineRuns (same pattern as developer-hub-on-developer-sandbox)
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.49.4__3.37.0!backstage-community-plugin-tekton
-          disabled: false
-        - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
-          disabled: false
-        - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
-          disabled: false
-        # GitHub org discovery needs organization/app — disable (catalog via ConfigMap file).
-        - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-          disabled: true
-        - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
-          disabled: true
-        # Namespace-scoped scaffolder helpers (Deployments/Services via Hub SA RBAC)
-        - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-          disabled: false
-        # --- AI / MCP community plugins (ghcr.io overlays for RHDH 1.10 / BS 1.49.4) ---
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:bs_1.49.4__0.1.11!backstage-plugin-mcp-actions-backend
-          disabled: false
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras:bs_1.49.4__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras
-          disabled: false
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras:bs_1.49.4__0.2.3!red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras
-          disabled: false
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat:bs_1.49.4__0.6.0!backstage-community-plugin-mcp-chat
-          disabled: false
-          pluginConfig:
-            dynamicPlugins:
-              frontend:
-                backstage-community.plugin-mcp-chat:
-                  dynamicRoutes:
-                    - path: /mcp-chat
-                      importName: McpChatPage
-                      menuItem:
-                        icon: MCPChatIcon
-                        text: MCP Chat
-        - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
-          disabled: false
-        # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
-        - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.11!plugin
-          disabled: false
-    # Asset packs publish to Quay. Do not wire a non-janus image as catalogIndex.extraImages.
-    catalogIndex:
-      extraImages: []
-  upstream:
-    backstage:
-      image:
-        pullPolicy: IfNotPresent
       annotations:
-        # OpenShift Topology: static icon (Hub route 503s during rollout; browser cannot fetch hub favicon until pods are ready).
-        app.openshift.io/custom-icon: "https://raw.githubusercontent.com/maximilianopizarro/rhdh-agent-sandbox/main/docs/assets/icon.png"
+        haproxy.router.openshift.io/timeout: 5m
+  auth:
+    backend:
+      enabled: true
+      existingSecretRef:
+        name: rhdh-agent-sandbox-secrets
+        key: backend-secret
+  dynamicPlugins:
+    includes:
+      - dynamic-plugins.default.yaml
+    # Sandbox PVC quota is often full — do not use ephemeral PVC for plugins.
+    volume:
+      type: emptyDir
+    plugins:
+      # RHDH 2.1: auth providers are dynamic plugins (guest is not enabled by auth.environment alone).
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.54.9__0.2.22!backstage-plugin-auth-backend-module-guest-provider
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes-backend:bs_1.54.9__0.21.10!backstage-plugin-kubernetes-backend
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes:bs_1.54.9__0.12.22!backstage-plugin-kubernetes
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-topology:bs_1.54.9__3.0.7!backstage-community-plugin-topology
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.54.9__4.0.5!backstage-community-plugin-tekton
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-scaffolder-backend-module-kubernetes:bs_1.54.9__2.21.0!backstage-community-plugin-scaffolder-backend-module-kubernetes
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.54.9__4.5.2!red-hat-developer-hub-backstage-plugin-scorecard
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.54.9__4.5.2!red-hat-developer-hub-backstage-plugin-scorecard-backend
+        enabled: true
+      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-filecheck:bs_1.54.9__1.1.7!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-filecheck
+        enabled: true
+      # Pin to last published OCI until CI pushes scaffolder-backend-module-catalog-register-0.2.0
+      - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.11!plugin
+        enabled: true
+  intelligentAssistant:
+    enabled: true
+    existingSecret: rhdh-agent-sandbox-secrets
+    config:
+      stack:
+        existingConfigMap:
+          name: rhdh-agent-sandbox-lightspeed-stack
+          key: lightspeed-stack.yaml
+    okp:
+      enabled: false
+    core:
       resources:
         requests:
-          cpu: 250m
-          memory: 1Gi
+          cpu: 100m
+          memory: 512Mi
         limits:
           cpu: 1000m
           memory: 2Gi
-      appConfig:
-        app:
-          title: Agent-friendly Developer Hub
-        # Demo: Guest login with permission framework off.
-        auth:
-          environment: development
-          providers:
-            guest:
-              userEntityRef: user:default/guest
-              dangerouslyAllowOutsideDevelopment: true
-        permission:
-          enabled: false
-        techdocs:
-          builder: local
-          publisher:
-            type: local
-        catalog:
-          locations:
-            - type: file
-              target: /opt/app-root/src/catalog/all.yaml
-              rules:
-                - allow: [Component, System, API, Resource, Location, Template, User, Group]
-            - type: file
-              target: /opt/app-root/src/scaffolder-registered/entities/*.yaml
-              rules:
-                - allow: [Component, API, Resource, Location, System]
-        backend:
-          actions:
-            pluginSources:
-              - software-catalog-mcp-extras
-              - techdocs-mcp-extras
-          auth:
-            externalAccess:
-              - type: legacy
-                options:
-                  secret: ${BACKEND_SECRET}
-                  subject: legacy-default-config
-              - type: static
-                options:
-                  token: ${MCP_TOKEN}
-                  subject: mcp-clients
-          reading:
-            allow:
-              - host: github.com
-              - host: raw.githubusercontent.com
-              - host: "*.github.io"
-        # MCP Chat → LiteLLM. Default demo model is LiteMaaS Qwen (tool calling).
-        # Shared granite/qwen3 remain available via Lightspeed for chat-only.
-        mcpChat:
-          providers:
-            - id: litellm
-              baseUrl: http://rhdh-agent-sandbox-litellm:4000
-              token: ${LITELLM_API_KEY}
-              model: litemaas-qwen
-          mcpServers:
-            # Cluster MCP services are up before Hub; prefer these for reliable connect.
-            - id: openshift-mcp
-              name: OpenShift MCP
-              url: http://rhdh-agent-sandbox-mcp:8080/mcp
-            - id: k8s-mcp
-              name: Kubernetes MCP
-              url: http://rhdh-agent-sandbox-k8s-mcp:8085/mcp
-            # Same-pod Streamable HTTP: may miss first connect while mcp-actions registers.
-            # UI can reconnect; external clients use the Hub Route + mcp-token.
-            - id: backstage-mcp
-              name: Backstage MCP Actions
-              url: http://localhost:7007/api/mcp-actions/v1
-              headers:
-                Authorization: Bearer ${MCP_TOKEN}
-                Accept: application/json, text/event-stream
-            # Red Hat Security MCP requires Customer Portal OAuth (SSO). Hub cannot
-            # complete browser login — use Cursor/.mcp.json for live CVE tools.
-            - id: redhat-security-mcp
-              name: Red Hat Security MCP (requires SSO)
-              url: https://security-mcp.api.redhat.com/mcp
-              enabled: false
-          systemPrompt: >-
-            You are the agent-friendly Developer Hub assistant on OpenShift Developer Sandbox.
-            Namespace is scoped: prefer Kubernetes MCP tools pods_list_in_namespace, resources_list,
-            events_list, helm_list, and OpenShift MCP monitorDeployments / createDeployment / createService.
-            Do NOT call pods_list (all namespaces), namespaces_list, or nodes_* — they are disabled or forbidden.
-            Prefer catalog and TechDocs MCP tools when available. Summarize tool results clearly.
-          quickPrompts:
-            - title: Catalog overview
-              description: List components in the software catalog
-              prompt: List the Component entities in our Backstage catalog and summarize what each one does.
-              category: Catalog
-            - title: Namespace pods
-              description: List pods in this namespace via Kubernetes MCP
-              prompt: Use Kubernetes MCP tool pods_list_in_namespace for this chart namespace and summarize pod status.
-              category: Infrastructure
-            - title: Deployments health
-              description: Monitor deployments via OpenShift MCP
-              prompt: Call OpenShift MCP monitorDeployments for this namespace and report any unhealthy rollouts.
-              category: Infrastructure
-            - title: TechDocs search
-              description: Find docs related to MCP or Lightspeed
-              prompt: Search TechDocs for MCP, Lightspeed, or LiteLLM and summarize the key pages.
-              category: Docs
-        kubernetes:
-          # Tekton + OpenShift routes (Topology / CI)
-          customResources:
-            - group: tekton.dev
-              apiVersion: v1
-              plural: pipelines
-            - group: tekton.dev
-              apiVersion: v1
-              plural: pipelineruns
-            - group: tekton.dev
-              apiVersion: v1
-              plural: taskruns
-            - group: route.openshift.io
-              apiVersion: v1
-              plural: routes
-          serviceLocatorMethod:
-            type: multiTenant
-          clusterLocatorMethods:
-            - type: config
-              clusters:
-                # Public API + SA token (developer-hub-on-developer-sandbox pattern).
-                # kubernetes.default.svc hits self-signed TLS that Node/fetch does not honor reliably.
-                - url: ${K8S_CLUSTER_URL}
-                  name: ${K8S_CLUSTER_NAME}
-                  authProvider: serviceAccount
-                  skipTLSVerify: true
-                  skipMetricsLookup: true
-                  serviceAccountToken: ${K8S_CLUSTER_TOKEN}
-        # Lightspeed → LiteLLM via lightspeed-core (ENABLE_VLLM / VLLM_*).
-        # Model identifiers exposed by llama-stack are vllm/<name>.
-        lightspeed:
-          systemPrompt: >-
-            You are the agent-friendly Developer Hub demo assistant on OpenShift Developer Sandbox.
-            Prefer catalog, TechDocs, and namespace-scoped MCP tools. Stay inside the user namespace.
-            When diagnosing cluster state, list/get before mutate and summarize risk.
-          servers:
-            - id: vllm/granite
-              url: http://rhdh-agent-sandbox-litellm:4000/v1
-              model: granite
-            - id: vllm/qwen3
-              url: http://rhdh-agent-sandbox-litellm:4000/v1
-              model: qwen3
-            - id: vllm/litemaas-qwen
-              url: http://rhdh-agent-sandbox-litellm:4000/v1
-              model: litemaas-qwen
-          # Must match mcp_servers[].name in files/lightspeed-stack.yaml
-          mcpServers:
-            - name: mcp-integration-tools
+  podAnnotations:
+    app.openshift.io/custom-icon: "https://raw.githubusercontent.com/redhat-developer/rhdh/main/packages/app/public/favicon-96x96.png"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  appConfig:
+    app:
+      title: Agent-friendly Developer Hub
+      branding:
+        fullLogoWidth: 180
+        theme:
+          light:
+            primaryColor: "#EE0000"
+            headerColor1: "#151515"
+            headerColor2: "#EE0000"
+            navigationIndicatorColor: "#EE0000"
+          dark:
+            primaryColor: "#FF3333"
+            headerColor1: "#151515"
+            headerColor2: "#FF3333"
+            navigationIndicatorColor: "#FF3333"
+    auth:
+      environment: development
+      providers:
+        guest:
+          userEntityRef: user:default/guest
+          dangerouslyAllowOutsideDevelopment: true
+    permission:
+      enabled: false
+    techdocs:
+      builder: local
+      publisher:
+        type: local
+    catalog:
+      locations:
+        - type: file
+          target: /opt/app-root/src/catalog/all.yaml
+          rules:
+            - allow: [Component, System, API, Resource, Location, Template, User, Group]
+        - type: file
+          target: /opt/app-root/src/scaffolder-registered/entities/*.yaml
+          rules:
+            - allow: [Component, API, Resource, Location, System]
+    backend:
+      auth:
+        externalAccess:
+          - type: legacy
+            options:
+              secret: ${BACKEND_SECRET}
+              subject: legacy-default-config
+          - type: static
+            options:
               token: ${MCP_TOKEN}
-      # IMPORTANT: Helm replaces arrays — keep chart-required env vars AND default volumes.
-      extraEnvVars:
-        - name: BACKEND_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-secrets
-              key: backend-secret
-        - name: MCP_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-secrets
-              key: mcp-token
-        - name: LITELLM_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-secrets
-              key: litellm-master-key
-        - name: POSTGRESQL_ADMIN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-postgresql
-              key: postgres-password
-        - name: NODE_OPTIONS
-          value: "--no-node-snapshot"
-        - name: CLUSTER_ROUTER_BASE
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-cluster
-              key: router-base
-        # Kubernetes / Tekton plugin — public API + dedicated reader SA token
-        - name: K8S_CLUSTER_NAME
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-cluster
-              key: cluster-name
-        - name: K8S_CLUSTER_URL
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-cluster
-              key: api-url
-        - name: K8S_CLUSTER_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: rhdh-agent-sandbox-hub-k8s-reader
-              key: token
-      # RHDH 1.10.3 defaults + AI catalog ConfigMap mount.
-      extraVolumeMounts:
-        - name: dynamic-plugins-root
-          mountPath: /opt/app-root/src/dynamic-plugins-root
-        - name: extensions-catalog
-          mountPath: /extensions
-        - name: temp
-          mountPath: /tmp
-        - name: rhdh-agent-catalog
-          mountPath: /opt/app-root/src/catalog
-          readOnly: true
-        - name: scaffolder-assets
-          mountPath: /opt/app-root/src/scaffolder-assets
-          readOnly: true
-        - name: registered-catalog
-          mountPath: /opt/app-root/src/scaffolder-registered/entities
-          readOnly: true
-      extraVolumes:
-        - name: dynamic-plugins-root
-          ephemeral:
-            volumeClaimTemplate:
-              spec:
-                accessModes:
-                  - ReadWriteOnce
-                resources:
-                  requests:
-                    storage: 5Gi
-        - name: dynamic-plugins
-          configMap:
-            defaultMode: 420
-            name: '{{ printf "%s-dynamic-plugins" .Release.Name }}'
-            optional: true
-        - name: dynamic-plugins-npmrc
-          secret:
-            defaultMode: 420
-            optional: true
-            secretName: '{{ printf "%s-dynamic-plugins-npmrc" .Release.Name }}'
-        - name: dynamic-plugins-registry-auth
-          secret:
-            defaultMode: 416
-            optional: true
-            secretName: '{{ printf "%s-dynamic-plugins-registry-auth" .Release.Name }}'
-        - name: npmcacache
-          emptyDir: {}
-        - name: extensions-catalog
-          emptyDir: {}
-        - name: temp
-          emptyDir: {}
-        - name: rhdh-agent-catalog
-          configMap:
-            name: rhdh-agent-sandbox-catalog
-        - name: scaffolder-assets
-          projected:
-            sources:
-              - configMap:
-                  name: rhdh-agent-sandbox-scaffolder-assets
-                  items:
-                    - key: deploy-agent-README.md
-                      path: skeletons/deploy-agent/README.md
-                    - key: deploy-agent-catalog-info.yaml
-                      path: skeletons/deploy-agent/catalog-info.yaml
-                    - key: deploy-agent-devfile.yaml
-                      path: skeletons/deploy-agent/devfile.yaml
-                    - key: python-manifests.yaml
-                      path: agent-runtimes/python/manifests.yaml
-                    - key: python-catalog-info.yaml
-                      path: agent-runtimes/python/catalog-info.yaml
-                    - key: nodejs-manifests.yaml
-                      path: agent-runtimes/nodejs/manifests.yaml
-                    - key: nodejs-catalog-info.yaml
-                      path: agent-runtimes/nodejs/catalog-info.yaml
-                    - key: quarkus-manifests.yaml
-                      path: agent-runtimes/quarkus/manifests.yaml
-                    - key: quarkus-catalog-info.yaml
-                      path: agent-runtimes/quarkus/catalog-info.yaml
-        - name: registered-catalog
-          configMap:
-            name: rhdh-agent-sandbox-registered-catalog
-    postgresql:
-      primary:
-        persistence:
-          size: 1Gi
-        resources:
-          requests:
-            cpu: 50m
-            memory: 256Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi
+              subject: mcp-clients
+      reading:
+        allow:
+          - host: github.com
+          - host: raw.githubusercontent.com
+          - host: "*.github.io"
+    kubernetes:
+      customResources:
+        - group: tekton.dev
+          apiVersion: v1
+          plural: pipelines
+        - group: tekton.dev
+          apiVersion: v1
+          plural: pipelineruns
+        - group: tekton.dev
+          apiVersion: v1
+          plural: taskruns
+        - group: route.openshift.io
+          apiVersion: v1
+          plural: routes
+        - group: serving.kserve.io
+          apiVersion: v1beta1
+          plural: inferenceservices
+        - group: serving.kserve.io
+          apiVersion: v1alpha1
+          plural: servingruntimes
+      serviceLocatorMethod:
+        type: multiTenant
+      clusterLocatorMethods:
+        - type: config
+          clusters:
+            - url: ${K8S_CLUSTER_URL}
+              name: ${K8S_CLUSTER_NAME}
+              authProvider: serviceAccount
+              skipTLSVerify: true
+              skipMetricsLookup: true
+              serviceAccountToken: ${K8S_CLUSTER_TOKEN}
+    intelligent-assistant:
+      systemPrompt: >-
+        You are the agent-friendly Developer Hub demo assistant on OpenShift Developer Sandbox.
+        Prefer catalog, TechDocs, and namespace-scoped MCP tools. Stay inside the user namespace.
+        When diagnosing cluster state, list/get before mutate and summarize risk.
+      servers:
+        - id: vllm/local-cpu
+          url: http://rhdh-agent-sandbox-litellm:4000/v1
+          model: local-cpu
+        - id: vllm/litemaas-qwen
+          url: http://rhdh-agent-sandbox-litellm:4000/v1
+          model: litemaas-qwen
+      mcpServers:
+        - name: mcp-integration-tools
+          token: ${MCP_TOKEN}
+  extraEnv:
+    - name: MCP_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-secrets
+          key: mcp-token
+    - name: LITELLM_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-secrets
+          key: litellm-master-key
+    - name: NODE_OPTIONS
+      value: "--no-node-snapshot"
+    - name: CLUSTER_ROUTER_BASE
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-cluster
+          key: router-base
+    - name: K8S_CLUSTER_NAME
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-cluster
+          key: cluster-name
+    - name: K8S_CLUSTER_URL
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-cluster
+          key: api-url
+    - name: K8S_CLUSTER_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: rhdh-agent-sandbox-hub-k8s-reader
+          key: token
+  extraVolumeMounts:
+    - name: rhdh-agent-catalog
+      mountPath: /opt/app-root/src/catalog
+      readOnly: true
+    - name: scaffolder-assets
+      mountPath: /opt/app-root/src/scaffolder-assets
+      readOnly: true
+    - name: registered-catalog
+      mountPath: /opt/app-root/src/scaffolder-registered/entities
+      readOnly: true
+  extraVolumes:
+    - name: rhdh-agent-catalog
+      configMap:
+        name: rhdh-agent-sandbox-catalog
+    - name: scaffolder-assets
+      projected:
+        sources:
+          - configMap:
+              name: rhdh-agent-sandbox-scaffolder-assets
+              items:
+                - key: deploy-agent-README.md
+                  path: skeletons/deploy-agent/README.md
+                - key: deploy-agent-catalog-info.yaml
+                  path: skeletons/deploy-agent/catalog-info.yaml
+                - key: deploy-agent-devfile.yaml
+                  path: skeletons/deploy-agent/devfile.yaml
+                - key: python-manifests.yaml
+                  path: agent-runtimes/python/manifests.yaml
+                - key: python-catalog-info.yaml
+                  path: agent-runtimes/python/catalog-info.yaml
+                - key: nodejs-manifests.yaml
+                  path: agent-runtimes/nodejs/manifests.yaml
+                - key: nodejs-catalog-info.yaml
+                  path: agent-runtimes/nodejs/catalog-info.yaml
+                - key: quarkus-manifests.yaml
+                  path: agent-runtimes/quarkus/manifests.yaml
+                - key: quarkus-catalog-info.yaml
+                  path: agent-runtimes/quarkus/catalog-info.yaml
+    - name: registered-catalog
+      configMap:
+        name: rhdh-agent-sandbox-registered-catalog
+  postgresql:
+    primary:
+      persistence:
+        size: 1Gi
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi

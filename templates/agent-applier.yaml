@@ -49,6 +49,9 @@ rules:
   - apiGroups: ["route.openshift.io"]
     resources: ["routes"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["serving.kserve.io"]
+    resources: ["inferenceservices", "servingruntimes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -235,6 +238,9 @@ data:
 
     def catalog_ai_services():
         return catalog_entities("rhdh-agent-sandbox.io/managed-ai-service")
+
+    def catalog_models():
+        return catalog_entities("rhdh-agent-sandbox.io/managed-model")
 
     REGISTERED_CM = os.environ.get("REGISTERED_CATALOG_CM", f"{FULLNAME}-registered-catalog")
     REGISTERED_MOUNT = os.environ.get(
@@ -1188,6 +1194,158 @@ data:
         ensure_route(name)
         return action
 
+    def ensure_model(entity):
+        """Create ServingRuntime + InferenceService for managed CPU models (not chart local-cpu)."""
+        meta = entity.get("metadata", {}) or {}
+        ann = meta.get("annotations") or {}
+        name = meta.get("name")
+        if not name:
+            return "skip"
+        if name == "local-cpu":
+            log("INFO", "model_skip_reserved", name=name)
+            return "skip"
+        model_url = ann.get(
+            "rhdh-agent-sandbox.io/model-url",
+            "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        )
+        runtime_name = f"{name}-runtime"
+        desired_hash = hashlib.sha256(f"model|{name}|{model_url}|v1".encode()).hexdigest()[:16]
+        display = f"{name} CPU (llama.cpp)"
+        runtime = {
+            "apiVersion": "serving.kserve.io/v1alpha1",
+            "kind": "ServingRuntime",
+            "metadata": {
+                "name": runtime_name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "cpu-model",
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "opendatahub.io/dashboard": "true",
+                    "rhdh-agent-sandbox.io/managed-model": "true",
+                },
+                "annotations": {
+                    "opendatahub.io/dashboard": "true",
+                    "openshift.io/display-name": display,
+                    "opendatahub.io/template-display-name": display,
+                    "opendatahub.io/apiProtocol": "REST",
+                    "opendatahub.io/runtime-version": "llama.cpp",
+                    "opendatahub.io/recommended-accelerators": "[]",
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
+                },
+            },
+            "spec": {
+                "multiModel": False,
+                "protocolVersions": ["v1"],
+                "supportedModelFormats": [{"name": "gguf", "version": "1", "autoSelect": True}],
+                "annotations": {
+                    "prometheus.io/path": "/metrics",
+                    "prometheus.io/port": "8080",
+                },
+                "containers": [{
+                    "name": "kserve-container",
+                    "image": "ghcr.io/ggml-org/llama.cpp:server",
+                    "command": ["/bin/sh", "-c"],
+                    "args": [
+                        "set -eu\n"
+                        "mkdir -p /models\n"
+                        "if [ ! -f /models/model.gguf ]; then curl -fsSL -o /models/model.gguf \"$MODEL_URL\" || wget -O /models/model.gguf \"$MODEL_URL\"; fi\n"
+                        "exec /app/llama-server --host 0.0.0.0 --port 8080 -m /models/model.gguf -c 2048 -n 256 --jinja --metrics\n"
+                    ],
+                    "env": [{"name": "MODEL_URL", "value": model_url}],
+                    "ports": [{"containerPort": 8080, "protocol": "TCP", "name": "http1"}],
+                    "resources": {
+                        "requests": {"cpu": "1", "memory": "2Gi"},
+                        "limits": {"cpu": "1", "memory": "3Gi"},
+                    },
+                    "volumeMounts": [{"name": "model-volume", "mountPath": "/models"}],
+                }],
+                "volumes": [{"name": "model-volume", "emptyDir": {"sizeLimit": "1Gi"}}],
+            },
+        }
+        isvc = {
+            "apiVersion": "serving.kserve.io/v1beta1",
+            "kind": "InferenceService",
+            "metadata": {
+                "name": name,
+                "namespace": NS,
+                "labels": {
+                    "app.kubernetes.io/name": name,
+                    "app.kubernetes.io/component": "cpu-model",
+                    "app.kubernetes.io/part-of": FULLNAME,
+                    "opendatahub.io/dashboard": "true",
+                    "networking.kserve.io/visibility": "exposed",
+                    "rhdh-agent-sandbox.io/managed-model": "true",
+                },
+                "annotations": {
+                    "serving.kserve.io/deploymentMode": "RawDeployment",
+                    "opendatahub.io/modelmesh-enabled": "false",
+                    "serving.kserve.io/enable-route": "true",
+                    "serving.kserve.io/enable-prometheus-scraping": "true",
+                    "openshift.io/display-name": f"{name} (Golden Path CPU)",
+                    "opendatahub.io/hardware-profile-name": "default-profile",
+                    "opendatahub.io/hardware-profile-namespace": "redhat-ods-applications",
+                    "opendatahub.io/model-type": "generative",
+                    "security.opendatahub.io/enable-auth": "false",
+                    "rhdh-agent-sandbox.io/applier-hash": desired_hash,
+                },
+            },
+            "spec": {
+                "predictor": {
+                    "minReplicas": 1,
+                    "maxReplicas": 1,
+                    "annotations": {
+                        "prometheus.io/path": "/metrics",
+                        "prometheus.io/port": "8080",
+                    },
+                    "model": {
+                        "modelFormat": {"name": "gguf", "version": "1"},
+                        "runtime": runtime_name,
+                        "resources": {
+                            "requests": {"cpu": "1", "memory": "2Gi"},
+                            "limits": {"cpu": "1", "memory": "3Gi"},
+                        },
+                    }
+                }
+            },
+        }
+        action = "unchanged"
+        scode, sbody = k8s("GET", f"/apis/serving.kserve.io/v1alpha1/namespaces/{NS}/servingruntimes/{runtime_name}")
+        if scode == 404:
+            c, body = k8s("POST", f"/apis/serving.kserve.io/v1alpha1/namespaces/{NS}/servingruntimes", runtime)
+            if not (200 <= c < 300):
+                log("ERROR", "servingruntime_create_failed", name=runtime_name, code=c, body=str(body)[:300])
+                return "error"
+            action = "created"
+        elif 200 <= scode < 300:
+            existing_hash = ((sbody.get("metadata") or {}).get("annotations") or {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if existing_hash != desired_hash:
+                runtime["metadata"]["resourceVersion"] = (sbody.get("metadata") or {}).get("resourceVersion")
+                c, body = k8s("PUT", f"/apis/serving.kserve.io/v1alpha1/namespaces/{NS}/servingruntimes/{runtime_name}", runtime)
+                if not (200 <= c < 300):
+                    return "error"
+                action = "updated"
+        else:
+            return "error"
+        icode, ibody = k8s("GET", f"/apis/serving.kserve.io/v1beta1/namespaces/{NS}/inferenceservices/{name}")
+        if icode == 404:
+            c, body = k8s("POST", f"/apis/serving.kserve.io/v1beta1/namespaces/{NS}/inferenceservices", isvc)
+            if not (200 <= c < 300):
+                log("ERROR", "inferenceservice_create_failed", name=name, code=c, body=str(body)[:300])
+                return "error"
+            action = "created"
+        elif 200 <= icode < 300:
+            existing_hash = ((ibody.get("metadata") or {}).get("annotations") or {}).get("rhdh-agent-sandbox.io/applier-hash")
+            if existing_hash != desired_hash:
+                isvc["metadata"]["resourceVersion"] = (ibody.get("metadata") or {}).get("resourceVersion")
+                c, body = k8s("PUT", f"/apis/serving.kserve.io/v1beta1/namespaces/{NS}/inferenceservices/{name}", isvc)
+                if not (200 <= c < 300):
+                    return "error"
+                action = "updated" if action == "unchanged" else action
+        else:
+            return "error"
+        return action
+
     def ensure_devworkspace(entity):
         meta = entity.get("metadata", {})
         ann = meta.get("annotations") or {}
@@ -1428,13 +1586,15 @@ data:
         agents, err = catalog_agents()
         dws, err_dw = catalog_devworkspaces()
         ais, err_ai = catalog_ai_services()
+        models, err_model = catalog_models()
         STATE["cycles"] += 1
         STATE["last_poll_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        STATE["last_error"] = err or err_dw or err_ai
-        STATE["last_poll_ok"] = err is None and err_dw is None and err_ai is None
+        STATE["last_error"] = err or err_dw or err_ai or err_model
+        STATE["last_poll_ok"] = err is None and err_dw is None and err_ai is None and err_model is None
         STATE["agents_seen"] = len(agents)
         STATE["devworkspaces_seen"] = len(dws)
         STATE["ai_services_seen"] = len(ais)
+        STATE["models_seen"] = len(models)
 
         created = updated = unchanged = errors = skipped = building = 0
         for ent in agents:
@@ -1493,6 +1653,25 @@ data:
                 name = (ent.get("metadata") or {}).get("name", "?")
                 log("ERROR", "ensure_ai_service_error", name=name, error=repr(exc))
 
+        model_created = model_updated = model_unchanged = model_errors = model_skipped = 0
+        for ent in models:
+            try:
+                result = ensure_model(ent)
+                if result == "created":
+                    model_created += 1
+                elif result == "updated":
+                    model_updated += 1
+                elif result == "unchanged":
+                    model_unchanged += 1
+                elif result == "error":
+                    model_errors += 1
+                else:
+                    model_skipped += 1
+            except Exception as exc:
+                model_errors += 1
+                name = (ent.get("metadata") or {}).get("name", "?")
+                log("ERROR", "ensure_model_error", name=name, error=repr(exc))
+
         ms = int((time.monotonic() - cycle_started) * 1000)
         log(
             "INFO",
@@ -1517,8 +1696,14 @@ data:
             ai_updated=ai_updated,
             ai_unchanged=ai_unchanged,
             ai_errors=ai_errors,
+            models=len(models),
+            model_created=model_created,
+            model_updated=model_updated,
+            model_unchanged=model_unchanged,
+            model_errors=model_errors,
+            model_skipped=model_skipped,
             duration_ms=ms,
-            catalog_ok=(err is None and err_dw is None and err_ai is None),
+            catalog_ok=(err is None and err_dw is None and err_ai is None and err_model is None),
         )
         time.sleep(POLL_SECONDS)
 ---
@@ -1591,7 +1776,7 @@ spec:
             - name: CHE_CODE_DWT
               value: {{ printf "%s-che-code" (include "rhdh-agent-sandbox.fullname" .) | quote }}
             - name: CLUSTER_ROUTER_BASE
-              value: {{ .Values.rhdh.global.clusterRouterBase | quote }}
+              value: {{ include "rhdh-agent-sandbox.clusterRouterBase" . | quote }}
             - name: DEVSPACES_START_ON_CREATE
               value: {{ .Values.agents.devspaces.startOnCreate | default false | quote }}
             - name: DEVSPACES_MEMORY_REQUEST

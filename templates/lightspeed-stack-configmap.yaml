@@ -1,12 +1,84 @@
-{{- if and .Values.rhdh.enabled .Values.rhdh.global.lightspeed.enabled }}
+{{- if and .Values.rhdh.enabled .Values.rhdh.intelligentAssistant.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "rhdh-agent-sandbox.fullname" . }}-lightspeed-stack
+  name: {{ $fullname }}-lightspeed-stack
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
 data:
   lightspeed-stack.yaml: |
-{{ .Files.Get "files/lightspeed-stack.yaml" | indent 4 }}
+    name: lightspeed-core-stack
+    service:
+      host: ${env.SERVICE_HOST:=127.0.0.1}
+      port: 8080
+      auth_enabled: false
+      workers: 1
+      color_log: true
+      access_log: true
+    llama_stack:
+      use_as_library_client: true
+      config:
+        baseline: byo-llm
+        native_override:
+          vector_stores:
+            annotation_prompt_params:
+              enable_annotations: true
+              annotation_instruction_template: >
+                When appropriate, cite sources at the end of sentences using doc_url and doc_title format.
+                Citing sources is not always required because citations are handled externally.
+                Never include any citation that is in the form '<| file-id |>'.
+    inference:
+      providers:
+        - type: sentence_transformers
+        - type: vllm
+          id: vllm
+          api_key_env: VLLM_API_KEY
+          extra:
+            base_url: ${env.VLLM_URL:=}
+            max_tokens: ${env.VLLM_MAX_TOKENS:=2048}
+            network:
+              tls:
+                verify: ${env.VLLM_TLS_VERIFY:=false}
+    vector_store:
+      default_provider: notebooks
+      providers:
+        - id: notebooks
+          type: faiss
+          embedding_model: nomic-ai/nomic-embed-text-v1.5
+          embedding_dimension: 768
+          config:
+            path: /tmp/vector_db/notebooks/faiss_store.db
+    user_data_collection:
+      feedback_enabled: true
+      feedback_storage: '/tmp/data/feedback'
+    authentication:
+      module: 'noop'
+    conversation_cache:
+      type: 'sqlite'
+      sqlite:
+        db_path: '/tmp/cache.db'
+    customization:
+      profile_path: '/app-root/rhdh-profile.py'
+    shields: []
+    skills:
+      paths:
+        - /app-root/skills
+    mcp_servers:
+      - name: mcp-integration-tools
+        provider_id: 'model-context-protocol'
+        url: 'http://localhost:7007/api/mcp-actions/v1'
+        authorization_headers:
+          Authorization: 'client'
+{{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
+      - name: openshift-mcp
+        provider_id: 'model-context-protocol'
+        url: 'http://{{ $fullname }}-mcp:{{ .Values.mcp.quarkus.service.port }}/mcp'
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+      - name: k8s-mcp
+        provider_id: 'model-context-protocol'
+        url: 'http://{{ $fullname }}-k8s-mcp:{{ .Values.mcp.kubernetes.service.port }}/mcp'
+{{- end }}
 {{- end }}

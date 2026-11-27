@@ -42,7 +42,7 @@ helm dependency update
 helm upgrade --install rhdh-agent . \
   --namespace "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 
@@ -55,7 +55,7 @@ helm repo update
 helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox \
   --namespace "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 
@@ -67,7 +67,7 @@ Developer Sandbox → **Helm** → install **rhdh-agent-sandbox**. Fill:
 2. **OpenShift token (shared models)** — `oc whoami -t` (password field → Secret `rhdh-agent-sandbox-secrets`)
 3. **LiteMaaS API key (tool calling)** — LiteMaaS bearer (password field → Secret `litemaas-credentials`)
 
-Leave the Kubernetes API URL empty. Leave **Git revision** empty to pin `v` + chart version (e.g. `v0.1.11`) so Golden Path DevWorkspaces clone this release (Continue + Red Hat Security MCP helper come from the chart ConfigMap; no extra form fields). Backend, LiteLLM master, and MCP tokens are auto-generated.
+Leave the Kubernetes API URL empty. Leave **Git revision** empty to pin `v` + chart version (e.g. `v0.2.0`) so Golden Path DevWorkspaces clone this release (Continue + Red Hat Security MCP helper come from the chart ConfigMap; no extra form fields). Backend, LiteLLM master, and MCP tokens are auto-generated.
 
 ### From Artifact Hub
 
@@ -80,9 +80,9 @@ Search for **rhdh-agent-sandbox** on [artifacthub.io](https://artifacthub.io/pac
 | Parameter | Description |
 |---|---|
 | `secrets.modelApiKey` | OpenShift token for sandbox-shared-models oauth-proxy. Run `oc whoami -t`. Refreshes every ~24h. |
-| `rhdh.global.clusterRouterBase` | Cluster apps domain (e.g. `apps.rm2.thpm.p1.openshiftapps.com`) |
+| `rhdh.openshift.clusterRouterBase` | Cluster apps domain (e.g. `apps.rm2.thpm.p1.openshiftapps.com`) |
 | `secrets.litemaasApiKey` | LiteMaaS bearer for Hub tool calling (`litemaas-qwen`). Stored in Secret `litemaas-credentials`. Recommended for the video / MCP Chat demos. |
-| `agents.devspaces.gitRevision` | Git pin for Golden Path workspaces. Default `v` + chart version (e.g. `v0.1.11`). |
+| `agents.devspaces.gitRevision` | Git pin for Golden Path workspaces. Default `v` + chart version (e.g. `v0.2.0`). |
 
 ### Key optional parameters
 
@@ -158,7 +158,7 @@ Prefer **upgrade in place** (preserves secrets and Postgres data):
 ```bash
 helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 
@@ -171,7 +171,7 @@ oc delete pvc data-rhdh-agent-sandbox-postgresql-0 --ignore-not-found
 helm dependency update
 helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
   --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 

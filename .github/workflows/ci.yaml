@@ -27,7 +27,7 @@ jobs:
           helm lint .
           helm template rhdh-agent . \
             --set secrets.modelApiKey=dummy \
-            --set rhdh.global.clusterRouterBase=apps.example.openshiftapps.com \
+            --set rhdh.openshift.clusterRouterBase=apps.example.openshiftapps.com \
             > /tmp/render.yaml
           test -s /tmp/render.yaml
           python3 scripts/test-quote-unquoted-yaml-scalars.py

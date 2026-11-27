@@ -50,6 +50,8 @@
   children:
     - title: Production considerations
       url: /production-considerations/
+    - title: Upgrade to 0.2.0
+      url: /upgrade-0.2.0/
     - title: Troubleshooting
       url: /troubleshooting/
     - title: Community packs / Quay

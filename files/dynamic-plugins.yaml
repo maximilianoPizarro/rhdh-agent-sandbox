@@ -1,46 +1,23 @@
-# Reference list of dynamic plugins enabled for the sandbox demo.
-# Applied via values.yaml -> rhdh.global.dynamic.plugins
+# Reference list of dynamic plugins for RHDH 2.1 / BS 1.54.9.
+# Applied via values.yaml -> rhdh.dynamicPlugins.plugins
 includes:
   - dynamic-plugins.default.yaml
 plugins:
-  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-    disabled: false
-  - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
-    disabled: false
-  - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
-    disabled: false
-  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
-    disabled: false
-  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
-    disabled: false
-  # Requires catalog.providers.github organization/app — leave disabled unless configured.
-  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic
-    disabled: true
-  - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
-    disabled: true
-  - package: ./dynamic-plugins/dist/backstage-community-plugin-scaffolder-backend-module-kubernetes-dynamic
-    disabled: false
-  # --- AI / MCP community plugins (ghcr.io overlays for RHDH 1.10 / BS 1.49.4) ---
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-mcp-actions-backend:bs_1.49.4__0.1.11!backstage-plugin-mcp-actions-backend
-    disabled: false
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras:bs_1.49.4__0.2.2!red-hat-developer-hub-backstage-plugin-software-catalog-mcp-extras
-    disabled: false
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras:bs_1.49.4__0.2.3!red-hat-developer-hub-backstage-plugin-techdocs-mcp-extras
-    disabled: false
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat:bs_1.49.4__0.6.0!backstage-community-plugin-mcp-chat
-    disabled: false
-    pluginConfig:
-      dynamicPlugins:
-        frontend:
-          backstage-community.plugin-mcp-chat:
-            dynamicRoutes:
-              - path: /mcp-chat
-                importName: McpChatPage
-                menuItem:
-                  icon: MCPChatIcon
-                  text: MCP Chat
-  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-mcp-chat-backend:bs_1.49.4__0.8.0!backstage-community-plugin-mcp-chat-backend
-    disabled: false
-  # Custom scaffolder module: catalog:register-entity + catalog:apply-pending-configmap
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-auth-backend-module-guest-provider:bs_1.54.9__0.2.22!backstage-plugin-auth-backend-module-guest-provider
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes-backend:bs_1.54.9__0.21.10!backstage-plugin-kubernetes-backend
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-plugin-kubernetes:bs_1.54.9__0.12.22!backstage-plugin-kubernetes
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-topology:bs_1.54.9__3.0.7!backstage-community-plugin-topology
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.54.9__4.0.5!backstage-community-plugin-tekton
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard:bs_1.54.9__4.5.2!red-hat-developer-hub-backstage-plugin-scorecard
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend:bs_1.54.9__4.5.2!red-hat-developer-hub-backstage-plugin-scorecard-backend
+    enabled: true
+  - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scorecard-backend-module-filecheck:bs_1.54.9__1.1.7!red-hat-developer-hub-backstage-plugin-scorecard-backend-module-filecheck
+    enabled: true
   - package: oci://quay.io/maximilianopizarro/rhdh-agent-sandbox:scaffolder-backend-module-catalog-register-0.1.11!plugin
-    disabled: false
+    enabled: true

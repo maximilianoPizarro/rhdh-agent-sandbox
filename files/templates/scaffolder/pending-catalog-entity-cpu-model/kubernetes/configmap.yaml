@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pending-${{ values.name }}
+  labels:
+    rhdh-agent-sandbox.io/pending-catalog-entity: "true"
+data:
+  entity.yaml: |
+    apiVersion: backstage.io/v1alpha1
+    kind: Component
+    metadata:
+      name: ${{ values.name }}
+      description: ${{ values.description | dump }}
+      annotations:
+        rhdh-agent-sandbox.io/managed-model: "true"
+        rhdh-agent-sandbox.io/model-url: ${{ values.modelUrl | dump }}
+        backstage.io/kubernetes-id: ${{ values.name }}
+      tags:
+        - model
+        - cpu
+        - kserve
+        - golden-path
+    spec:
+      type: model
+      lifecycle: experimental
+      owner: ${{ values.owner }}
+      system: rhdh-agent-sandbox

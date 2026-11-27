@@ -1,3 +1,4 @@
+<!-- Chart 0.2.0 / RHDH 2.1: fresh install required (PG18). Default model is local-cpu InferenceService. -->
 ---
 title: Troubleshooting
 ---
@@ -15,6 +16,22 @@ oc rollout restart deploy -l app.kubernetes.io/component=litellm
 ```
 
 Confirm the LiteLLM pod picked up the new key (`oc exec … -- env | grep MODEL_API_KEY`).
+
+## Intelligent Assistant shows “not configured”
+
+RHDH 2.1 Hub pods use a **default-deny NetworkPolicy**. Without chart egress allows, `lightspeed-core` cannot reach LiteLLM (`:4000`) or MCP and the UI stays unconfigured even when `VLLM_URL` is set.
+
+```bash
+oc get networkpolicy -n "$NAMESPACE" | grep hub-allow-sandbox-egress
+oc exec -n "$NAMESPACE" deploy/rhdh-agent-sandbox-developer-hub -c lightspeed-core -- \
+  curl -sS -m 5 -H "Authorization: Bearer $VLLM_API_KEY" "$VLLM_URL/models"
+# Expect local-cpu / litemaas-qwen. Then LCORE:
+oc exec -n "$NAMESPACE" deploy/rhdh-agent-sandbox-developer-hub -c lightspeed-core -- \
+  curl -sS http://127.0.0.1:8080/v1/models
+# Expect identifier "vllm/local-cpu" with api_model_type "llm".
+```
+
+Chart template: `templates/hub-egress-networkpolicy.yaml`.
 
 ## Lightspeed chat empty / “Error while processing query”
 
@@ -46,7 +63,7 @@ oc set resources deploy/rhdh-agent-sandbox-litellm \
 
 ```bash
 helm upgrade rhdh-agent . \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --reuse-values
 ```
 
@@ -97,7 +114,7 @@ Same for `extraVolumes` / `extraVolumeMounts`: keep RHDH dynamic-plugins default
 ```bash
 helm upgrade rhdh-agent . \
   --set secrets.modelApiKey="$(oc whoami -t)" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com
 oc rollout status deploy/rhdh-agent-developer-hub
 ```
 
@@ -279,7 +296,7 @@ helm repo update
 helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 

@@ -1,0 +1,71 @@
+{{- if and .Values.models .Values.models.cpu .Values.models.cpu.enabled }}
+{{- $name := .Values.models.cpu.name | default "local-cpu" }}
+{{- $display := printf "%s CPU (llama.cpp)" $name }}
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: {{ include "rhdh-agent-sandbox.fullname" . }}-{{ $name }}-runtime
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cpu-model
+    opendatahub.io/dashboard: "true"
+  annotations:
+    opendatahub.io/dashboard: "true"
+    openshift.io/display-name: {{ $display | quote }}
+    opendatahub.io/template-display-name: {{ $display | quote }}
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/runtime-version: "llama.cpp"
+    opendatahub.io/recommended-accelerators: '[]'
+spec:
+  multiModel: false
+  protocolVersions:
+    - v1
+  supportedModelFormats:
+    - name: gguf
+      version: "1"
+      autoSelect: true
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8080"
+  containers:
+    - name: kserve-container
+      image: {{ .Values.models.cpu.image | quote }}
+      imagePullPolicy: {{ .Values.models.cpu.imagePullPolicy | default "IfNotPresent" }}
+      command:
+        - /bin/sh
+        - -c
+      args:
+        - |
+          set -eu
+          MODEL_URL="${MODEL_URL}"
+          mkdir -p /models
+          if [ ! -f /models/model.gguf ]; then
+            echo "Downloading ${MODEL_URL}"
+            if command -v curl >/dev/null 2>&1; then
+              curl -fsSL -o /models/model.gguf "${MODEL_URL}"
+            else
+              wget -O /models/model.gguf "${MODEL_URL}"
+            fi
+          fi
+          exec /app/llama-server --host 0.0.0.0 --port 8080 -m /models/model.gguf \
+            -c {{ .Values.models.cpu.contextSize | default 2048 }} \
+            -n {{ .Values.models.cpu.maxTokens | default 256 }} \
+            --jinja --metrics
+      env:
+        - name: MODEL_URL
+          value: {{ .Values.models.cpu.modelUrl | quote }}
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http1
+      resources:
+        {{- toYaml .Values.models.cpu.resources | nindent 8 }}
+      volumeMounts:
+        - name: model-volume
+          mountPath: /models
+  volumes:
+    - name: model-volume
+      emptyDir:
+        sizeLimit: {{ .Values.models.cpu.emptyDirSizeLimit | default "1Gi" | quote }}
+{{- end }}

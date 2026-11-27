@@ -130,6 +130,12 @@ spec:
               kubectl delete pipelinerun,taskrun -n "${NAMESPACE}" \
                 -l "app.kubernetes.io/part-of=${FULLNAME}" --ignore-not-found --wait=false || true
 
+              echo "pre-delete: chart CPU model InferenceService / ServingRuntime"
+              kubectl delete inferenceservice,servingruntime -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/component=cpu-model" --ignore-not-found --wait=false || true
+              kubectl delete inferenceservice,servingruntime -n "${NAMESPACE}" \
+                -l "app.kubernetes.io/instance=${RELEASE_NAME}" --ignore-not-found --wait=false || true
+
               echo "pre-delete: chart PVCs (postgres + dynamic-plugins)"
               kubectl delete pvc -n "${NAMESPACE}" \
                 -l "app.kubernetes.io/instance=${RELEASE_NAME}" --ignore-not-found --wait=false || true

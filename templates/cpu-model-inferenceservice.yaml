@@ -1,0 +1,41 @@
+{{- if and .Values.models .Values.models.cpu .Values.models.cpu.enabled }}
+{{- $name := .Values.models.cpu.name | default "local-cpu" }}
+{{- $runtime := printf "%s-%s-runtime" (include "rhdh-agent-sandbox.fullname" .) $name }}
+{{- $hwpName := .Values.models.cpu.hardwareProfile.name | default "default-profile" }}
+{{- $hwpNs := .Values.models.cpu.hardwareProfile.namespace | default "redhat-ods-applications" }}
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cpu-model
+    opendatahub.io/dashboard: "true"
+    networking.kserve.io/visibility: exposed
+  annotations:
+    serving.kserve.io/deploymentMode: RawDeployment
+    opendatahub.io/modelmesh-enabled: "false"
+    serving.kserve.io/enable-route: {{ .Values.models.cpu.enableRoute | default true | quote }}
+    serving.kserve.io/enable-prometheus-scraping: "true"
+    openshift.io/display-name: {{ printf "%s (chart CPU model)" $name | quote }}
+    opendatahub.io/hardware-profile-name: {{ $hwpName | quote }}
+    opendatahub.io/hardware-profile-namespace: {{ $hwpNs | quote }}
+    opendatahub.io/model-type: generative
+    security.opendatahub.io/enable-auth: "false"
+spec:
+  predictor:
+    minReplicas: {{ .Values.models.cpu.minReplicas | default 1 }}
+    maxReplicas: {{ .Values.models.cpu.maxReplicas | default 1 }}
+    annotations:
+      prometheus.io/path: /metrics
+      prometheus.io/port: "8080"
+    model:
+      modelFormat:
+        name: gguf
+        version: "1"
+      runtime: {{ $runtime }}
+      # No storageUri — runtime downloads GGUF into emptyDir (avoids ~20Gi storage-initializer quota hit).
+      resources:
+        {{- toYaml .Values.models.cpu.resources | nindent 8 }}
+{{- end }}

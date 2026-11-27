@@ -4,6 +4,9 @@ title: Lightspeed and models
 
 # Lightspeed and models
 
+> **0.2.0:** Default model is in-namespace InferenceService `local-cpu` (llama.cpp). Shared `sandbox-shared-models` granite/qwen are no longer assumed. Intelligent Assistant replaces Lightspeed at `/intelligent-assistant`.
+
+
 ## Model aliases
 
 LiteLLM exposes OpenAI-compatible endpoints:

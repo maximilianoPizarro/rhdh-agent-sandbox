@@ -1,6 +1,6 @@
 {{- if and .Values.agents.enabled .Values.agents.applier.enabled }}
 {{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
-{{- $router := .Values.rhdh.global.clusterRouterBase | default "apps.example.com" }}
+{{- $router := include "rhdh-agent-sandbox.clusterRouterBase" . }}
 {{- $che := index (.Values.agents.devspaces | default dict) "cheCode" | default dict }}
 {{- $injector := $che.injectorImage | default "registry.redhat.io/devspaces/code-rhel9@sha256:0969d1f90608227c0aa6ec3a85b31bde966a5d73db1ef8af620ebc39ef1da82b" }}
 {{- $runtime := $che.runtimeImage | default "registry.redhat.io/devspaces/udi-rhel9@sha256:2708a8082c9c0aa569e31c79695483311cae3533e42b950fd02384b0def75415" }}

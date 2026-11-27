@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: local-cpu
+  description: Chart-managed CPU InferenceService (llama.cpp) used as Intelligent Assistant default via LiteLLM.
+  annotations:
+    rhdh-agent-sandbox.io/chart-model: "true"
+    backstage.io/kubernetes-id: local-cpu
+  tags:
+    - model
+    - cpu
+    - kserve
+    - intelligent-assistant
+spec:
+  type: model
+  lifecycle: experimental
+  owner: group:default/developers
+  system: rhdh-agent-sandbox

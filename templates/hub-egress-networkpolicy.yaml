@@ -1,0 +1,45 @@
+{{- /*
+RHDH 2.1 ships a default-deny NetworkPolicy on the Hub pod (DNS/HTTPS/Postgres only).
+Without same-namespace egress allows, lightspeed-core cannot reach LiteLLM/MCP and
+Intelligent Assistant stays "not configured". Policies are additive.
+*/ -}}
+{{- if .Values.rhdh.enabled }}
+{{- $fullname := include "rhdh-agent-sandbox.fullname" . }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullname }}-hub-allow-sandbox-egress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhdh-agent-sandbox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: networkpolicy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backstage
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/name: {{ .Values.rhdh.nameOverride | default "developer-hub" | quote }}
+  policyTypes:
+    - Egress
+  egress:
+    # Same-namespace chart services: LiteLLM, MCP, InferenceService predictors.
+    - to:
+        - podSelector: {}
+      ports:
+{{- if .Values.litellm.enabled }}
+        - port: {{ .Values.litellm.service.port | default 4000 }}
+          protocol: TCP
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
+        - port: {{ .Values.mcp.quarkus.service.port | default 8080 }}
+          protocol: TCP
+{{- end }}
+{{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
+        - port: {{ .Values.mcp.kubernetes.service.port | default 8080 }}
+          protocol: TCP
+{{- end }}
+{{- if and .Values.models .Values.models.cpu .Values.models.cpu.enabled }}
+        - port: {{ .Values.models.cpu.servicePort | default 80 }}
+          protocol: TCP
+{{- end }}
+{{- end }}

@@ -1,41 +1,41 @@
 ============================================================
- rhdh-agent-sandbox installed in namespace {{ .Release.Namespace }}
+ rhdh-agent-sandbox {{ .Chart.Version }} in namespace {{ .Release.Namespace }}
 ============================================================
 
 Components:
 {{- if .Values.rhdh.enabled }}
-  - Red Hat Developer Hub (subchart) — Guest login enabled for demo
+  - Red Hat Developer Hub 2.1 — Guest login; Intelligent Assistant at /intelligent-assistant
 {{- end }}
 {{- if .Values.litellm.enabled }}
   - LiteLLM  -> Service {{ include "rhdh-agent-sandbox.fullname" . }}-litellm:{{ .Values.litellm.service.port }}
 {{- end }}
+{{- if and .Values.models .Values.models.cpu .Values.models.cpu.enabled }}
+  - CPU model InferenceService "{{ .Values.models.cpu.name }}" (llama.cpp) -> LiteLLM alias local-cpu
+{{- end }}
 {{- if and .Values.mcp.enabled .Values.mcp.quarkus.enabled }}
-  - OpenShift MCP (Quarkus) -> {{ include "rhdh-agent-sandbox.fullname" . }}-mcp:{{ .Values.mcp.quarkus.service.port }}
+  - OpenShift MCP -> {{ include "rhdh-agent-sandbox.fullname" . }}-mcp:{{ .Values.mcp.quarkus.service.port }}
 {{- end }}
 {{- if and .Values.mcp.enabled .Values.mcp.kubernetes.enabled }}
   - Kubernetes MCP -> {{ include "rhdh-agent-sandbox.fullname" . }}-k8s-mcp:{{ .Values.mcp.kubernetes.service.port }}
+{{- else }}
+  - Kubernetes MCP disabled (mcp.kubernetes.enabled=false)
 {{- end }}
 
 Next steps:
 
-  1. Wait for Hub pod Ready (2/2) — first install can take 5–10 minutes:
+  1. Wait for Hub Ready (first install 5–10 min; CPU model may take longer to download GGUF):
        kubectl wait --for=condition=available deploy/{{ .Release.Name }}-developer-hub -n {{ .Release.Namespace }} --timeout=600s
+       oc wait --for=condition=Ready inferenceservice/{{ .Values.models.cpu.name | default "local-cpu" }} -n {{ .Release.Namespace }} --timeout=600s || true
 
-  2. Open Developer Hub and sign in as Guest:
-       https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.{{ .Values.rhdh.global.clusterRouterBase }}
+  2. Open Developer Hub (Guest):
+       https://{{ .Release.Name }}-developer-hub-{{ .Release.Namespace }}.{{ include "rhdh-agent-sandbox.clusterRouterBase" . }}
+       Use Intelligent Assistant (not /lightspeed). Default model: local-cpu.
 
-  3. If Lightspeed or LiteLLM chat returns 401 to shared models (~24h token TTL), refresh:
-       oc patch secret/{{ .Values.secrets.name }} -n {{ .Release.Namespace }} --type=merge \
-         -p "{\"stringData\":{\"model-api-key\":\"$(oc whoami -t)\"}}"
-       oc rollout restart deploy/{{ include "rhdh-agent-sandbox.fullname" . }}-litellm -n {{ .Release.Namespace }}
+  3. Optional LiteMaaS tool-calling: set Secret litemaas-credentials key api-key, then chat with litemaas-qwen.
 
-  4. MCP Chat tool calling uses LiteMaaS Qwen. If Secret litemaas-credentials is empty, chat works but tools may not fire — paste your LiteMaaS key on Helm upgrade or create the Secret manually.
+  4. If k8s-mcp stays ImagePullBackOff / CrashLoop, disable it:
+       helm upgrade ... --set mcp.kubernetes.enabled=false
 
-  5. DevSpaces Golden Path workspaces start **stopped** by default (quota). Start from Dev Spaces after Create.
-
-  6. AI catalog is mounted from ConfigMap {{ .Values.catalog.configMapName }}
-     at /opt/app-root/src/catalog (file location).
-
-Reinstall: helm uninstall {{ .Release.Name }} runs a pre-delete hook that cleans Golden Path leftovers and chart PVCs (keeps litemaas-credentials). Then install again from the Pages Helm repo.
+  5. 0.2.0 needs a fresh install (PG18). Uninstall deletes chart PVCs via pre-delete hook; keep litemaas-credentials.
 
 Docs: https://maximilianopizarro.github.io/rhdh-agent-sandbox

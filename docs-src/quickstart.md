@@ -1,3 +1,4 @@
+<!-- Chart 0.2.0 / RHDH 2.1: fresh install required (PG18). Default model is local-cpu InferenceService. -->
 ---
 layout: default
 title: Quickstart
@@ -22,7 +23,7 @@ export MODEL_API_KEY=$(oc whoami -t)
 helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 
@@ -39,7 +40,7 @@ export MODEL_API_KEY=$(oc whoami -t)
 helm dependency update
 helm upgrade --install rhdh-agent . -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 
@@ -79,7 +80,7 @@ export MODEL_API_KEY=$(oc whoami -t)
 helm upgrade --install rhdh-agent rhdh-agent/rhdh-agent-sandbox --version 0.1.11 \
   -n "$(oc project -q)" \
   --set secrets.modelApiKey="$MODEL_API_KEY" \
-  --set rhdh.global.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
+  --set rhdh.openshift.clusterRouterBase=apps.<your-sandbox>.openshiftapps.com \
   --timeout 20m --wait=false
 ```
 

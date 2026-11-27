@@ -1,0 +1,80 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: deploy-cpu-model
+  title: Deploy CPU model (OpenShift AI)
+  description: >
+    Register a Component and have the agent-applier create a namespaced
+    ServingRuntime + InferenceService (llama.cpp, RawDeployment, no PVC)
+    visible in OpenShift AI. Does not replace the chart default local-cpu model.
+  tags:
+    - golden-path
+    - ai
+    - kserve
+    - openshift-ai
+    - recommended
+spec:
+  owner: group:default/developers
+  type: model
+  parameters:
+    - title: Model details
+      required: [name, owner]
+      properties:
+        name:
+          title: Name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 40
+          ui:autofocus: true
+          description: Must not be "local-cpu" (reserved for the chart default model).
+        owner:
+          title: Owner
+          type: string
+          default: group:default/developers
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [Group]
+        modelUrl:
+          title: GGUF download URL
+          type: string
+          default: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf
+        description:
+          title: Description
+          type: string
+          default: Namespace CPU InferenceService for OpenShift AI / LiteLLM
+  steps:
+    - id: guard
+      name: Reserve local-cpu
+      action: debug:log
+      input:
+        message: >-
+          Creating managed CPU model ${{ parameters.name }} (chart default local-cpu is untouched).
+    - id: register
+      name: Register Component
+      action: fetch:template
+      input:
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/scaffolder/pending-catalog-entity-cpu-model
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          modelUrl: ${{ parameters.modelUrl }}
+          description: ${{ parameters.description }}
+    - id: apply-register
+      name: Apply catalog registration to cluster
+      action: catalog:apply-pending-configmap
+      input:
+        manifestPath: kubernetes/configmap.yaml
+    - id: verify
+      name: Verify entity in catalog
+      action: catalog:wait-for-entity
+      input:
+        name: ${{ parameters.name }}
+        kind: Component
+        namespace: default
+        timeoutSeconds: 300
+        pollIntervalSeconds: 5
+  output:
+    links:
+      - title: Open Component
+        icon: catalog
+        entityRef: "component:default/${{ parameters.name }}"
