@@ -6,6 +6,8 @@ metadata:
   annotations:
     rhdh-agent-sandbox.io/chart-model: "true"
     backstage.io/kubernetes-id: local-cpu
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+    backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main
   tags:
     - model
     - cpu
@@ -15,4 +17,4 @@ spec:
   type: model
   lifecycle: experimental
   owner: group:default/developers
-  system: rhdh-agent-sandbox
+  system: agent-sandbox

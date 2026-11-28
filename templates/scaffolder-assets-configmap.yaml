@@ -33,4 +33,7 @@ data:
 {{ .Files.Get "files/templates/agent-runtimes/quarkus/manifests.yaml" | indent 4 }}
   quarkus-catalog-info.yaml: |
 {{ .Files.Get "files/templates/agent-runtimes/quarkus/catalog-info.yaml" | indent 4 }}
+  # Golden Path: Deploy CPU model (fetch:template file:// — do not depend on GitHub main)
+  pending-cpu-model-configmap.yaml: |
+{{ .Files.Get "files/templates/scaffolder/pending-catalog-entity-cpu-model/kubernetes/configmap.yaml" | indent 4 }}
 {{- end }}

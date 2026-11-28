@@ -297,6 +297,14 @@ rhdh:
     okp:
       enabled: false
     core:
+      # MCP Authorization: "client" is filled by the IA backend from app-config;
+      # LCORE also needs MCP_TOKEN when mcpInCore=true and headers use ${env.MCP_TOKEN}.
+      extraEnv:
+        - name: MCP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rhdh-agent-sandbox-secrets
+              key: mcp-token
       resources:
         requests:
           cpu: 100m
@@ -367,6 +375,23 @@ rhdh:
           - host: github.com
           - host: raw.githubusercontent.com
           - host: "*.github.io"
+    # Scorecard filecheck (RHDH 2.1: metricProviders, not scorecard.plugins).
+    # Needs backstage.io/source-location on Components.
+    scorecard:
+      metricProviders:
+        filecheck:
+          fileExistence:
+            options:
+              files:
+                readme: README.md
+                license: LICENSE
+            schedule:
+              frequency:
+                minutes: 30
+              timeout:
+                minutes: 5
+              initialDelay:
+                seconds: 20
     kubernetes:
       customResources:
         - group: tekton.dev
@@ -484,6 +509,8 @@ rhdh:
                   path: agent-runtimes/quarkus/manifests.yaml
                 - key: quarkus-catalog-info.yaml
                   path: agent-runtimes/quarkus/catalog-info.yaml
+                - key: pending-cpu-model-configmap.yaml
+                  path: scaffolder/pending-catalog-entity-cpu-model/kubernetes/configmap.yaml
     - name: registered-catalog
       configMap:
         name: rhdh-agent-sandbox-registered-catalog

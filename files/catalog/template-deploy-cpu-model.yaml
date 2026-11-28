@@ -53,7 +53,8 @@ spec:
       name: Register Component
       action: fetch:template
       input:
-        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/scaffolder/pending-catalog-entity-cpu-model
+        # Skeleton lives on this feature branch until merged to main (main fetch returned 0 files).
+        url: https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/feat/rhdh-2.1-models/files/templates/scaffolder/pending-catalog-entity-cpu-model
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}

@@ -19,6 +19,9 @@ data:
         - mcp
         - golden-path
         - ${{ values.language }}
+      annotations:
+        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+        backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ values.language }}
     spec:
       type: openapi
       lifecycle: experimental
@@ -111,6 +114,8 @@ data:
           ${{ values.agentSpec }}
         rhdh-agent-sandbox.io/image-stream: "${{ values.name }}:latest"
         rhdh-agent-sandbox.io/build-source: ${{ values.language }}
+        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+        backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ values.language }}
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"
         backstage.io/kubernetes-namespace: __RELEASE_NAMESPACE__
         janus-idp.io/tekton: "app.kubernetes.io/name=${{ values.name }}"

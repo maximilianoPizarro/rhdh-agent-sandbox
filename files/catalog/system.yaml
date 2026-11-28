@@ -8,5 +8,8 @@ metadata:
     - ai
     - golden-path
     - demo
+  annotations:
+    backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+    backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main
 spec:
   owner: group:default/developers

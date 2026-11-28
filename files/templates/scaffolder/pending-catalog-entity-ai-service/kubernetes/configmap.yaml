@@ -17,6 +17,9 @@ data:
         - ai
         - mcp
         - golden-path
+      annotations:
+        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+        backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/ai-service
     spec:
       type: openapi
       lifecycle: experimental
@@ -58,6 +61,8 @@ data:
       annotations:
         rhdh-agent-sandbox.io/managed-ai-service: "true"
         rhdh-agent-sandbox.io/model: ${{ values.model }}
+        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+        backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/ai-service
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"
     spec:
       type: service

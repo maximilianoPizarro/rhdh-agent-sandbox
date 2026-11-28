@@ -24,6 +24,8 @@ data:
         rhdh-agent-sandbox.io/framework: ${{ values.framework }}
         rhdh-agent-sandbox.io/model: ${{ values.model }}
         rhdh-agent-sandbox.io/devspaces-workspace: ${{ values.name }}
+        backstage.io/techdocs-ref: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/techdocs/platform
+        backstage.io/source-location: url:https://github.com/maximilianoPizarro/rhdh-agent-sandbox/tree/main/files/templates/skeletons/deploy-agent/${{ values.language }}
         backstage.io/kubernetes-label-selector: "app.kubernetes.io/name=${{ values.name }}"
       links:
         - url: https://workspaces.openshift.com/dashboard/#/workspaces
