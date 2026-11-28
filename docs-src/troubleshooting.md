@@ -33,6 +33,14 @@ oc exec -n "$NAMESPACE" deploy/rhdh-agent-sandbox-developer-hub -c lightspeed-co
 
 Chart template: `templates/hub-egress-networkpolicy.yaml`.
 
+## Intelligent Assistant UI opens but chat never answers
+
+With `local-cpu` (tiny GGUF), LCORE MCP tool listing overwhelms the model and the UI stream stalls or dies (`Exceeded maximum output retries`). Default chart sets `assistant.mcpInCore: false` so chat works. Re-enable MCP in LCORE only with a tool-capable model:
+
+```bash
+helm upgrade ... --set assistant.mcpInCore=true
+```
+
 ## Lightspeed chat empty / “Error while processing query”
 
 Check sidecar logs:

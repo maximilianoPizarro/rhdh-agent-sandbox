@@ -65,6 +65,9 @@ data:
     skills:
       paths:
         - /app-root/skills
+    # local-cpu (tiny GGUF) cannot satisfy MCP tool schemas → UI stream dies with
+    # "Exceeded maximum output retries". Enable only with a tool-capable model (LiteMaaS).
+{{- if and .Values.assistant .Values.assistant.mcpInCore }}
     mcp_servers:
       - name: mcp-integration-tools
         provider_id: 'model-context-protocol'
@@ -80,5 +83,8 @@ data:
       - name: k8s-mcp
         provider_id: 'model-context-protocol'
         url: 'http://{{ $fullname }}-k8s-mcp:{{ .Values.mcp.kubernetes.service.port }}/mcp'
+{{- end }}
+{{- else }}
+    mcp_servers: []
 {{- end }}
 {{- end }}

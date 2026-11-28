@@ -37,6 +37,11 @@ hub:
     # MCP Chat community overlay is not reliably published for BS 1.54.9; IA replaces it.
     mcpChat: false
 
+# Parent-chart only (not passed to rhdh subchart schema).
+# Wire MCP into LCORE only with a tool-capable model; local-cpu 0.5B stalls/breaks chat UI.
+assistant:
+  mcpInCore: false
+
 # Chart-managed CPU model (ServingRuntime + InferenceService). Default ON.
 # Wired to LiteLLM alias local-cpu and Intelligent Assistant. No PVC (emptyDir download).
 models:
